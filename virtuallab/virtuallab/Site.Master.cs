@@ -96,6 +96,7 @@ namespace virtuallab
         protected void LoadCookiedUser()
         {
             LogPart.ActiveViewIndex = 0;
+            FuncMenu.ActiveViewIndex = -1;
 
             // 设置好本页面的Cookie结构
             if (Request.Cookies["LoginStudent"] == null)
@@ -107,11 +108,16 @@ namespace virtuallab
             if (CurrentLoginUser != null)
             {
                 LogPart.ActiveViewIndex = 1;
-
                 if (CurrentLoginUser.type == 1)
+                {
+                    FuncMenu.ActiveViewIndex = 1;
                     Request.Cookies["LoginStudent"].Value = CurrentLoginUser.alias;
+                }
                 else
+                {
+                    FuncMenu.ActiveViewIndex = 0;
                     Request.Cookies["LoginManager"].Value = CurrentLoginUser.alias;
+                }
                 return;
             }
 
@@ -187,6 +193,7 @@ namespace virtuallab
             CurrentLoginUser.password = outDS.Tables["BHUSER"].Rows[0]["password"].ToString();
 
             LogPart.ActiveViewIndex = 1;
+            FuncMenu.ActiveViewIndex = userType;
         }
     }
 }

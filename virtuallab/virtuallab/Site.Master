@@ -48,14 +48,23 @@
                     <a class="navbar-brand" runat="server" href="~/">虚拟仿真网络实验室</a>
                 </div>
                 <div class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav">
-                        <li>
-                            <a href="#">我的任务</a>
-                            <ul class="nav navbar-collapse dropdown-menu">
-                                <li class=""><a runat="server" href="~/">实验列表</a></li>
-                                <li class=""><a runat="server" href="~/">实验列表</a></li>
+                    <asp:MultiView runat="server" ID="FuncMenu" ActiveViewIndex="-1">
+                        <asp:View ID="ManagerMenu" runat="server">
+                            <ul class="nav navbar-nav">
+                                <li><a runat="server" href="~/ReportList">报告列表</a></li>
+                                <li><a runat="server" href="~/StudentList">我的学生</a></li>
+                                <li><a runat="server" href="~/ManagerPage">实验管理</a></li>
                             </ul>
-                        </li>
+                        </asp:View>
+                        <asp:View ID="StudentMenu" runat="server">
+                            <ul class="nav navbar-nav">
+                                <li><a runat="server" href="~/StudentPage">我的任务</a></li>
+                                <li><a runat="server" href="~/Environment">进行实验</a></li>
+                                <li><a runat="server" href="~/ModifyPass/">修改密码</a></li>
+                            </ul>
+                        </asp:View>
+                    </asp:MultiView>
+                    <ul class="nav navbar-nav">
                         <li><a runat="server" href="~/About">关于</a></li>
                         <li><a runat="server" href="~/Contact">联络</a></li>
                     </ul>
@@ -67,10 +76,8 @@
                         </asp:View>
                         <asp:View ID="LogoffView" runat="server">
                             <ul class="nav navbar-nav navbar-right">
-                                <li><a runat="server" href="~/Account/Manage" title="Manage your account">你好, <%: CurrentLoginUser.name %> !</a></li>
-                                <li>
-                                    <asp:LinkButton runat="server" OnClick="LoggingOut" Text="退出" CssClass=""/>
-                                </li>
+                                <li><a runat="server" href="#">你好, <%: CurrentLoginUser.name %> !</a></li>
+                                <li><asp:LinkButton runat="server" OnClick="LoggingOut" Text="退出" /></li>
                             </ul>
                         </asp:View>
                     </asp:MultiView>
