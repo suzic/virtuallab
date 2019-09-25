@@ -59,21 +59,21 @@
                         <li><a runat="server" href="~/About">关于</a></li>
                         <li><a runat="server" href="~/Contact">联络</a></li>
                     </ul>
-                    <asp:LoginView runat="server" ViewStateMode="Disabled" ID="LoginState">
-                        <AnonymousTemplate>
+                    <asp:MultiView runat="server" ID="LogPart" ActiveViewIndex="0">
+                        <asp:View ID="LoginView" runat="server">
                             <ul class="nav navbar-nav navbar-right">
                                 <li><a runat="server" href="~/Account/Login">登录</a></li>
                             </ul>
-                        </AnonymousTemplate>
-                        <LoggedInTemplate>
+                        </asp:View>
+                        <asp:View ID="LogoffView" runat="server">
                             <ul class="nav navbar-nav navbar-right">
                                 <li><a runat="server" href="~/Account/Manage" title="Manage your account">你好, <%: CurrentLoginUser.name %> !</a></li>
                                 <li>
-                                    <asp:LoginStatus runat="server" LogoutAction="Redirect" LogoutText="退出" LogoutPageUrl="~/" OnLoggingOut="Unnamed_LoggingOut" />
+                                    <asp:LinkButton runat="server" OnClick="LoggingOut" Text="退出" CssClass=""/>
                                 </li>
                             </ul>
-                        </LoggedInTemplate>
-                    </asp:LoginView>
+                        </asp:View>
+                    </asp:MultiView>
                 </div>
             </div>
         </div>

@@ -83,8 +83,20 @@ namespace virtuallab
             Context.GetOwinContext().Authentication.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
         }
 
+        protected void LoggingOut(object sender, EventArgs e)
+        {
+            LogPart.ActiveViewIndex = 0;
+            CurrentLoginUser = null;
+            Request.Cookies["LoginStudent"].Value = "";
+            Request.Cookies["LoginManager"].Value = "";
+
+            Response.Redirect("~/");
+        }
+
         protected void LoadCookiedUser()
         {
+            LogPart.ActiveViewIndex = 0;
+
             // 设置好本页面的Cookie结构
             if (Request.Cookies["LoginStudent"] == null)
                 Request.Cookies.Add(new HttpCookie("LoginStudent"));
@@ -94,6 +106,8 @@ namespace virtuallab
             // 存在已登录对象的情况
             if (CurrentLoginUser != null)
             {
+                LogPart.ActiveViewIndex = 1;
+
                 if (CurrentLoginUser.type == 1)
                     Request.Cookies["LoginStudent"].Value = CurrentLoginUser.alias;
                 else
@@ -171,6 +185,8 @@ namespace virtuallab
             CurrentLoginUser.phone = outDS.Tables["BHUSER"].Rows[0]["phone"].ToString();
             CurrentLoginUser.email = outDS.Tables["BHUSER"].Rows[0]["email"].ToString();
             CurrentLoginUser.password = outDS.Tables["BHUSER"].Rows[0]["password"].ToString();
+
+            LogPart.ActiveViewIndex = 1;
         }
     }
 }
