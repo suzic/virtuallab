@@ -56,8 +56,8 @@
                     <h4>请在左侧列表中选择一个实验的详情后查看</h4>
                 </EmptyDataTemplate>
                 <Fields>
-                    <asp:BoundField DataField="memo" HeaderText="描述" SortExpression="memo" >
-                    <HeaderStyle CssClass="col-md-3" />
+                    <asp:BoundField DataField="memo" HeaderText="描述" SortExpression="memo">
+                        <HeaderStyle CssClass="col-md-3" />
                     </asp:BoundField>
                     <asp:BoundField DataField="template_uri" HeaderText="代码模板" SortExpression="template_uri" />
                     <asp:BoundField DataField="rjson_uri" HeaderText="报告格式" SortExpression="rjson_uri" />
@@ -72,6 +72,6 @@
                 <PagerStyle BackColor="White" ForeColor="Black" HorizontalAlign="Right" />
             </asp:DetailsView>
         </div>
+        <asp:SqlDataSource ID="sdsExperiment" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [id_experiment], [title], [rjson_uri], [template_uri], [memo], [create_date], [update_date], [delete_date], [record_status] FROM [bhExperiment]"></asp:SqlDataSource>
     </div>
-    <asp:SqlDataSource ID="sdsExperiment" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [id_experiment], [title], [rjson_uri], [template_uri], [memo], [create_date], [update_date], [delete_date], [record_status] FROM [bhExperiment]"></asp:SqlDataSource>
 </asp:Content>
