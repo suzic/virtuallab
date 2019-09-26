@@ -38,9 +38,9 @@
                     </div>
                     <hr />
                     <div class="form-group">
-                        <div class="col-md-offset-2 col-md-12">
-                            <asp:RadioButton ID="RadioStudent" runat="server" CssClass="col-md-2" Text="学员登录" ValidationGroup="0" Checked="True" GroupName="LoginWay" />
-                            <asp:RadioButton ID="RadioManager" runat="server" CssClass="col-md-2" Text="管理登录" ValidationGroup="0" GroupName="LoginWay" />
+                        <div class="col-md-offset-2 col-md-10">
+                            <asp:RadioButton ID="RadioStudent" runat="server" CssClass="col-md-2" Text="&nbsp;学员登录" Checked="True" GroupName="LoginWay" />
+                            <asp:RadioButton ID="RadioManager" runat="server" CssClass="col-md-2" Text="&nbsp;管理登录" GroupName="LoginWay" />
                         </div>
                     </div>
 

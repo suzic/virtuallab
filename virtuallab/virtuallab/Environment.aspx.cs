@@ -25,5 +25,9 @@ namespace virtuallab
         {
 
         }
+        protected void Func(object sender, EventArgs e)
+        {
+
+        }
     }
 }
