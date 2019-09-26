@@ -1,6 +1,6 @@
 ﻿<%@ Page Title="我的学生" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="StudentList.aspx.cs" Inherits="virtuallab.StudentList" %>
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
-        <h2>网络实验室学员列表</h2>
+    <h2>网络实验室学员列表</h2>
     <asp:GridView ID="gvStudents" runat="server" AllowPaging="True" AllowSorting="True" AutoGenerateColumns="False" CssClass="table col-md-12" DataSourceID="sdsStudentList" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="4" ForeColor="Black" GridLines="Horizontal">
         <Columns>
             <asp:TemplateField HeaderText="姓名" SortExpression="name">
