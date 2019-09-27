@@ -99,6 +99,8 @@ namespace virtuallab
             FuncMenu.ActiveViewIndex = -1;
 
             // 设置好本页面的Cookie结构
+            if (Request.Cookies["UserID"] == null)
+                Request.Cookies.Add(new HttpCookie("UserID"));
             if (Request.Cookies["LoginStudent"] == null)
                 Request.Cookies.Add(new HttpCookie("LoginStudent"));
             if (Request.Cookies["LoginManager"] == null)
@@ -108,6 +110,7 @@ namespace virtuallab
             if (CurrentLoginUser != null)
             {
                 LogPart.ActiveViewIndex = 1;
+                Request.Cookies["UserID"].Value = CurrentLoginUser.userId.ToString();
                 if (CurrentLoginUser.type == 1)
                 {
                     FuncMenu.ActiveViewIndex = 1;
@@ -122,6 +125,10 @@ namespace virtuallab
             }
 
             // 即便已登录对象已经不存在，但反过来若Cookie还在，就尝试自动登录重建登录对象，除非Cookie也没有
+            string currentUserID = Request.Cookies["UserID"].Value;
+            if (currentUserID == null || currentUserID.Equals(String.Empty))
+                return;
+
             int userType = 0;
             string cmdString = null;
             string currentAlias = Request.Cookies["LoginStudent"].Value;
@@ -178,7 +185,7 @@ namespace virtuallab
             CurrentLoginUser = new LoginUser();
 
             CurrentLoginUser.type = userType;
-            CurrentLoginUser.alias = outDS.Tables["BHUSER"].Rows[0]["alias"].ToString();
+            // CurrentLoginUser.alias = outDS.Tables["BHUSER"].Rows[0]["alias"].ToString(); 可以不必反写一次
             CurrentLoginUser.name = outDS.Tables["BHUSER"].Rows[0]["name"].ToString();
 
             if (outDS.Tables["BHUSER"].Columns.Contains("gender"))

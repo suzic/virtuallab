@@ -8,6 +8,7 @@ namespace virtuallab.Models
     public class LoginUser
     {
         public int type;
+        public int userId;
         public string alias;
         public string name;
         public int gender;

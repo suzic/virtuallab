@@ -5,15 +5,46 @@
     <div class="row">
         <asp:GridView ID="gvRepots" runat="server" AutoGenerateColumns="False" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="4" CssClass="table col-md-12" DataKeyNames="id_task" DataSourceID="sdsReports" ForeColor="Black" GridLines="Horizontal" AllowPaging="True" AllowSorting="True">
             <Columns>
-                <asp:BoundField DataField="id_task" HeaderText="id_task" InsertVisible="False" ReadOnly="True" SortExpression="id_task" />
-                <asp:BoundField DataField="fid_experiment" HeaderText="fid_experiment" SortExpression="fid_experiment" />
-                <asp:BoundField DataField="fid_student" HeaderText="fid_student" SortExpression="fid_student" />
-                <asp:BoundField DataField="fid_manager" HeaderText="fid_manager" SortExpression="fid_manager" />
-                <asp:BoundField DataField="score" HeaderText="score" SortExpression="score" />
-                <asp:BoundField DataField="complete" HeaderText="complete" SortExpression="complete" />
+                <asp:BoundField DataField="id_experiment" HeaderText="id_experiment" ReadOnly="True" SortExpression="id_experiment" Visible="False" />
+
+                <asp:TemplateField ConvertEmptyStringToNull="False" HeaderText="实验名称" SortExpression="title">
+                    <ItemTemplate>
+                        <asp:Label ID="lbTitle" runat="server" CssClass="col-md-12" Text='<%# Eval("title", "{0}") %>'></asp:Label>
+                    </ItemTemplate>
+                    <HeaderStyle CssClass="col-md-5" />
+                </asp:TemplateField>
+                <asp:BoundField DataField="id_student" HeaderText="id_student" ReadOnly="True" SortExpression="id_student" Visible="False" />
+                <asp:TemplateField ConvertEmptyStringToNull="False" HeaderText="参与人" SortExpression="name">
+                    <ItemTemplate>
+                        <asp:Label ID="lbName" runat="server" CssClass="col-md-12" Text='<%# Eval("name", "{0}") %>'></asp:Label>
+                    </ItemTemplate>
+                    <HeaderStyle CssClass="col-md-1" />
+                </asp:TemplateField>
+                <asp:BoundField DataField="id_task" HeaderText="id_task" ReadOnly="True" SortExpression="id_task" Visible="False" />
+                <asp:BoundField DataField="complete" HeaderText="complete" SortExpression="complete" Visible="False" />
+                <asp:TemplateField ConvertEmptyStringToNull="False" HeaderText="成绩" SortExpression="score">
+                    <ItemTemplate>
+                        <asp:Label ID="lbScore" runat="server" CssClass="col-md-12" Text='<%# Eval("score", "{0}") %>'></asp:Label>
+                    </ItemTemplate>
+                    <HeaderStyle CssClass="col-md-1" />
+                </asp:TemplateField>
+                <asp:BoundField DataField="id_record" HeaderText="id_record" ReadOnly="True" SortExpression="id_record" Visible="False" />
+                <asp:TemplateField ConvertEmptyStringToNull="False" HeaderText="完成时间" SortExpression="finish_date">
+                    <ItemTemplate>
+                        <asp:Label ID="lbFinishDate" runat="server" CssClass="col-md-12" Text='<%# Eval("finish_date", "{0:g}") %>'></asp:Label>
+                    </ItemTemplate>
+                    <HeaderStyle CssClass="col-md-2" />
+                </asp:TemplateField>
+                <asp:TemplateField HeaderText="实验数据">
+                    <ItemTemplate>
+                        <asp:LinkButton ID="lbCode" runat="server" CommandArgument='<%# Eval("final_code_uri") %>' CssClass="col-md-6">实验代码</asp:LinkButton>
+                        <asp:LinkButton ID="lbReport" runat="server" CommandArgument='<%# Eval("result_json_uri") %>' CssClass="col-md-6">报告</asp:LinkButton>
+                    </ItemTemplate>
+                    <HeaderStyle CssClass="col-md-3" />
+                </asp:TemplateField>
             </Columns>
             <EmptyDataTemplate>
-                <h3>前暂无数据</h3>
+                <h3>当前暂未有学生完成实验</h3>
             </EmptyDataTemplate>
             <FooterStyle BackColor="#CCCC99" ForeColor="Black" />
             <HeaderStyle BackColor="#333333" Font-Bold="True" ForeColor="White" />
@@ -25,8 +56,6 @@
             <SortedDescendingCellStyle BackColor="#E5E5E5" />
             <SortedDescendingHeaderStyle BackColor="#242121" />
         </asp:GridView>
-        <asp:SqlDataSource ID="sdsExperiment" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [id_experiment], [title], [template_uri], [rjson_uri], [memo], [create_date], [update_date], [delete_date], [record_status] FROM [bhExperiment]"></asp:SqlDataSource>
-        <asp:SqlDataSource ID="sdsStudent" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [name], [alias], [password], [gender], [grade], [belong], [phone], [email], [record_status], [id_student] FROM [bhStudent]"></asp:SqlDataSource>
-        <asp:SqlDataSource ID="sdsReports" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [id_task], [fid_experiment], [fid_student], [fid_manager], [score], [complete] FROM [bhTask]"></asp:SqlDataSource>
+        <asp:SqlDataSource ID="sdsReports" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [id_experiment], [title], [id_task], [score], [id_student], [name], [complete], [id_record], [finish_date], [result_json_uri], [final_code_uri] FROM [bh_view_manager_reports]"></asp:SqlDataSource>
     </div>
 </asp:Content>

@@ -127,6 +127,10 @@ namespace virtuallab.Account
                 SiteMaster.CurrentLoginUser = new LoginUser();
 
                 SiteMaster.CurrentLoginUser.type = userType;
+                if (userType == 1)
+                    SiteMaster.CurrentLoginUser.userId = (int)outDS.Tables["BHUSER"].Rows[0]["id_student"];
+                else // userType == 0
+                    SiteMaster.CurrentLoginUser.userId = (int)outDS.Tables["BHUSER"].Rows[0]["id_manager"];
                 SiteMaster.CurrentLoginUser.alias = outDS.Tables["BHUSER"].Rows[0]["alias"].ToString();
                 SiteMaster.CurrentLoginUser.name = outDS.Tables["BHUSER"].Rows[0]["name"].ToString();
 
