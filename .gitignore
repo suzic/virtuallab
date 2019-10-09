@@ -8,3 +8,5 @@
 /virtuallab/virtuallab/App_Data/aspnet-virtuallab-20190924043204_log.ldf
 /virtuallab/virtuallab/App_Data/aspnet-virtuallab-20190924043204.mdf
 .vs/
+virtuallab/virtuallab/CM/
+virtuallab/virtuallab/Properties/PublishProfiles/
