@@ -2,7 +2,9 @@
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <h2>网络实验室学员列表</h2>
+    <hr />
     <div class="row">
+        <div class="col-md-12">
         <asp:GridView ID="gvStudents" runat="server" AllowPaging="True" AllowSorting="True" AutoGenerateColumns="False" CssClass="table col-md-12" DataSourceID="sdsStudentList" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="4" ForeColor="Black" GridLines="Horizontal">
             <Columns>
                 <asp:TemplateField HeaderText="姓名" SortExpression="name">
@@ -99,6 +101,7 @@
             <SortedDescendingCellStyle BackColor="#E5E5E5" />
             <SortedDescendingHeaderStyle BackColor="#242121" />
         </asp:GridView>
+        </div>
         <asp:SqlDataSource ID="sdsStudentList" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [id_student], [alias], [password], [name], [gender], [grade], [belong], [phone], [email], [record_status] FROM [bhStudent]"></asp:SqlDataSource>
     </div>
 </asp:Content>

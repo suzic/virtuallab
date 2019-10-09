@@ -2,6 +2,7 @@
 
 <asp:Content ID="BodyConent" ContentPlaceHolderID="MainContent" runat="server">
     <h2>仿真实验管理中心</h2>
+    <hr />
     <div class="row">
         <div class="col-md-8">
             <asp:GridView ID="gvExperiment" runat="server" AllowPaging="True" AllowSorting="True" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="4" CssClass="table col-md-12" DataSourceID="sdsExperiment" ForeColor="Black" GridLines="Horizontal" AutoGenerateColumns="False">

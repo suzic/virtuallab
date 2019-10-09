@@ -2,7 +2,9 @@
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <h2>我的实验中心</h2>
+    <hr />
     <div class="row">
+        <div class="col-md-12">
         <asp:GridView ID="gvMyTasks" runat="server" AllowPaging="True" AllowSorting="True" AutoGenerateColumns="False" CellPadding="4" CssClass="table col-md-12" DataKeyNames="id_task" DataSourceID="sdsStudentTask" ForeColor="#333333" GridLines="None">
             <AlternatingRowStyle BackColor="White" ForeColor="#284775" />
             <Columns>
@@ -65,6 +67,7 @@
             <SortedDescendingCellStyle BackColor="#FFFDF8" />
             <SortedDescendingHeaderStyle BackColor="#6F8DAE" />
         </asp:GridView>
+        </div>
         <asp:SqlDataSource ID="sdsStudentTask" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [id_task], [fid_student], [complete], [score], [name], [title], [memo], [template_uri], [rjson_uri], [fid_experiment] FROM [bh_view_student_tasks] WHERE ([fid_student] = @fid_student)">
             <SelectParameters>
                 <asp:CookieParameter CookieName="UserID" Name="fid_student" Type="Int32" />

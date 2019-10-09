@@ -2,7 +2,9 @@
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <h2>学员实验报告</h2>
+    <hr />
     <div class="row">
+        <div class="col-md-12">
         <asp:GridView ID="gvRepots" runat="server" AutoGenerateColumns="False" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="4" CssClass="table col-md-12" DataKeyNames="id_task" DataSourceID="sdsReports" ForeColor="Black" GridLines="Horizontal" AllowPaging="True" AllowSorting="True">
             <Columns>
                 <asp:BoundField DataField="id_experiment" HeaderText="id_experiment" ReadOnly="True" SortExpression="id_experiment" Visible="False" />
@@ -56,6 +58,7 @@
             <SortedDescendingCellStyle BackColor="#E5E5E5" />
             <SortedDescendingHeaderStyle BackColor="#242121" />
         </asp:GridView>
+        </div>
         <asp:SqlDataSource ID="sdsReports" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [id_experiment], [title], [id_task], [score], [id_student], [name], [complete], [id_record], [finish_date], [result_json_uri], [final_code_uri] FROM [bh_view_manager_reports]"></asp:SqlDataSource>
     </div>
 </asp:Content>
