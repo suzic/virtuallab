@@ -770,6 +770,7 @@
     <Content Include="ModifyPass.aspx" />
     <Content Include="NotReady.aspx" />
     <Content Include="ReportList.aspx" />
+    <Content Include="Scripts\environment.js" />
     <Content Include="StudentList.aspx" />
     <Content Include="StudentPage.aspx" />
     <Content Include="CM\.editorconfig" />

@@ -1,6 +1,7 @@
 ﻿<%@ Page Title="进行实验" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Environment.aspx.cs" Inherits="virtuallab.Environment" %>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
+    <script type="text/javascript" src="Scripts/environment.js"></script>
     <asp:MultiView ID="EnvironmentView" runat="server" ActiveViewIndex="0">
         <asp:View ID="CodeView" runat="server">
             <div class="row" style="position: relative; margin-top: 20px; margin-bottom: 20px;">
@@ -10,8 +11,11 @@
                 <div class="col-md-6">
                     <asp:Label ID="lbGeneral" runat="server" Text=""></asp:Label>
                 </div>
+                <%-- <div class="col-md-2">
+                    <input id="Button1" type="button" value="前端动作" onclick="JSAction();" class="btn btn-default form-control" />
+                </div>--%>
                 <div class="col-md-2">
-                    <asp:Button runat="server" ID="btnComplie" OnClick="CodeComplie" Text="提交编译" CssClass="btn btn-default form-control" />
+                    <asp:Button runat="server" ID="btnCompile" OnClick="CodeComplie" Text="提交编译" CssClass="btn btn-default form-control" />
                 </div>
                 <div class="col-md-2">
                     <asp:Button runat="server" OnClick="CodeUpload" Text="上传程序" CssClass="btn btn-default form-control" />

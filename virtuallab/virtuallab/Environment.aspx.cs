@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Http.Routing;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -31,6 +32,7 @@ namespace virtuallab
     public partial class Environment : System.Web.UI.Page
     {
         private bool bTaskExit;
+        public UrlHelper Url = new UrlHelper(new HttpRequestMessage());
 
         private class EnvironmentRequest
         {
@@ -104,7 +106,7 @@ namespace virtuallab
         protected void CodeComplie(object sender, EventArgs e)
         {
             currentState = EnvironmentState.InCompiling;
-            btnComplie.Enabled = false;
+            btnCompile.Enabled = false;
             //var client = new HttpClient();
             //client.BaseAddress = new Uri(BaseURL);
             //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -160,31 +162,6 @@ namespace virtuallab
             this.Page.Header.Controls.Add(CodeFormatClike);
             this.Page.Header.Controls.Add(CodeFormatText);
             this.Page.Header.Controls.Add(CodeScrollbar);
-
-            string script = "<script>" +
-                "window.onload = function() {" +
-                "   var editor = CodeMirror.fromTextArea(document.getElementById('code_text')," +
-                "   {" +
-                "       mode:'text/x-c++src'," +
-                "       lineNumbers:true," +
-                "       theme:'mdn-like'," +
-                "       matchBrackets:true," +
-                "       identUnit:4," +
-                "       smartIdent:true," +
-                "       indentWithTabs:true" +
-                "   });" +
-                "   editor.setSize('100%', '100%');" +
-                "   var outer = CodeMirror.fromTextArea(document.getElementById('debug_text')," +
-                "   {" +
-                "       mode:'textile'," +
-                "       theme:'zenburn'," +
-                "       identUnit:4," +
-                "       readOnly:true" +
-                "   });" +
-                "   outer.setSize('100%', '100%');" +
-                "};" +
-                "</script>";
-            Page.ClientScript.RegisterClientScriptBlock(this.GetType(), "text", script);
         }
 
         // 接收线程
@@ -198,7 +175,7 @@ namespace virtuallab
                 {
                     case EnvironmentState.InCompiling:
                         {
-                            btnComplie.Enabled = true;
+                            btnCompile.Enabled = true;
                         }
                         break;
 
