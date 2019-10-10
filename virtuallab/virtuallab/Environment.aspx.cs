@@ -29,11 +29,40 @@ namespace virtuallab
 
         }
 
-        protected void Func(object sender, EventArgs e)
+        // 重新加载模板代码
+        protected void ReloadCode(object sender, EventArgs e)
         {
 
         }
 
+        // 编译代码
+        protected void CodeComplie(object sender, EventArgs e)
+        {
+
+        }
+
+        // 上传代码
+        protected void CodeUpload(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void SwitchViewToCode(object sender, EventArgs e)
+        {
+            EnvironmentView.ActiveViewIndex = 0;
+        }
+
+        protected void SwitchViewToBoard(object sender, EventArgs e)
+        {
+            EnvironmentView.ActiveViewIndex = 1;
+        }
+
+        protected void SwitchViewToIntro(object sender, EventArgs e)
+        {
+            EnvironmentView.ActiveViewIndex = 2;
+        }
+
+        // 初始化CodeMirror以呈现代码规范化效果
         protected void InitCodeMirrorStyles()
         {
             HtmlGenericControl CodeMirrorJS = new HtmlGenericControl("script");
@@ -76,7 +105,7 @@ namespace virtuallab
                 "       matchBrackets:true," +
                 "       identUnit:4," +
                 "       smartIdent:true," +
-                "       indentWithTabs:true," +
+                "       indentWithTabs:true" +
                 "   });" +
                 "   editor.setSize('100%', '100%');" +
                 "   var outer = CodeMirror.fromTextArea(document.getElementById('debug_text')," +

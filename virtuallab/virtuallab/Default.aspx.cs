@@ -42,6 +42,7 @@ namespace virtuallab
         {
         }
 
+        // 首要进入按钮功能
         protected void FirstTask(object sender, EventArgs e)
         {
             if (CurrentLoginUser == null)
@@ -55,6 +56,7 @@ namespace virtuallab
             }
         }
 
+        // 实验任务按钮功能
         protected void ExperiTask(object sender, EventArgs e)
         {
             if (CurrentLoginUser == null)
@@ -68,6 +70,7 @@ namespace virtuallab
             }
         }
 
+        // 得分相关按钮功能
         protected void ScoreTask(object sender, EventArgs e)
         {
             if (CurrentLoginUser == null)
