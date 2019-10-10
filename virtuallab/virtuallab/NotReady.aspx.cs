@@ -8,7 +8,7 @@ using virtuallab.Models;
 
 namespace virtuallab
 {
-    public partial class StudentPage : System.Web.UI.Page
+    public partial class NotReady : System.Web.UI.Page
     {
         public LoginUser CurrentLoginUser;
 
@@ -23,13 +23,14 @@ namespace virtuallab
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            CurrentLoginUser = SiteMaster.CurrentLoginUser;
+            // 默认是没有选择实验；但如果仍然提供了实验ID，说明实验还未准备好
+            if (!string.IsNullOrEmpty(CurrentLoginUser.currentExperiment))
+                InformationView.ActiveViewIndex = 1;
         }
 
-        protected void lbEnterTask_Command(object sender, CommandEventArgs e)
+        protected void GotoTaskView(object sender, EventArgs e)
         {
-            CurrentLoginUser.currentExperiment = e.CommandArgument.ToString();
-            Response.Redirect("~/Environment");
+            Response.Redirect("~/StudentPage");
         }
     }
 }

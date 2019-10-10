@@ -105,6 +105,8 @@ namespace virtuallab
                 Request.Cookies.Add(new HttpCookie("LoginStudent"));
             if (Request.Cookies["LoginManager"] == null)
                 Request.Cookies.Add(new HttpCookie("LoginManager"));
+            if (Request.Cookies["ExperimentID"] == null)
+                Request.Cookies.Add(new HttpCookie("ExperimentID"));
 
             // 存在已登录对象的情况
             if (CurrentLoginUser != null)
@@ -121,6 +123,7 @@ namespace virtuallab
                     FuncMenu.ActiveViewIndex = 0;
                     Request.Cookies["LoginManager"].Value = CurrentLoginUser.alias;
                 }
+                Request.Cookies["ExperimentID"].Value = CurrentLoginUser.currentExperiment;
                 return;
             }
 
@@ -198,6 +201,9 @@ namespace virtuallab
             CurrentLoginUser.phone = outDS.Tables["BHUSER"].Rows[0]["phone"].ToString();
             CurrentLoginUser.email = outDS.Tables["BHUSER"].Rows[0]["email"].ToString();
             CurrentLoginUser.password = outDS.Tables["BHUSER"].Rows[0]["password"].ToString();
+
+            // 刚登录是没有要做的实验的
+            CurrentLoginUser.currentExperiment = "";
 
             LogPart.ActiveViewIndex = 1;
             FuncMenu.ActiveViewIndex = userType;

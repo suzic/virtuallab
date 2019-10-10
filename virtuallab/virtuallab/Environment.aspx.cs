@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
@@ -16,8 +17,21 @@ using virtuallab.Models;
 
 namespace virtuallab
 {
+    /// <summary>
+    /// 游戏进行状态枚举值
+    /// </summary>
+    public enum EnvironmentState
+    {
+        InEditing = 0,
+        InCompiling,
+        InUploading,
+        InPlaying
+    }
+
     public partial class Environment : System.Web.UI.Page
     {
+        private bool bTaskExit;
+
         private class EnvironmentRequest
         {
             public string exp_id;
@@ -31,9 +45,13 @@ namespace virtuallab
         public const string URIComplieResultTick = "path4";
         public const string URIRunResultTick = "path5";
 
+        public EnvironmentState currentState;
         public string currentCode;
         public bool compileSuccess;
         public bool uploadSuccess;
+
+        // 声明一个委托类型，该委托类型无输入参数和输出参数
+        public delegate void ProcessDelegate();
 
         protected void Page_Init(object sender, EventArgs e)
         {
@@ -44,11 +62,21 @@ namespace virtuallab
                 Response.Redirect("~/");
             else if (CurrentLoginUser.type == 0)
                 Response.Redirect("~/ManagerPage");
+
+            if (string.IsNullOrEmpty(CurrentLoginUser.currentExperiment)
+                || !CurrentLoginUser.currentExperiment.Equals("3"))
+                Response.Redirect("~/NotReady");
         }
 
         // 页面加载，该方法先获取可用的目标开发环境
         protected void Page_Load(object sender, EventArgs e)
         {
+            bTaskExit = false;
+            currentState = EnvironmentState.InEditing;
+            Thread callbackThread = new Thread(delegate () { ThreadListener(); });
+            callbackThread.Start();
+
+
             //using (var httpClient = new HttpClient())
             //{
             //    httpClient.BaseAddress = new Uri(BaseURL);
@@ -75,27 +103,29 @@ namespace virtuallab
         // 编译代码
         protected void CodeComplie(object sender, EventArgs e)
         {
-            var client = new HttpClient();
-            client.BaseAddress = new Uri(BaseURL);
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            var retData = NetworkRun(client, URIComplieResultTick, new EnvironmentRequest()
-            {
-                exp_id = "",
-                user_id = ""
-            });
+            currentState = EnvironmentState.InCompiling;
+            btnComplie.Enabled = false;
+            //var client = new HttpClient();
+            //client.BaseAddress = new Uri(BaseURL);
+            //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            //var retData = NetworkRun(client, URIComplieResultTick, new EnvironmentRequest()
+            //{
+            //    exp_id = "",
+            //    user_id = ""
+            //});
         }
 
         // 上传代码
         protected void CodeUpload(object sender, EventArgs e)
         {
-            var client = new HttpClient();
-            client.BaseAddress = new Uri(BaseURL);
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            var retData = NetworkRun(client, URIProgramUpload, new EnvironmentRequest()
-            {
-                exp_id = "",
-                user_id = ""
-            });
+            //var client = new HttpClient();
+            //client.BaseAddress = new Uri(BaseURL);
+            //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            //var retData = NetworkRun(client, URIProgramUpload, new EnvironmentRequest()
+            //{
+            //    exp_id = "",
+            //    user_id = ""
+            //});
         }
 
         // 初始化CodeMirror以呈现代码规范化效果
@@ -157,6 +187,38 @@ namespace virtuallab
             Page.ClientScript.RegisterClientScriptBlock(this.GetType(), "text", script);
         }
 
+        // 接收线程
+        private void ThreadListener()
+        {
+            while (bTaskExit == false)
+            {
+                Thread.Sleep(1000);
+
+                switch (currentState)
+                {
+                    case EnvironmentState.InCompiling:
+                        {
+                            btnComplie.Enabled = true;
+                        }
+                        break;
+
+                    case EnvironmentState.InUploading:
+                        break;
+
+                    case EnvironmentState.InPlaying:
+                        break;
+
+                    case EnvironmentState.InEditing:
+                    default:
+                        {
+
+                        }
+                        break;
+                }
+            }
+        }
+
+
         #region 网络请求方法
 
         private static async Task<EnvironmentRequest> NetworkRun(HttpClient client, string uri, EnvironmentRequest param)
@@ -214,16 +276,25 @@ namespace virtuallab
 
         protected void SwitchViewToCode(object sender, EventArgs e)
         {
+            btnCode.Enabled = false;
+            btnBoard.Enabled = true;
+            btnExp.Enabled = true;
             EnvironmentView.ActiveViewIndex = 0;
         }
 
         protected void SwitchViewToBoard(object sender, EventArgs e)
         {
+            btnCode.Enabled = true;
+            btnBoard.Enabled = false;
+            btnExp.Enabled = true;
             EnvironmentView.ActiveViewIndex = 1;
         }
 
         protected void SwitchViewToIntro(object sender, EventArgs e)
         {
+            btnCode.Enabled = true;
+            btnBoard.Enabled = true;
+            btnExp.Enabled = false;
             EnvironmentView.ActiveViewIndex = 2;
         }
 

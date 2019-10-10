@@ -18,5 +18,7 @@ namespace virtuallab.Models
         public string email;
 
         public string password;
+
+        public string currentExperiment;
     }
 }

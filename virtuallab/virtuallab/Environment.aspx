@@ -11,7 +11,7 @@
                     <asp:Label ID="lbGeneral" runat="server" Text=""></asp:Label>
                 </div>
                 <div class="col-md-2">
-                    <asp:Button runat="server" OnClick="CodeComplie" Text="提交编译" CssClass="btn btn-default form-control" />
+                    <asp:Button runat="server" ID="btnComplie" OnClick="CodeComplie" Text="提交编译" CssClass="btn btn-default form-control" />
                 </div>
                 <div class="col-md-2">
                     <asp:Button runat="server" OnClick="CodeUpload" Text="上传程序" CssClass="btn btn-default form-control" />
@@ -407,7 +407,7 @@ MODULE_LICENSE("GPL");
         </asp:View>
         <asp:View ID="ModelView" runat="server">
             <div class="row">
-                <div class="col-md-12" style="position: relative; margin-top: 20px; height: 855px; background-color: lightgray; border-style: solid; border-width: thin; border-color: darkgray">
+                <div class="col-md-12" style="position: relative; margin-top: 20px; height: 852px; background-color: lightgray; border-style: solid; border-width: thin; border-color: darkgray">
                 </div>
             </div>
         </asp:View>
@@ -415,7 +415,7 @@ MODULE_LICENSE("GPL");
             <h2>实验说明</h2>
             <hr />
             <div class="row">
-                <div class="col-md-12" style="overflow-y:scroll; position: relative; height: 780px; background-color: whitesmoke; border-style: solid; border-width: thin; border-color: lightgray">
+                <div class="col-md-12" style="overflow-y: scroll; position: relative; height: 780px; background-color: whitesmoke; border-style: solid; border-width: thin; border-color: lightgray">
                     <h4>实验步骤1 内容简介</h4>
                     阅读实验原理，了解zlg7290的读写流程和I2C总线的使用方法<br />
                     根据实验步骤完成对zlg7290的读写程序设计和验证<br />
@@ -468,14 +468,14 @@ MODULE_LICENSE("GPL");
     </asp:MultiView>
     <div class="row" style="position: relative; margin-top: 20px; height: 50px;">
         <div class="col-md-2">
-            <asp:Button runat="server" OnClick="SwitchViewToIntro" Text="实验说明" CssClass="btn btn-default form-control" />
+            <asp:Button ID="btnExp" runat="server" OnClick="SwitchViewToIntro" Text="实验说明" CssClass="btn btn-default form-control" />
         </div>
         <div class="col-md-2">
-            <asp:Button runat="server" OnClick="SwitchViewToCode" Text="代码编辑" CssClass="btn btn-default form-control" />
+            <asp:Button ID="btnCode" type="button" runat="server" OnClick="SwitchViewToCode" Text="代码编辑" CssClass="btn btn-default form-control" Enabled="False" />
         </div>
         <div class="col-md-6"></div>
         <div class="col-md-2">
-            <asp:Button runat="server" OnClick="SwitchViewToBoard" Text="板卡效果" CssClass="btn btn-default form-control" />
+            <asp:Button ID="btnBoard" runat="server" OnClick="SwitchViewToBoard" Text="板卡效果" CssClass="btn btn-default form-control" />
         </div>
     </div>
 

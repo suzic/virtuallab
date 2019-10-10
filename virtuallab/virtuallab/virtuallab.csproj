@@ -768,6 +768,7 @@
     <Content Include="Account\Web.config" />
     <Content Include="ManagerPage.aspx" />
     <Content Include="ModifyPass.aspx" />
+    <Content Include="NotReady.aspx" />
     <Content Include="ReportList.aspx" />
     <Content Include="StudentList.aspx" />
     <Content Include="StudentPage.aspx" />
@@ -973,6 +974,13 @@
     </Compile>
     <Compile Include="ModifyPass.aspx.designer.cs">
       <DependentUpon>ModifyPass.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="NotReady.aspx.cs">
+      <DependentUpon>NotReady.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="NotReady.aspx.designer.cs">
+      <DependentUpon>NotReady.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReportList.aspx.cs">

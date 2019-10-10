@@ -47,7 +47,7 @@
                     </EditItemTemplate>
                     <ItemTemplate>
                         <asp:Label ID="lbComplete" runat="server" Text='<%# (short)Eval("complete")==1?"已完成":"未完成" %>' CssClass="col-md-5" ForeColor='<%# (short)Eval("complete")==1?System.Drawing.Color.Green:System.Drawing.Color.Red %>'></asp:Label>
-                        <asp:LinkButton ID="lbEnterTask" runat="server" CssClass="col-md-7">进入实验&gt;</asp:LinkButton>
+                        <asp:LinkButton ID="lbEnterTask" runat="server" CssClass="col-md-7" CommandArgument='<%# Eval("fid_experiment") %>' OnCommand="lbEnterTask_Command">进入实验&gt;</asp:LinkButton>
                     </ItemTemplate>
                     <HeaderStyle CssClass="col-md-2" />
                 </asp:TemplateField>
