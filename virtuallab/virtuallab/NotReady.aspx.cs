@@ -23,9 +23,18 @@ namespace virtuallab
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // 默认是没有选择实验；但如果仍然提供了实验ID，说明实验还未准备好
-            if (!string.IsNullOrEmpty(CurrentLoginUser.currentExperiment))
-                InformationView.ActiveViewIndex = 1;
+            // 默认是没有选择实验；
+            InformationView.ActiveViewIndex = 0;
+
+            // 提供了实验ID
+            if (!string.IsNullOrEmpty(CurrentLoginUser.currentExperimentId))
+            {
+                // 目前除了实验ID=3之外的实验，都还未准备好
+                if (!CurrentLoginUser.currentExperimentId.Equals("3"))
+                    InformationView.ActiveViewIndex = 1;
+                else // CurrentLoginUser.currentSessionId为空，未分配到实验环境
+                    InformationView.ActiveViewIndex = 2;
+            }
         }
 
         protected void GotoTaskView(object sender, EventArgs e)

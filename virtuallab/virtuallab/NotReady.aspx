@@ -20,5 +20,14 @@
                 </div>
             </div>
         </asp:View>
+        <asp:View runat="server">
+            <h2>服务忙，您暂时无法连接到实验服务，请稍后再试</h2>
+            <hr />
+            <div class="row">
+                <div class="col-md-2">
+                    <asp:Button runat="server" OnClick="GotoTaskView" Text="查看我的任务" CssClass="btn btn-default form-control" />
+                </div>
+            </div>
+        </asp:View>
     </asp:MultiView>
 </asp:Content>

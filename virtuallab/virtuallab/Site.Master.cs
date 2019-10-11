@@ -98,17 +98,28 @@ namespace virtuallab
             LogPart.ActiveViewIndex = 0;
             FuncMenu.ActiveViewIndex = -1;
 
-            // 设置好本页面的Cookie结构
+            // 无论何时，均先设置好本页面的Cookie结构
             if (Request.Cookies["UserID"] == null)
                 Request.Cookies.Add(new HttpCookie("UserID"));
             if (Request.Cookies["LoginStudent"] == null)
                 Request.Cookies.Add(new HttpCookie("LoginStudent"));
             if (Request.Cookies["LoginManager"] == null)
                 Request.Cookies.Add(new HttpCookie("LoginManager"));
+
             if (Request.Cookies["ExperimentID"] == null)
                 Request.Cookies.Add(new HttpCookie("ExperimentID"));
+            if (Request.Cookies["TaskID"] == null)
+                Request.Cookies.Add(new HttpCookie("TaskID"));
+            if (Request.Cookies["SessionID"] == null)
+                Request.Cookies.Add(new HttpCookie("SessionID"));
+            if (Request.Cookies["CompileID"] == null)
+                Request.Cookies.Add(new HttpCookie("CompileID"));
+            if (Request.Cookies["UploadID"] == null)
+                Request.Cookies.Add(new HttpCookie("UploadID"));
+            if (Request.Cookies["CodeURI"] == null)
+                Request.Cookies.Add(new HttpCookie("CodeURI"));
 
-            // 存在已登录对象的情况
+            // 存在已登录对象的情况，通过对象重设Cookies
             if (CurrentLoginUser != null)
             {
                 LogPart.ActiveViewIndex = 1;
@@ -123,11 +134,16 @@ namespace virtuallab
                     FuncMenu.ActiveViewIndex = 0;
                     Request.Cookies["LoginManager"].Value = CurrentLoginUser.alias;
                 }
-                Request.Cookies["ExperimentID"].Value = CurrentLoginUser.currentExperiment;
+                Request.Cookies["ExperimentID"].Value = CurrentLoginUser.currentExperimentId;
+                Request.Cookies["TaskID"].Value = CurrentLoginUser.currentTaskId;
+                Request.Cookies["SessionID"].Value = CurrentLoginUser.currentSessionId;
+                Request.Cookies["CompileID"].Value = CurrentLoginUser.currentCompileId;
+                Request.Cookies["UploadID"].Value = CurrentLoginUser.currentUploadId;
+                Request.Cookies["CodeURI"].Value = CurrentLoginUser.currentCodeUri;
                 return;
             }
 
-            // 即便已登录对象已经不存在，但反过来若Cookie还在，就尝试自动登录重建登录对象，除非Cookie也没有
+            // 已登录对象已经不存在，但反过来若Cookie还在，就尝试自动登录重建登录对象，除非Cookie也没有
             string currentUserID = Request.Cookies["UserID"].Value;
             if (currentUserID == null || currentUserID.Equals(String.Empty))
                 return;
@@ -202,8 +218,19 @@ namespace virtuallab
             CurrentLoginUser.email = outDS.Tables["BHUSER"].Rows[0]["email"].ToString();
             CurrentLoginUser.password = outDS.Tables["BHUSER"].Rows[0]["password"].ToString();
 
-            // 刚登录是没有要做的实验的
-            CurrentLoginUser.currentExperiment = "";
+            // 尝试从Cookie中恢复当前登录对象的实验信息
+            //CurrentLoginUser.currentExperimentId = Request.Cookies["ExperimentID"].Value;
+            //CurrentLoginUser.currentTaskId = Request.Cookies["TaskID"].Value;
+            //CurrentLoginUser.currentSessionId = Request.Cookies["SessionID"].Value;
+            //CurrentLoginUser.currentCompileId = Request.Cookies["CompileID"].Value;
+            //CurrentLoginUser.currentUploadId = Request.Cookies["UploadID"].Value;
+            //CurrentLoginUser.currentCodeUri = Request.Cookies["CodeURI"].Value;
+            CurrentLoginUser.currentExperimentId = "";
+            CurrentLoginUser.currentTaskId = "";
+            CurrentLoginUser.currentSessionId = "";
+            CurrentLoginUser.currentCompileId = "";
+            CurrentLoginUser.currentUploadId = "";
+            CurrentLoginUser.currentCodeUri = "";
 
             LogPart.ActiveViewIndex = 1;
             FuncMenu.ActiveViewIndex = userType;

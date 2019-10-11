@@ -5,7 +5,7 @@
     <hr />
     <div class="row">
         <div class="col-md-12">
-        <asp:GridView ID="gvMyTasks" runat="server" AllowPaging="True" AllowSorting="True" AutoGenerateColumns="False" CellPadding="4" CssClass="table col-md-12" DataKeyNames="id_task" DataSourceID="sdsStudentTask" ForeColor="#333333" GridLines="None">
+        <asp:GridView ID="gvMyTasks" runat="server" AllowPaging="True" AllowSorting="True" AutoGenerateColumns="False" CellPadding="4" CssClass="table col-md-12" DataKeyNames="fid_experiment,id_task" DataSourceID="sdsStudentTask" ForeColor="#333333" GridLines="None">
             <AlternatingRowStyle BackColor="White" ForeColor="#284775" />
             <Columns>
                 <asp:BoundField DataField="fid_student" HeaderText="我" SortExpression="fid_student" Visible="False" />
@@ -42,9 +42,6 @@
                     <HeaderStyle CssClass="col-md-1" />
                 </asp:TemplateField>
                 <asp:TemplateField HeaderText="完成情况" SortExpression="complete">
-                    <EditItemTemplate>
-                        <asp:TextBox ID="TextBox1" runat="server" Text='<%# Bind("complete") %>'></asp:TextBox>
-                    </EditItemTemplate>
                     <ItemTemplate>
                         <asp:Label ID="lbComplete" runat="server" Text='<%# (short)Eval("complete")==1?"已完成":"未完成" %>' CssClass="col-md-5" ForeColor='<%# (short)Eval("complete")==1?System.Drawing.Color.Green:System.Drawing.Color.Red %>'></asp:Label>
                         <asp:LinkButton ID="lbEnterTask" runat="server" CssClass="col-md-7" CommandArgument='<%# Eval("fid_experiment") %>' OnCommand="lbEnterTask_Command">进入实验&gt;</asp:LinkButton>
@@ -68,7 +65,7 @@
             <SortedDescendingHeaderStyle BackColor="#6F8DAE" />
         </asp:GridView>
         </div>
-        <asp:SqlDataSource ID="sdsStudentTask" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [id_task], [fid_student], [complete], [score], [name], [title], [memo], [template_uri], [rjson_uri], [fid_experiment] FROM [bh_view_student_tasks] WHERE ([fid_student] = @fid_student)">
+        <asp:SqlDataSource ID="sdsStudentTask" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT id_task, fid_student, complete, score, name, title, memo, template_uri, rjson_uri, fid_experiment FROM bh_view_student_tasks WHERE (fid_student = @fid_student)">
             <SelectParameters>
                 <asp:CookieParameter CookieName="UserID" Name="fid_student" Type="Int32" />
             </SelectParameters>

@@ -28,7 +28,16 @@ namespace virtuallab
 
         protected void lbEnterTask_Command(object sender, CommandEventArgs e)
         {
-            CurrentLoginUser.currentExperiment = e.CommandArgument.ToString();
+            string expId = e.CommandArgument.ToString();
+            if (string.IsNullOrEmpty(CurrentLoginUser.currentExperimentId)
+                || !CurrentLoginUser.currentExperimentId.Equals(expId))
+            {
+                CurrentLoginUser.currentExperimentId = expId;
+                CurrentLoginUser.currentTaskId = "";
+                CurrentLoginUser.currentSessionId = "";
+                CurrentLoginUser.currentCompileId = "";
+                CurrentLoginUser.currentUploadId = "";
+            }
             Response.Redirect("~/Environment");
         }
     }
