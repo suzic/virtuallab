@@ -20,36 +20,17 @@ using virtuallab.Models;
 
 namespace virtuallab
 {
-    /// <summary>
-    /// 游戏进行状态枚举值
-    /// </summary>
-    public enum EnvironmentState
-    {
-        InEditing = 0,
-        InCompiling,
-        InUploading,
-        InPlaying
-    }
-
     public partial class Environment : System.Web.UI.Page
     {
-        public UrlHelper Url = new UrlHelper(new HttpRequestMessage());
-
         public LoginUser CurrentLoginUser;
+        public string currentCode;
+
         public const string BaseURL = "http://192.168.200.119:8088/address/";
         public const string URIEnvironmentRequest = "environmentRequest";
         public const string URICodeSubmit = "codeSubmit";
-        public const string URIProgramUpload = "programUpload";
-        public const string URICompileResultTick = "compileResultTick";
-        public const string URIRunResultTick = "runResultTick";
-
-        public EnvironmentState currentState;
-        public string currentCode;
-        public bool compileSuccess;
-        public bool uploadSuccess;
-
-        // 声明一个委托类型，该委托类型无输入参数和输出参数
-        public delegate void ProcessDelegate();
+        public const string URIProgramUpload = "ProgramUpload";
+        public const string URICompileResultTick = "CompileResultTick";
+        public const string URIRunResultTick = "RunResultTick";
 
         protected void Page_Init(object sender, EventArgs e)
         {
@@ -67,42 +48,46 @@ namespace virtuallab
                 Response.Redirect("~/NotReady");
         }
 
-        // 页面加载，该方法先获取可用的目标开发环境
+        // 页面加载，该方法先获取可用的目标开发环境；同时处理可能来自前端的接口方法回调，并启动计时器进行Tick操作
         protected void Page_Load(object sender, EventArgs e)
         {
-            // 进入页面首先获取session_id（如果已经有，则可以跳过）
-            if (string.IsNullOrEmpty(CurrentLoginUser.currentSessionId))
+            // 进入页面首先获取session_id，并且确保当前用户状态不是NotReady
+            if (string.IsNullOrEmpty(CurrentLoginUser.currentSessionId)
+                || CurrentLoginUser.currentState == EnvironmentState.NotReady)
+            {
                 EnvironmentRequest();
-            // 在请求session_id之后如果仍然还是空，说明服务器暂时无法提供连接
-            if (string.IsNullOrEmpty(CurrentLoginUser.currentSessionId))
-                Response.Redirect("~/NotReady");
+
+                // 在请求session_id之后如果仍然还是空，说明服务器暂时无法提供连接
+                if (string.IsNullOrEmpty(CurrentLoginUser.currentSessionId))
+                    Response.Redirect("~/NotReady");
+            }
+            // 如果不需要获取session_id的情况下，检查是否是前端操作的回调，并执行对应的动作命令
+            else
+            {
+                String key = Request.Form["__EVENTTARGET"];
+                if (!string.IsNullOrEmpty(key) && key.Equals("SUBMIT_CODE"))
+                {
+                    currentCode = Request.Form["__EVENTARGUMENT"];
+                    CodeSubmit(); 
+                }
+                else if (!string.IsNullOrEmpty(key) && key.Equals("UPLOAD_PROGRAM"))
+                {
+                    ProgramUpload();
+                }
+                else if (!string.IsNullOrEmpty(key) && key.Equals("COMPILE_TICK"))
+                {
+                    CompileTick();
+                }
+                else if (!string.IsNullOrEmpty(key) && key.Equals("RUN_TICK"))
+                {
+                    UploadTick();
+                }
+            }
         }
 
         // 重新加载模板代码
         protected void ReloadCode(object sender, EventArgs e)
         {
-
-        }
-
-        // 编译代码
-        protected void CodeComplie(object sender, EventArgs e)
-        {
-            currentState = EnvironmentState.InCompiling;
-            btnCompile.Enabled = false;
-            CodeSubmit();
-        }
-
-        // 上传代码
-        protected void CodeUpload(object sender, EventArgs e)
-        {
-            //var client = new HttpClient();
-            //client.BaseAddress = new Uri(BaseURL);
-            //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            //var retData = NetworkRun(client, URIProgramUpload, new EnvironmentRequest()
-            //{
-            //    exp_id = "",
-            //    user_id = ""
-            //});
         }
 
         // 初始化CodeMirror以呈现代码规范化效果
@@ -139,43 +124,14 @@ namespace virtuallab
             this.Page.Header.Controls.Add(CodeScrollbar);
         }
 
-        // 接收线程
-        //private void ThreadListener()
-        //{
-        //    while (bTaskExit == false)
-        //    {
-        //        Thread.Sleep(1000);
-
-        //        switch (currentState)
-        //        {
-        //            case EnvironmentState.InCompiling:
-        //                {
-        //                    btnCompile.Enabled = true;
-        //                }
-        //                break;
-
-        //            case EnvironmentState.InUploading:
-        //                break;
-
-        //            case EnvironmentState.InPlaying:
-        //                break;
-
-        //            case EnvironmentState.InEditing:
-        //            default:
-        //                {
-
-        //                }
-        //                break;
-        //        }
-        //    }
-        //}
-
         #region 网络请求方法
 
         // 初始化开发环境，获取session_id的网络请求
         protected void EnvironmentRequest()
         {
-            System.Diagnostics.Debug.Write("============= Environment Request ===============\n");
+            CurrentLoginUser.currentState = EnvironmentState.NotReady;
+
+            System.Diagnostics.Debug.WriteLine("============= Environment Request ===============");
             using (var httpClient = new HttpClient())
             {
                 httpClient.BaseAddress = new Uri(BaseURL);
@@ -193,36 +149,173 @@ namespace virtuallab
                 bool success = (int)result["fail"] == 0;
                 if (success)
                 {
+                    CurrentLoginUser.currentState = EnvironmentState.InEditing;
+
                     CurrentLoginUser.currentSessionId = result["session_id"].ToString();
                     System.Diagnostics.Debug.Write("-------- session_id = " + CurrentLoginUser.currentSessionId + "\n");
                 }
             }
         }
 
+        // 代码提交，后台将会执行编译动作
         protected void CodeSubmit()
         {
-            System.Diagnostics.Debug.Write("============= Code Submit ===============\n");
-            using (var httpClient = new HttpClient())
+            if (CurrentLoginUser.currentState == EnvironmentState.InEditing)
             {
-                httpClient.BaseAddress = new Uri(BaseURL);
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var body = new FormUrlEncodedContent(new Dictionary<string, string> {
-                        { "session_id", CurrentLoginUser.currentSessionId.ToString() }, 
-                        { "code",  }
+                CurrentLoginUser.currentState = EnvironmentState.InCompiling;
+                CurrentLoginUser.compileSuccess = false;
+
+                System.Diagnostics.Debug.WriteLine("============= Code Submit ===============");
+                System.Diagnostics.Debug.WriteLine(currentCode);
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.BaseAddress = new Uri(BaseURL);
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var body = new FormUrlEncodedContent(new Dictionary<string, string> {
+                        { "session_id", CurrentLoginUser.currentSessionId.ToString() },
+                        { "code",  currentCode }
                     });
 
-                // response
-                var response = httpClient.PostAsync(URICodeSubmit, body).Result;
-                var data = response.Content.ReadAsStringAsync().Result;
-                var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
-                var result = (JObject)formatData["data"];
-                bool success = (int)result["fail"] == 0;
-                if (success)
+                    // response
+                    var response = httpClient.PostAsync(URICodeSubmit, body).Result;
+                    var data = response.Content.ReadAsStringAsync().Result;
+                    var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
+                    var result = (JObject)formatData["data"];
+                    bool success = (int)result["fail"] == 0;
+                    if (success)
+                    {
+                        CurrentLoginUser.currentCompileId = result["compile_id"].ToString();
+                        CurrentLoginUser.currentCodeUri = result["code_url"].ToString();
+                        System.Diagnostics.Debug.Write("-------- compile_id = " + CurrentLoginUser.currentCompileId + "\n");
+                        System.Diagnostics.Debug.Write("-------- code_uri = " + CurrentLoginUser.currentCodeUri + "\n");
+                    }
+                    else
+                        CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                }
+            }
+        }
+
+        // 编译结果心跳检查
+        protected void CompileTick()
+        {
+            if (CurrentLoginUser.currentState == EnvironmentState.InCompiling)
+            {
+                System.Diagnostics.Debug.WriteLine("============= Compile Tick ===============");
+                using (var httpClient = new HttpClient())
                 {
-                    CurrentLoginUser.currentCompileId = result["compile_id"].ToString();
-                    CurrentLoginUser.currentCodeUri = result["code_uri"].ToString();
-                    System.Diagnostics.Debug.Write("-------- compile_id = " + CurrentLoginUser.currentCompileId + "\n");
-                    System.Diagnostics.Debug.Write("-------- code_uri = " + CurrentLoginUser.currentCodeUri + "\n");
+                    httpClient.BaseAddress = new Uri(BaseURL);
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var body = new FormUrlEncodedContent(new Dictionary<string, string> {
+                        { "session_id", CurrentLoginUser.currentSessionId.ToString() },
+                        { "compile_id", CurrentLoginUser.currentCompileId.ToString() }
+                    });
+
+                    // response
+                    var response = httpClient.PostAsync(URICompileResultTick, body).Result;
+                    var data = response.Content.ReadAsStringAsync().Result;
+                    var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
+                    var result = (JObject)formatData["data"];
+                    bool success = (int)result["fail"] == 0;
+                    if (success)
+                    {
+                        string infoBuffer = result["info_buffer"].ToString();
+                        int finishInt = (int)result["finish"];
+                        string finishFlag = finishInt == 0 ? "未完成" : finishInt == 1 ? "成功" : "失败";
+                        System.Diagnostics.Debug.WriteLine("-------- infoBuffer ----------------");
+                        System.Diagnostics.Debug.WriteLine(infoBuffer);
+                        System.Diagnostics.Debug.WriteLine(">>>> Finished :" + finishFlag);
+                        if (finishInt != 0)
+                        {
+                            CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                            CurrentLoginUser.compileSuccess = (finishInt == 1);
+                        }
+                    }
+                    else
+                    {
+                        CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                        CurrentLoginUser.compileSuccess = false;
+                    }
+                }
+            }
+        }
+
+        // 代码上传到板卡
+        protected void ProgramUpload()
+        {
+            if (CurrentLoginUser.currentState == EnvironmentState.InEditing && CurrentLoginUser.compileSuccess)
+            {
+                CurrentLoginUser.currentState = EnvironmentState.InUploading;
+                CurrentLoginUser.uploadSuccess = false;
+
+                System.Diagnostics.Debug.WriteLine("============= Program Uploading ===============");
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.BaseAddress = new Uri(BaseURL);
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var body = new FormUrlEncodedContent(new Dictionary<string, string> {
+                        { "session_id", CurrentLoginUser.currentSessionId.ToString() }
+                    });
+
+                    // response
+                    var response = httpClient.PostAsync(URIProgramUpload, body).Result;
+                    var data = response.Content.ReadAsStringAsync().Result;
+                    var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
+                    var result = (JObject)formatData["data"];
+                    bool success = (int)result["fail"] == 0;
+                    if (success)
+                    {
+                        CurrentLoginUser.currentUploadId = result["upload_id"].ToString();
+                        System.Diagnostics.Debug.Write("-------- upload_id = " + CurrentLoginUser.currentUploadId + "\n");
+                    }
+                    else
+                        CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                }
+            }
+        }
+
+        // 上传结果心跳检查
+        protected void UploadTick()
+        {
+            if (CurrentLoginUser.currentState == EnvironmentState.InUploading)
+            {
+                System.Diagnostics.Debug.WriteLine("============= Run Tick ===============");
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.BaseAddress = new Uri(BaseURL);
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var body = new FormUrlEncodedContent(new Dictionary<string, string> {
+                        { "session", CurrentLoginUser.currentSessionId.ToString() },
+                        { "upload_id", CurrentLoginUser.currentUploadId.ToString() }
+                    });
+
+                    // response
+                    var response = httpClient.PostAsync(URIRunResultTick, body).Result;
+                    var data = response.Content.ReadAsStringAsync().Result;
+                    var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
+                    var result = (JObject)formatData["data"];
+                    bool success = (int)result["fail"] == 0;
+                    if (success)
+                    {
+                        int finishInt = (int)result["finish"];
+                        string finishFlag = finishInt == 0 ? "未完成" : finishInt == 1 ? "成功" : "失败";
+                        System.Diagnostics.Debug.WriteLine(">>>> Finished :" + finishFlag);
+                        if (finishInt != 0)
+                        {
+                            CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                            CurrentLoginUser.uploadSuccess = (finishInt == 1);
+                            if (CurrentLoginUser.uploadSuccess)
+                            {
+                                string resultInfo = result["result_json"].ToString();
+                                System.Diagnostics.Debug.WriteLine("-------- Result info ----------------");
+                                System.Diagnostics.Debug.WriteLine(resultInfo);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                        CurrentLoginUser.uploadSuccess = false;
+                    }
                 }
             }
         }

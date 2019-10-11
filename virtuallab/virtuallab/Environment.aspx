@@ -2,26 +2,44 @@
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <script type="text/javascript" src="Scripts/environment.js"></script>
+    <script type="text/javascript">
+        function submitCode() {
+            var codeText = editor.getValue();
+            __doPostBack("SUBMIT_CODE", codeText);
+        }
+        function uploadProgram() {
+            __doPostBack("UPLOAD_PROGRAM", "");
+        }
+        function compileTick() {
+            __doPostBack("COMPILE_TICK", "");
+        }
+        function runTick() {
+            __doPostBack("RUN_TICK", "");
+        }
+    </script>
     <asp:MultiView ID="EnvironmentView" runat="server" ActiveViewIndex="0">
         <asp:View ID="CodeView" runat="server">
             <div class="row" style="position: relative; margin-top: 20px; margin-bottom: 20px;">
-<%--                <div class="col-md-2">
+                <%--<div class="col-md-2">
                     <asp:Button runat="server" OnClick="ReloadCode" Text="重新加载模板代码" CssClass="btn btn-default form-control" />
                 </div>--%>
                 <div class="col-md-2">
                     <input type="file" name="codeFile" id="codeFileID" onchange="loadCodeFile(this)" class="form-control" />
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-2">
                     <asp:Label ID="lbGeneral" runat="server" Text=""></asp:Label>
                 </div>
-                <%-- <div class="col-md-2">
-                    <input id="Button1" type="button" value="前端动作" onclick="JSAction();" class="btn btn-default form-control" />
-                </div>--%>
                 <div class="col-md-2">
-                    <asp:Button runat="server" ID="btnCompile" OnClick="CodeComplie" Text="提交编译" CssClass="btn btn-default form-control" />
+                    <input id="btnSubmit" type="submit" value="提交编译" onclick="submitCode();" class="btn btn-default form-control" />
                 </div>
                 <div class="col-md-2">
-                    <asp:Button runat="server" OnClick="CodeUpload" Text="上传程序" CssClass="btn btn-default form-control" />
+                    <input id="btnCompileTick" type="submit" value="编译Tick" onclick="compileTick();" class="btn btn-default form-control" />
+                </div>
+                <div class="col-md-2">
+                    <input id="btnUpload" type="submit" value="上传程序" onclick="uploadProgram();" class="btn btn-default form-control" />
+                </div>
+                <div class="col-md-2">
+                    <input id="btnRunTick" type="submit" value="上传Tick" onclick="runTick();" class="btn btn-default form-control" />
                 </div>
             </div>
             <div class="row">

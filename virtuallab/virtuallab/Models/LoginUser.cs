@@ -5,6 +5,18 @@ using System.Web;
 
 namespace virtuallab.Models
 {
+    /// <summary>
+    /// 状态枚举值
+    /// </summary>
+    public enum EnvironmentState
+    {
+        NotReady = 0,
+        InEditing,
+        InCompiling,
+        InUploading,
+        InPlaying
+    }
+
     public class LoginUser
     {
         public int type;
@@ -24,5 +36,9 @@ namespace virtuallab.Models
         public string currentCompileId;
         public string currentUploadId;
         public string currentCodeUri;
+
+        public EnvironmentState currentState;
+        public bool compileSuccess;
+        public bool uploadSuccess;
     }
 }

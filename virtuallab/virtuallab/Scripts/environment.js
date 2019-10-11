@@ -24,10 +24,6 @@ $(document).ready(function () {
     outer.setSize('100%', '100%');
 });
 
-function JSAction() {
-    alert("JS Worked!");
-}
-
 function loadCodeFile(input) {
     //支持chrome IE10  
     if (window.FileReader) {
@@ -58,4 +54,4 @@ function loadCodeFile(input) {
         codeText = "";
         alert('加载代码文件出现错误');
     }
-}  
+} 

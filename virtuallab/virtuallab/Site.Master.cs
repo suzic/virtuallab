@@ -232,6 +232,10 @@ namespace virtuallab
             CurrentLoginUser.currentUploadId = "";
             CurrentLoginUser.currentCodeUri = "";
 
+            CurrentLoginUser.currentState = EnvironmentState.NotReady;
+            CurrentLoginUser.compileSuccess = false;
+            CurrentLoginUser.uploadSuccess = false;
+
             LogPart.ActiveViewIndex = 1;
             FuncMenu.ActiveViewIndex = userType;
         }
