@@ -69,6 +69,7 @@
                     <table class="table">
                         <tr>
                             <td class="col-md-12" colspan="2">
+                                <asp:Label ID="lbExpID" runat="server" Text='<%# Eval("id_experiment", "{0}") %>' Visible="False"></asp:Label>
                                 <asp:TextBox ID="tbTitle" runat="server" Width="100%" Text='<%# Bind("title", "{0}") %>' BackColor="Silver" BorderStyle="None"></asp:TextBox>
                             </td>
                         </tr>
@@ -104,7 +105,7 @@
                         <tr>
                             <td></td>
                             <td style="text-align:right">
-                                <asp:LinkButton ID="lbEdit" runat="server" CommandName="Cancel" ForeColor="Yellow">更新</asp:LinkButton>
+                                <asp:LinkButton ID="lbEdit" runat="server" OnCommand="UpdateExperiment" CommandName="Cancel" ForeColor="Yellow">更新</asp:LinkButton>
                             </td>
                         </tr>
                     </table>

@@ -29,6 +29,10 @@ namespace virtuallab
         {
         }
 
+        /// <summary>
+        /// 获取所有未禁用学生的数量
+        /// </summary>
+        /// <returns></returns>
         protected int GetStudentCount()
         {
             string sConnString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -52,6 +56,11 @@ namespace virtuallab
             return studentCount;
         }
 
+        /// <summary>
+        /// 获取某个实验已经分发下去的任务数（每个任务代表该实验分配给了一个学生）
+        /// </summary>
+        /// <param name="ExperimentId"></param>
+        /// <returns></returns>
         protected int GetTaskCount(int ExperimentId)
         {
             string sConnString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -77,16 +86,25 @@ namespace virtuallab
             return TaskCount;
         }
 
+        /// <summary>
+        /// 数据将要绑定到数据表
+        /// </summary>
         protected void gvExperiment_DataBinding(object sender, EventArgs e)
         {
             StudentCount = GetStudentCount();
         }
 
+        /// <summary>
+        /// 数据已经绑定到数据表
+        /// </summary>
         protected void gvExperiment_DataBound(object sender, EventArgs e)
         {
 
         }
 
+        /// <summary>
+        /// 数据逐行绑定完成后的处理，主要用于显示任务分配情况和分配按钮
+        /// </summary>
         protected void gvExperiment_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             Label lbID = (Label)e.Row.FindControl("lbID");
@@ -103,6 +121,9 @@ namespace virtuallab
                 lbDistribute.Visible = false;
         }
 
+        /// <summary>
+        /// 选择变更
+        /// </summary>
         protected void gvExperiment_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (gvExperiment.SelectedDataKey == null)
@@ -110,11 +131,17 @@ namespace virtuallab
             SelectExperiment(Convert.ToInt32(gvExperiment.SelectedDataKey["id_experiment"]));
         }
 
+        /// <summary>
+        /// 将一个实验分配给所有未禁用的学生
+        /// </summary>
         protected void DistributeTasks(object sender, CommandEventArgs e)
         {
 
         }
 
+        /// <summary>
+        /// 新建一个实验
+        /// </summary>
         protected void InsertExperiment(object sender, CommandEventArgs e)
         {
             string sConnString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -145,6 +172,55 @@ namespace virtuallab
             gvExperiment_SelectedIndexChanged(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// 更新一个实验
+        /// </summary>
+        protected void UpdateExperiment(object sender, CommandEventArgs e)
+        {
+            string sConnString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            SqlConnection sSqlConn = new SqlConnection(sConnString);
+            Label lbExpID = (Label)fvExperiment.FindControl("lbExpID");
+            TextBox tbTitle = (TextBox)fvExperiment.FindControl("tbTitle");
+            TextBox tbDetail = (TextBox)fvExperiment.FindControl("tbDetail");
+            TextBox tbCodeUri = (TextBox)fvExperiment.FindControl("tbCodeUri");
+            TextBox tbRjsonUri = (TextBox)fvExperiment.FindControl("tbRjsonUri");
+            Label lbUpdateDate = (Label)fvExperiment.FindControl("lbUpdateDate");
+
+            try
+            {
+                sSqlConn.Open();
+                SqlCommand cmd = sSqlConn.CreateCommand();
+                cmd.CommandText = "UPDATE bhExperiment SET title = @title, memo = @memo, template_uri = @template_uri, rjson_uri = @rjson_uri, update_date=@update_date WHERE (id_experiment = @id_experiment)";
+                cmd.Parameters.Clear();
+                cmd.Parameters.Add("@title", SqlDbType.VarChar, 64).Value = tbTitle.Text;
+                cmd.Parameters.Add("@memo", SqlDbType.Text).Value = tbDetail.Text;
+                cmd.Parameters.Add("@template_uri", SqlDbType.VarChar, 64).Value = tbCodeUri.Text;
+                cmd.Parameters.Add("@rjson_uri", SqlDbType.VarChar, 64).Value = tbRjsonUri.Text;
+                cmd.Parameters.Add("@update_date", SqlDbType.DateTime).Value = DateTime.Now;
+                cmd.Parameters.Add("@id_experiment", SqlDbType.Int).Value = Convert.ToInt32(lbExpID.Text);
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                sSqlConn.Close();
+            }
+
+            // Refresh
+            int oldIndex = gvExperiment.PageIndex;
+            int oldSelectIndex = gvExperiment.SelectedIndex;
+            gvExperiment.DataBind();
+            gvExperiment.PageIndex = oldIndex;
+            gvExperiment.SelectedIndex = oldSelectIndex;
+        }
+
+        /// <summary>
+        /// 选择一个实验
+        /// </summary>
+        /// <param name="ExperimentId"></param>
         protected void SelectExperiment(int ExperimentId)
         {
             string sConnString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -154,7 +230,7 @@ namespace virtuallab
             try
             {
                 sSqlConn.Open();
-                string cmdText = "SELECT [title], [rjson_uri], [template_uri], [memo], [create_date], [update_date], [delete_date], [record_status] FROM [bhExperiment] WHERE (id_experiment = @id)";
+                string cmdText = "SELECT [id_experiment], [title], [rjson_uri], [template_uri], [memo], [create_date], [update_date], [delete_date], [record_status] FROM [bhExperiment] WHERE (id_experiment = @id)";
                 SqlCommand cmd = new SqlCommand(cmdText);
                 cmd.Parameters.Add("@id", SqlDbType.Int).Value = ExperimentId;
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
@@ -162,6 +238,7 @@ namespace virtuallab
                 da.FillSchema(outDS, SchemaType.Source, "EXPERIMENT");
                 da.Fill(outDS, "EXPERIMENT");
 
+                Label lbExpID = (Label)fvExperiment.FindControl("lbExpID");
                 TextBox tbTitle = (TextBox)fvExperiment.FindControl("tbTitle");
                 TextBox tbDetail = (TextBox)fvExperiment.FindControl("tbDetail");
                 TextBox tbCodeUri = (TextBox)fvExperiment.FindControl("tbCodeUri");
@@ -169,6 +246,7 @@ namespace virtuallab
                 Label lbCreateDate = (Label)fvExperiment.FindControl("lbCreateDate");
                 Label lbUpdateDate = (Label)fvExperiment.FindControl("lbUpdateDate");
 
+                lbExpID.Text = outDS.Tables["EXPERIMENT"].Rows[0]["id_experiment"].ToString();
                 tbTitle.Text = outDS.Tables["EXPERIMENT"].Rows[0]["title"].ToString();
                 tbDetail.Text = outDS.Tables["EXPERIMENT"].Rows[0]["memo"].ToString();
                 tbCodeUri.Text = outDS.Tables["EXPERIMENT"].Rows[0]["template_uri"].ToString();
