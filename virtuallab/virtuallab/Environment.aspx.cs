@@ -299,16 +299,14 @@ namespace virtuallab
                         int finishInt = (int)result["finish"];
                         string finishFlag = finishInt == 0 ? "未完成" : finishInt == 1 ? "成功" : "失败";
                         System.Diagnostics.Debug.WriteLine(">>>> Finished :" + finishFlag);
+                        string resultInfo = result["result_json"].ToString();
+                        System.Diagnostics.Debug.WriteLine("-------- Result info ----------------");
+                        System.Diagnostics.Debug.WriteLine(resultInfo);
+
                         if (finishInt != 0)
                         {
                             CurrentLoginUser.currentState = EnvironmentState.InEditing;
                             CurrentLoginUser.uploadSuccess = (finishInt == 1);
-                            if (CurrentLoginUser.uploadSuccess)
-                            {
-                                string resultInfo = result["result_json"].ToString();
-                                System.Diagnostics.Debug.WriteLine("-------- Result info ----------------");
-                                System.Diagnostics.Debug.WriteLine(resultInfo);
-                            }
                         }
                     }
                     else

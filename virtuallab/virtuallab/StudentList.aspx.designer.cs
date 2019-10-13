@@ -7,11 +7,13 @@
 // </自动生成>
 //------------------------------------------------------------------------------
 
-namespace virtuallab {
-    
-    
-    public partial class StudentList {
-        
+namespace virtuallab
+{
+
+
+    public partial class StudentList
+    {
+
         /// <summary>
         /// gvStudents 控件。
         /// </summary>
@@ -20,7 +22,7 @@ namespace virtuallab {
         /// 若要进行修改，请将字段声明从设计器文件移到代码隐藏文件。
         /// </remarks>
         protected global::System.Web.UI.WebControls.GridView gvStudents;
-        
+
         /// <summary>
         /// sdsStudentList 控件。
         /// </summary>

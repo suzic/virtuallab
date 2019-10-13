@@ -55,3 +55,24 @@ function loadCodeFile(input) {
         alert('加载代码文件出现错误');
     }
 } 
+
+function complieResultTick() {
+    $.ajax({
+        url: "/script/selectScript",
+        type: "post",
+        dataType: "json",
+        data: {
+            session_id: id,
+            compile_id: id
+        },
+        success: function (res) {
+            outer.setValue(res.data.scriptDesc);
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+        }
+    });  
+}
+
+function runResultTick() {
+
+}

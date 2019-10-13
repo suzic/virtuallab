@@ -5,12 +5,20 @@
     <hr />
     <div class="row">
         <div class="col-md-12">
-        <asp:GridView ID="gvStudents" runat="server" AllowPaging="True" AllowSorting="True" AutoGenerateColumns="False" CssClass="table col-md-12" DataSourceID="sdsStudentList" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="4" ForeColor="Black" GridLines="Horizontal">
+        <asp:GridView ID="gvStudents" runat="server" AllowPaging="True" AllowSorting="True" AutoGenerateColumns="False" CssClass="table col-md-12" DataSourceID="sdsStudentList" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="4" ForeColor="Black" GridLines="Horizontal" ShowFooter="True" PageSize="20">
             <Columns>
+                <asp:TemplateField HeaderText="ID" InsertVisible="False" SortExpression="id_student" Visible="False">
+                    <ItemTemplate>
+                        <asp:Label ID="lbStudentID" runat="server" Text='<%# Bind("id_student") %>'></asp:Label>
+                    </ItemTemplate>
+                </asp:TemplateField>
                 <asp:TemplateField HeaderText="姓名" SortExpression="name">
                     <EditItemTemplate>
                         <asp:TextBox ID="tbName" runat="server" Text='<%# Bind("name", "{0}") %>' Width="100%"></asp:TextBox>
                     </EditItemTemplate>
+                    <FooterTemplate>
+                        <asp:LinkButton ID="lbInsertStudent" runat="server" OnCommand="InsertStudent" CommandName="Insert">新建学员</asp:LinkButton>
+                    </FooterTemplate>
                     <ItemTemplate>
                         <asp:Label ID="lbName" runat="server" Text='<%# Bind("name", "{0}") %>' CssClass="col-md-12"></asp:Label>
                     </ItemTemplate>
@@ -77,13 +85,13 @@
                 </asp:TemplateField>
                 <asp:TemplateField HeaderText="启用状态及相关操作" SortExpression="record_status">
                     <EditItemTemplate>
-                        <asp:LinkButton ID="lbUpdate" runat="server" CssClass="col-md-6" CommandName="Update" ForeColor="Red" ValidationGroup="2">更新</asp:LinkButton>
+                        <asp:LinkButton ID="lbUpdate" runat="server" CssClass="col-md-6" CausesValidation="True" CommandName="Cancel" OnCommand="UpdateStudent" ForeColor="Red" ValidationGroup="2" >更新</asp:LinkButton>
                         <asp:LinkButton ID="lbCancel" runat="server" CssClass="col-md-6" CausesValidation="False" CommandName="Cancel">取消</asp:LinkButton>
                     </EditItemTemplate>
                     <ItemTemplate>
                         <asp:LinkButton ID="lbEdit" runat="server" CssClass="col-md-6" CausesValidation="False" CommandName="Edit">编辑</asp:LinkButton>
-                        <asp:LinkButton ID="lbDisable" runat="server" CssClass="col-md-6" Visible='<%# (short)Eval("record_status") == 1 %>' CausesValidation="False" CommandArgument="id_student" CommandName="Disable">禁用</asp:LinkButton>
-                        <asp:LinkButton ID="lbEnable" runat="server" CssClass="col-md-6" ForeColor="Red" Visible='<%# (short)Eval("record_status") == 0 %>' CausesValidation="False" CommandArgument="id_student" CommandName="Enable">已禁用</asp:LinkButton>
+                        <asp:LinkButton ID="lbDisable" runat="server" CssClass="col-md-6" Visible='<%# (short)Eval("record_status") == 1 %>' CausesValidation="True" OnCommand="EnableStudent" CommandName="Cancel">禁用</asp:LinkButton>
+                        <asp:LinkButton ID="lbEnable" runat="server" CssClass="col-md-6" ForeColor="Red" Visible='<%# (short)Eval("record_status") == 0 %>' CausesValidation="True" OnCommand="EnableStudent" CommandName="Cancel">已禁用</asp:LinkButton>
                     </ItemTemplate>
                     <HeaderStyle CssClass="col-md-2" />
                 </asp:TemplateField>
@@ -91,7 +99,7 @@
             <EmptyDataTemplate>
                 <h4>当前学生数据库为空</h4>
             </EmptyDataTemplate>
-            <FooterStyle BackColor="#CCCC99" ForeColor="Black" />
+            <FooterStyle BackColor="#ECECEC" ForeColor="Black" />
             <HeaderStyle BackColor="#333333" Font-Bold="True" ForeColor="White" />
             <PagerSettings FirstPageText="&amp;lt;&amp;lt;&amp;nbsp;首页&amp;nbsp;" LastPageText="&amp;nbsp;尾页&amp;nbsp;&amp;gt;&amp;gt;" Mode="NextPreviousFirstLast" NextPageText="下一页&amp;nbsp;&amp;gt;&amp;nbsp;" PreviousPageText="&amp;nbsp;&amp;lt;&amp;nbsp;上一页" />
             <PagerStyle BackColor="White" ForeColor="Black" HorizontalAlign="Right" />
@@ -102,6 +110,8 @@
             <SortedDescendingHeaderStyle BackColor="#242121" />
         </asp:GridView>
         </div>
-        <asp:SqlDataSource ID="sdsStudentList" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [id_student], [alias], [password], [name], [gender], [grade], [belong], [phone], [email], [record_status] FROM [bhStudent]"></asp:SqlDataSource>
+        <asp:SqlDataSource ID="sdsStudentList" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>"
+            SelectCommand="SELECT [id_student], [alias], [password], [name], [gender], [grade], [belong], [phone], [email], [record_status] FROM [bhStudent]">
+        </asp:SqlDataSource>
     </div>
 </asp:Content>

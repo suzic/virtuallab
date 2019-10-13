@@ -3,16 +3,49 @@
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <script type="text/javascript" src="Scripts/environment.js"></script>
     <script type="text/javascript">
+
+        var inCompiling = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InCompiling) %>";
+        var session_id = "<%=CurrentLoginUser.currentSessionId %>";
+        var compile_id = "<%=CurrentLoginUser.currentCompileId %>";
+        var upload_id = "<%=CurrentLoginUser.currentUploadId %>";
+
+        //$(document).ready(function () {
+        //    editor = CodeMirror.fromTextArea(document.getElementById('code_text'),
+        //        {
+        //            mode: 'text/x-c++src',
+        //            lineNumbers: true,
+        //            theme: 'mdn-like',
+        //            matchBrackets: true,
+        //            identUnit: 4,
+        //            smartIdent: true,
+        //            indentWithTabs: true
+        //        });
+        //    editor.setSize('100%', '100%');
+        //    outer = CodeMirror.fromTextArea(document.getElementById('debug_text'),
+        //        {
+        //            mode: 'textile',
+        //            theme: 'zenburn',
+        //            identUnit: 4,
+        //            readOnly: true
+        //        });
+        //    outer.setSize('100%', '100%');
+
+        //    //setInterval(compileTick, 1000);
+        //});
+
         function submitCode() {
             var codeText = editor.getValue();
             __doPostBack("SUBMIT_CODE", codeText);
         }
+
         function uploadProgram() {
             __doPostBack("UPLOAD_PROGRAM", "");
         }
+
         function compileTick() {
             __doPostBack("COMPILE_TICK", "");
         }
+
         function runTick() {
             __doPostBack("RUN_TICK", "");
         }
