@@ -22,6 +22,8 @@ $(document).ready(function () {
             readOnly: true
         });
     outer.setSize('100%', '100%');
+
+    editor.setValue(current_code);
 });
 
 function loadCodeFile(input) {

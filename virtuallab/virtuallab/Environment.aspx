@@ -1,37 +1,39 @@
 ﻿<%@ Page Title="进行实验" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Environment.aspx.cs" Inherits="virtuallab.Environment" %>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
-    <script type="text/javascript" src="Scripts/environment.js"></script>
+<%--    <script type="text/javascript" src="Scripts/environment.js"></script>--%>
     <script type="text/javascript">
 
         var inCompiling = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InCompiling) %>";
         var session_id = "<%=CurrentLoginUser.currentSessionId %>";
         var compile_id = "<%=CurrentLoginUser.currentCompileId %>";
         var upload_id = "<%=CurrentLoginUser.currentUploadId %>";
+        var current_code = <%=currentCode %>;
 
-        //$(document).ready(function () {
-        //    editor = CodeMirror.fromTextArea(document.getElementById('code_text'),
-        //        {
-        //            mode: 'text/x-c++src',
-        //            lineNumbers: true,
-        //            theme: 'mdn-like',
-        //            matchBrackets: true,
-        //            identUnit: 4,
-        //            smartIdent: true,
-        //            indentWithTabs: true
-        //        });
-        //    editor.setSize('100%', '100%');
-        //    outer = CodeMirror.fromTextArea(document.getElementById('debug_text'),
-        //        {
-        //            mode: 'textile',
-        //            theme: 'zenburn',
-        //            identUnit: 4,
-        //            readOnly: true
-        //        });
-        //    outer.setSize('100%', '100%');
+        $(document).ready(function () {
+            editor = CodeMirror.fromTextArea(document.getElementById('code_text'),
+                {
+                    mode: 'text/x-c++src',
+                    lineNumbers: true,
+                    theme: 'mdn-like',
+                    matchBrackets: true,
+                    identUnit: 4,
+                    smartIdent: true,
+                    indentWithTabs: true
+                });
+            editor.setSize('100%', '100%');
+            outer = CodeMirror.fromTextArea(document.getElementById('debug_text'),
+                {
+                    mode: 'textile',
+                    theme: 'zenburn',
+                    identUnit: 4,
+                    readOnly: true
+                });
+            outer.setSize('100%', '100%');
 
-        //    //setInterval(compileTick, 1000);
-        //});
+            editor.setValue(current_code);
+            //setInterval(compileTick, 1000);
+        });
 
         function submitCode() {
             var codeText = editor.getValue();
@@ -39,40 +41,37 @@
         }
 
         function uploadProgram() {
-            __doPostBack("UPLOAD_PROGRAM", "");
+            var codeText = editor.getValue();
+            __doPostBack("UPLOAD_PROGRAM", codeText);
         }
 
         function compileTick() {
-            __doPostBack("COMPILE_TICK", "");
+            var codeText = editor.getValue();
+            __doPostBack("COMPILE_TICK", codeText);
         }
 
         function runTick() {
-            __doPostBack("RUN_TICK", "");
+            var codeText = editor.getValue();
+            __doPostBack("RUN_TICK", codeText);
         }
     </script>
     <asp:MultiView ID="EnvironmentView" runat="server" ActiveViewIndex="0">
         <asp:View ID="CodeView" runat="server">
             <div class="row" style="position: relative; margin-top: 20px; margin-bottom: 20px;">
-                <%--<div class="col-md-2">
-                    <asp:Button runat="server" OnClick="ReloadCode" Text="重新加载模板代码" CssClass="btn btn-default form-control" />
-                </div>--%>
                 <div class="col-md-2">
-                    <input type="file" name="codeFile" id="codeFileID" onchange="loadCodeFile(this)" class="form-control" />
+                    <asp:Button ID="btnReload" runat="server" OnClick="ReloadCode" Text="重新加载模板代码" CssClass="btn btn-default form-control" />
                 </div>
-                <div class="col-md-2">
-                    <asp:Label ID="lbGeneral" runat="server" Text=""></asp:Label>
+                <%--<div class="col-md-2">
+                    <input type="file" name="codeFile" id="codeFileID" onchange="loadCodeFile(this)" class="form-control" />
+                </div>--%>
+                <div class="col-md-6">
+                    <asp:Label ID="lbGeneral" class="btn" runat="server" Text=""></asp:Label>
                 </div>
                 <div class="col-md-2">
                     <input id="btnSubmit" type="submit" value="提交编译" onclick="submitCode();" class="btn btn-default form-control" />
                 </div>
                 <div class="col-md-2">
-                    <input id="btnCompileTick" type="submit" value="编译Tick" onclick="compileTick();" class="btn btn-default form-control" />
-                </div>
-                <div class="col-md-2">
                     <input id="btnUpload" type="submit" value="上传程序" onclick="uploadProgram();" class="btn btn-default form-control" />
-                </div>
-                <div class="col-md-2">
-                    <input id="btnRunTick" type="submit" value="上传Tick" onclick="runTick();" class="btn btn-default form-control" />
                 </div>
             </div>
             <div class="row">
@@ -153,7 +152,14 @@
         <div class="col-md-2">
             <asp:Button ID="btnCode" type="button" runat="server" OnClick="SwitchViewToCode" Text="代码编辑" CssClass="btn btn-default form-control" Enabled="False" />
         </div>
-        <div class="col-md-6"></div>
+        <div class="col-md-2"></div>
+        <div class="col-md-2">
+            <input id="btnCompileTick" type="submit" value="编译Tick" onclick="compileTick();" class="btn btn-default form-control" />
+        </div>
+        <div class="col-md-2">
+            <input id="btnRunTick" type="submit" value="上传Tick" onclick="runTick();" class="btn btn-default form-control" />
+        </div>
+
         <div class="col-md-2">
             <asp:Button ID="btnBoard" runat="server" OnClick="SwitchViewToBoard" Text="板卡效果" CssClass="btn btn-default form-control" />
         </div>

@@ -169,6 +169,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\codeSample.txt" />
+    <Content Include="Content\digit_num\0.png" />
+    <Content Include="Content\digit_num\1.png" />
+    <Content Include="Content\digit_num\2.png" />
+    <Content Include="Content\digit_num\3.png" />
+    <Content Include="Content\digit_num\4.png" />
+    <Content Include="Content\digit_num\5.png" />
+    <Content Include="Content\digit_num\6.png" />
+    <Content Include="Content\digit_num\7.png" />
+    <Content Include="Content\digit_num\8.png" />
+    <Content Include="Content\digit_num\9.png" />
     <Content Include="About.aspx" />
     <Content Include="Account\AddPhoneNumber.aspx" />
     <Content Include="Account\Confirm.aspx" />
@@ -771,6 +782,9 @@
     <Content Include="NotReady.aspx" />
     <Content Include="ReportList.aspx" />
     <Content Include="Scripts\environment.js" />
+    <Content Include="Scripts\popup.js" />
+    <Content Include="Scripts\popupdiv.js" />
+    <Content Include="Scripts\TabPanelControl.js" />
     <Content Include="StudentList.aspx" />
     <Content Include="StudentPage.aspx" />
     <Content Include="CM\.editorconfig" />

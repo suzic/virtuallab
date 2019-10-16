@@ -25,18 +25,26 @@ namespace virtuallab
         public LoginUser CurrentLoginUser;
         public string currentCode;
 
-        public const string BaseURL = "http://192.168.200.119:8088/address/";
-        public const string URIEnvironmentRequest = "environmentRequest";
-        public const string URICodeSubmit = "codeSubmit";
-        public const string URIProgramUpload = "ProgramUpload";
-        public const string URICompileResultTick = "CompileResultTick";
-        public const string URIRunResultTick = "RunResultTick";
+        public string BaseURL = "http://192.168.200.119:8088/address/";
+        public string URIEnvironmentRequest = "environmentRequest";
+        public string URICodeSubmit = "codeSubmit";
+        public string URIProgramUpload = "ProgramUpload";
+        public string URICompileResultTick = "CompileResultTick";
+        public string URIRunResultTick = "RunResultTick";
+
+        public bool EnableService = true;
+        public List<string> compileResultArray = new List<string>();
+        public List<string> runResultArray = new List<string>();
 
         protected void Page_Init(object sender, EventArgs e)
         {
+            InitNetworkParams();
             InitCodeMirrorStyles();
 
             CurrentLoginUser = SiteMaster.CurrentLoginUser;
+            if (CurrentLoginUser != null)
+                CurrentLoginUser.StateChangedEvent += new StateChanged(EnvironmentStateChanged);
+
             if (CurrentLoginUser == null)
                 Response.Redirect("~/");
             else if (CurrentLoginUser.type == 0)
@@ -56,6 +64,7 @@ namespace virtuallab
                 || CurrentLoginUser.currentState == EnvironmentState.NotReady)
             {
                 EnvironmentRequest();
+                ReloadCode(this, EventArgs.Empty);
 
                 // 在请求session_id之后如果仍然还是空，说明服务器暂时无法提供连接
                 if (string.IsNullOrEmpty(CurrentLoginUser.currentSessionId))
@@ -68,19 +77,32 @@ namespace virtuallab
                 if (!string.IsNullOrEmpty(key) && key.Equals("SUBMIT_CODE"))
                 {
                     currentCode = Request.Form["__EVENTARGUMENT"];
+                    currentCode = JsonConvert.SerializeObject(currentCode);
                     CodeSubmit(); 
                 }
                 else if (!string.IsNullOrEmpty(key) && key.Equals("UPLOAD_PROGRAM"))
                 {
+                    currentCode = Request.Form["__EVENTARGUMENT"];
+                    currentCode = JsonConvert.SerializeObject(currentCode);
                     ProgramUpload();
                 }
                 else if (!string.IsNullOrEmpty(key) && key.Equals("COMPILE_TICK"))
                 {
+                    currentCode = Request.Form["__EVENTARGUMENT"];
+                    currentCode = JsonConvert.SerializeObject(currentCode);
                     CompileTick();
                 }
                 else if (!string.IsNullOrEmpty(key) && key.Equals("RUN_TICK"))
                 {
+                    currentCode = Request.Form["__EVENTARGUMENT"];
+                    currentCode = JsonConvert.SerializeObject(currentCode);
                     UploadTick();
+                }
+                // 可能不是前端操作的回调，只是刷新了，这种情况单纯的重新加载代码
+                else
+                {
+                    CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                    ReloadCode(this, EventArgs.Empty);
                 }
             }
         }
@@ -88,6 +110,36 @@ namespace virtuallab
         // 重新加载模板代码
         protected void ReloadCode(object sender, EventArgs e)
         {
+            HttpWebRequest myHttpWebRequest = System.Net.WebRequest.Create(Request.Url.GetLeftPart(UriPartial.Authority) + "/Content/codeSample.txt") as HttpWebRequest;
+            myHttpWebRequest.KeepAlive = false;
+            myHttpWebRequest.AllowAutoRedirect = false;
+            myHttpWebRequest.UserAgent = "Mozilla/5.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727)";
+            myHttpWebRequest.Timeout = 10000;
+            myHttpWebRequest.ContentType = "application/x-www-form-urlencoded;charset=utf-8";
+            using (HttpWebResponse res = (HttpWebResponse)myHttpWebRequest.GetResponse())
+            {
+                if (res.StatusCode == HttpStatusCode.OK || res.StatusCode == HttpStatusCode.PartialContent)//返回为200或206
+                {
+                    string dd = res.ContentEncoding;
+                    System.IO.Stream strem = res.GetResponseStream();
+                    System.IO.StreamReader r = new System.IO.StreamReader(strem);
+                    currentCode = r.ReadToEnd();
+                    // 需要使用JSON封装的方法将该字符串传至前端
+                    currentCode = JsonConvert.SerializeObject(currentCode);
+                }
+            }
+        }
+
+        // 从配置文件中读取接口设置
+        protected void InitNetworkParams()
+        {
+            BaseURL = System.Configuration.ConfigurationManager.AppSettings["BaseURL"];
+            URIEnvironmentRequest = System.Configuration.ConfigurationManager.AppSettings["URIEnvironmentRequest"];
+            URICodeSubmit = System.Configuration.ConfigurationManager.AppSettings["URICodeSubmit"];
+            URIProgramUpload = System.Configuration.ConfigurationManager.AppSettings["URIProgramUpload"];
+            URICompileResultTick = System.Configuration.ConfigurationManager.AppSettings["URICompileResultTick"];
+            URIRunResultTick = System.Configuration.ConfigurationManager.AppSettings["URIRunResultTick"];
+            EnableService = System.Configuration.ConfigurationManager.AppSettings["EnableService"].Equals("1");
         }
 
         // 初始化CodeMirror以呈现代码规范化效果
@@ -124,12 +176,47 @@ namespace virtuallab
             this.Page.Header.Controls.Add(CodeScrollbar);
         }
 
+        protected void EnvironmentStateChanged(object sender, EventArgs e)
+        {
+            LoginUser user = sender as LoginUser;
+            switch (user.currentState)
+            {
+                case EnvironmentState.InEditing:
+                    lbGeneral.Text = "实验服务正常。编辑你的代码。";
+                    btnReload.Enabled = true;
+                    break;
+                case EnvironmentState.InCompiling:
+                    lbGeneral.Text = "正在编译……";
+                    btnReload.Enabled = false;
+                    break;
+                case EnvironmentState.InUploading:
+                    lbGeneral.Text = "正在上传程序到板卡……";
+                    btnReload.Enabled = false;
+                    break;
+                case EnvironmentState.InPlaying:
+                    lbGeneral.Text = "板卡正在运行程序，请查看板卡效果。";
+                    btnReload.Enabled = false;
+                    break;
+                case EnvironmentState.NotReady:
+                default:
+                    lbGeneral.Text = "未能连接到实验室服务，请稍后刷新页面重试。";
+                    btnReload.Enabled = false;
+                    break;
+            }
+        }
+
         #region 网络请求方法
 
         // 初始化开发环境，获取session_id的网络请求
         protected void EnvironmentRequest()
         {
             CurrentLoginUser.currentState = EnvironmentState.NotReady;
+            if (!EnableService)
+            {
+                CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                CurrentLoginUser.currentSessionId = "test_session_sz19";
+                return;
+            }
 
             System.Diagnostics.Debug.WriteLine("============= Environment Request ===============");
             using (var httpClient = new HttpClient())
@@ -164,6 +251,12 @@ namespace virtuallab
             {
                 CurrentLoginUser.currentState = EnvironmentState.InCompiling;
                 CurrentLoginUser.compileSuccess = false;
+                if (!EnableService)
+                {
+                    CurrentLoginUser.currentCompileId = "test_compile_sz19";
+                    CurrentLoginUser.currentCodeUri = "test_code_uri_sz19";
+                    return;
+                }
 
                 System.Diagnostics.Debug.WriteLine("============= Code Submit ===============");
                 System.Diagnostics.Debug.WriteLine(currentCode);
@@ -200,6 +293,25 @@ namespace virtuallab
         {
             if (CurrentLoginUser.currentState == EnvironmentState.InCompiling)
             {
+                if (!EnableService)
+                {
+                    CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                    CurrentLoginUser.compileSuccess = true;
+                    compileResultArray.Add("");
+                    compileResultArray.Add("");
+                    compileResultArray.Add("");
+                    compileResultArray.Add("");
+                    compileResultArray.Add("");
+                    compileResultArray.Add("");
+                    compileResultArray.Add("");
+                    compileResultArray.Add("");
+                    compileResultArray.Add("");
+                    compileResultArray.Add("");
+                    compileResultArray.Add("");
+                    compileResultArray.Add("");
+                    return;
+                }
+
                 System.Diagnostics.Debug.WriteLine("============= Compile Tick ===============");
                 using (var httpClient = new HttpClient())
                 {
@@ -246,6 +358,11 @@ namespace virtuallab
             {
                 CurrentLoginUser.currentState = EnvironmentState.InUploading;
                 CurrentLoginUser.uploadSuccess = false;
+                if (!EnableService)
+                {
+                    CurrentLoginUser.currentUploadId = "test_upload_id_sz19";
+                    return;
+                }
 
                 System.Diagnostics.Debug.WriteLine("============= Program Uploading ===============");
                 using (var httpClient = new HttpClient())
@@ -278,6 +395,22 @@ namespace virtuallab
         {
             if (CurrentLoginUser.currentState == EnvironmentState.InUploading)
             {
+                if (!EnableService)
+                {
+                    CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                    CurrentLoginUser.uploadSuccess = true;
+                    runResultArray.Add("");
+                    runResultArray.Add("");
+                    runResultArray.Add("");
+                    runResultArray.Add("");
+                    runResultArray.Add("");
+                    runResultArray.Add("");
+                    runResultArray.Add("");
+                    runResultArray.Add("");
+                    runResultArray.Add("");
+                    return;
+                }
+
                 System.Diagnostics.Debug.WriteLine("============= Run Tick ===============");
                 using (var httpClient = new HttpClient())
                 {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.UI.WebControls;
 
 namespace virtuallab.Models
 {
@@ -16,6 +17,8 @@ namespace virtuallab.Models
         InUploading,
         InPlaying
     }
+
+    public delegate void StateChanged(object sender, EventArgs e);
 
     public class LoginUser
     {
@@ -37,8 +40,19 @@ namespace virtuallab.Models
         public string currentUploadId;
         public string currentCodeUri;
 
-        public EnvironmentState currentState;
         public bool compileSuccess;
         public bool uploadSuccess;
+
+        public EnvironmentState _currentState;
+        public EnvironmentState currentState
+        {
+            get { return _currentState; }
+            set
+            {
+                _currentState = value;
+                StateChangedEvent(this, EventArgs.Empty);
+            }
+        }
+        public event StateChanged StateChangedEvent;
     }
 }
