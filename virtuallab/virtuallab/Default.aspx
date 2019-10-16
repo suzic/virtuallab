@@ -3,8 +3,8 @@
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
 
     <div class="jumbotron">
-        <h1>单片机开发调试虚拟仿真网络实验室</h1>
-        <h2>北京航空航天大学信息学院</h2>
+        <h1>嵌入式开发Web在线仿真实验平台</h1>
+        <h2>北京航空航天大学计算机学院</h2>
         <br />
         <p class="lead">通过网站应用，编辑你的硬件控制程序代码，连接到实验室内的硬件设备进行远程仿真控制，并返回结果，达到远程调试开发的实验效果。</p>
         <p><asp:LinkButton runat="server" OnClick="FirstTask" CssClass="btn btn-primary btn-lg" Text="登录使用 &raquo;" ID="FuncMain" /></p>
