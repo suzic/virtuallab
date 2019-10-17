@@ -145,6 +145,10 @@ namespace virtuallab
         // 初始化CodeMirror以呈现代码规范化效果
         protected void InitCodeMirrorStyles()
         {
+            HtmlGenericControl TabCSS = new HtmlGenericControl("link");
+            TabCSS.Attributes.Add("href", ResolveUrl(Page.ResolveClientUrl("~/Content/tab.css")));
+            TabCSS.Attributes.Add("rel", "stylesheet");
+
             HtmlGenericControl CodeMirrorJS = new HtmlGenericControl("script");
             CodeMirrorJS.Attributes.Add("src", ResolveUrl(Page.ResolveClientUrl("~/CM/lib/codemirror.js")));
 
@@ -167,6 +171,7 @@ namespace virtuallab
             HtmlGenericControl CodeFormatText = new HtmlGenericControl("script");
             CodeFormatText.Attributes.Add("src", ResolveUrl(Page.ResolveClientUrl("~/CM/mode/textile/textile.js")));
 
+            this.Page.Header.Controls.Add(TabCSS);
             this.Page.Header.Controls.Add(CodeMirrorCSS);
             this.Page.Header.Controls.Add(CodeMirrorJS);
             this.Page.Header.Controls.Add(CodeMirrorTheme1);
@@ -449,34 +454,6 @@ namespace virtuallab
                     }
                 }
             }
-        }
-
-        #endregion
-
-        #region 界面切换按钮
-
-        protected void SwitchViewToCode(object sender, EventArgs e)
-        {
-            btnCode.Enabled = false;
-            btnBoard.Enabled = true;
-            btnExp.Enabled = true;
-            EnvironmentView.ActiveViewIndex = 0;
-        }
-
-        protected void SwitchViewToBoard(object sender, EventArgs e)
-        {
-            btnCode.Enabled = true;
-            btnBoard.Enabled = false;
-            btnExp.Enabled = true;
-            EnvironmentView.ActiveViewIndex = 1;
-        }
-
-        protected void SwitchViewToIntro(object sender, EventArgs e)
-        {
-            btnCode.Enabled = true;
-            btnBoard.Enabled = true;
-            btnExp.Enabled = false;
-            EnvironmentView.ActiveViewIndex = 2;
         }
 
         #endregion

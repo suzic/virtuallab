@@ -763,6 +763,7 @@
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\Site.css" />
+    <Content Include="Content\tab.css" />
     <Content Include="Default.aspx" />
     <Content Include="Environment.aspx" />
     <Content Include="favicon.ico" />

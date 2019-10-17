@@ -1,0 +1,43 @@
+
+.Tab {
+}
+
+.tab_title {
+    height: 35px;
+    border-bottom: solid 1px #ebebeb;
+    color: black;
+    display: flex;
+}
+
+.tab_title div {
+    height: inherit;
+    text-align: center;
+    border: solid 1px transparent;
+    line-height: 35px;
+    color: black;
+    margin-top: auto;
+}
+
+.tab_title div:hover {
+	color: #aec8de;
+	cursor: pointer;
+}
+
+.tab_title div.active {
+    border-color: #ebebeb;
+    background-color: #ebebeb;
+    color: #3757b1;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.tab_panel div.active {
+    display: block;
+}
+
+.tab_panel {
+}
+
+.tab_panel div.deactive {
+    display: none;
+}
