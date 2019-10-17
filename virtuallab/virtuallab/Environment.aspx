@@ -5,61 +5,129 @@
     <script type="text/javascript">
 
         var inCompiling = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InCompiling) %>";
+        var inRunning = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InPlaying) %>";
         var session_id = "<%=CurrentLoginUser.currentSessionId %>";
         var compile_id = "<%=CurrentLoginUser.currentCompileId %>";
         var upload_id = "<%=CurrentLoginUser.currentUploadId %>";
+        var playOK = 0;
         var current_code = <%=currentCode %>;
-        var interval = 0;
+        var timerId;
+        var tickCount;
 
         $(document).ready(function () {
-            editor = CodeMirror.fromTextArea(document.getElementById('code_text'),
-                {
-                    mode: 'text/x-c++src',
-                    lineNumbers: true,
-                    theme: 'mdn-like',
-                    matchBrackets: true,
-                    identUnit: 4,
-                    smartIdent: true,
-                    indentWithTabs: true
-                });
+            editor = CodeMirror.fromTextArea(document.getElementById('code_text'), {
+                mode: 'text/x-c++src',
+                lineNumbers: true,
+                theme: 'mdn-like',
+                matchBrackets: true,
+                identUnit: 4,
+                smartIdent: true,
+                indentWithTabs: true
+            });
             editor.setSize('100%', '100%');
-            outer = CodeMirror.fromTextArea(document.getElementById('debug_text'),
-                {
-                    mode: 'textile',
-                    theme: 'zenburn',
-                    identUnit: 4,
-                    readOnly: true
-                });
+            outer = CodeMirror.fromTextArea(document.getElementById('debug_text'), {
+                mode: 'textile',
+                theme: 'zenburn',
+                identUnit: 4,
+                readOnly: true
+            });
             outer.setSize('100%', '100%');
 
             editor.setValue(current_code);
             new Tab("#Tab");
-
-            //clearInterval(interval);
-            //interval = setInterval("showDigit('2019')", 1000);
-            showDigit("2019");
         });
 
+        // 上传代码编译接口调用，后端完成
         function submitCode() {
             var codeText = editor.getValue();
             __doPostBack("SUBMIT_CODE", codeText);
         }
 
+        // 上传程序接口调用，后端完成
         function uploadProgram() {
             var codeText = editor.getValue();
             __doPostBack("UPLOAD_PROGRAM", codeText);
         }
 
+        // 获取编译信息，前端完成
         function compileTick() {
-            var codeText = editor.getValue();
-            __doPostBack("COMPILE_TICK", codeText);
+            playOK = 0;
+            tickCount = 0;
+            clearInterval(timerId);
+            timerId = setInterval("tickCompile()", 1000);
+            //var codeText = editor.getValue();
+            //__doPostBack("COMPILE_TICK", codeText);
+            //$.ajax({
+            //    type: "POST",
+            //    dataType: "json",
+            //    url: "http://192.168.200.119:8088/address/" + "CompileResultTick",
+            //    data: {
+            //        "session_id": session_id,
+            //        "compile_id": compile_id
+            //    },
+            //    success: function (data) {
+            //        getDebugOutput(data);
+            //    },
+            //    error: function (er) {
+            //    }
+            //});
         }
 
+        // 上传并获取运行效果，前端完成
         function runTick() {
-            var codeText = editor.getValue();
-            __doPostBack("RUN_TICK", codeText);
+            playOK = 0;
+            tickCount = 0;
+            clearInterval(timerId);
+            timerId = setInterval("tickRunning()", 1000);
+            //var codeText = editor.getValue();
+            //__doPostBack("RUN_TICK", codeText);
         }
 
+        /// === Timer related ====
+        function tickCompile() {
+            if (tickCount == 0)
+                setDebugOutput("\nIn compiling...\n");
+            else if (tickCount > 10) {
+                setDebugOutput("Completed.\n");
+                clearInterval(timerId);
+            }
+            else {
+                setDebugOutput("Progress " + tickCount.toString() + "0%......\n");
+            }
+            tickCount++;
+        }
+
+        function tickRunning() {
+            if (tickCount == 0)
+                setDebugOutput("\n开始将程序上传到板卡...\n");
+            else if (tickCount > 10) {
+                playOK = 1;
+                setDebugOutput("已完成，请切换到板卡效果查看.\n");
+                clearInterval(timerId);
+            }
+            else {
+                setDebugOutput("上传完成了 " + tickCount.toString() + "0%......\n");
+            }
+            tickCount++;
+        }
+
+        function tickPlaying() {
+            if (tickCount >= 10) {
+                clearInterval(timerId);
+                return;
+            }
+            var num = tickCount.toString();
+            showDigit(num + num + num + num);
+            tickCount++;
+        }
+
+        function setDebugOutput(data) {
+            var oldData = outer.getValue();
+            data = oldData + data;
+            outer.setValue(data);
+        }
+
+        /// === show images ======
         function getImg(num, stageW, stageH, index, total) {
             var w = 90;
             var h = 150;
@@ -67,7 +135,7 @@
             var hT = h;
             var top = (stageH - hT) / 2;
             var left = (stageW - wT) / 2 + w * index;
-            var images = "<img src='Content/digit_num/" + num + ".png' style = 'position: relative;";
+            var images = "<img src='Content/digit_num/" + num + ".png' style = 'position:absolute;";
             images += "left:" + left.toString() + "px;";
             images += "top:" + top.toString() + "px;";
             images += "width:" + w.toString() + "px;";
@@ -89,6 +157,7 @@
             $("#stage").html(contentHtml);
         }
 
+        /// === JS Tab functions ====
         function Tab(tabId, active, tab) {
             this.init(tabId, active, tab);
         }
@@ -116,6 +185,11 @@
                 this.tabTitle[this.current].classList.remove("active");
                 this.tabPanel[this.current].classList.remove("active");
                 this.tabPanel[this.current].classList.add("deactive");
+                if (playOK == 1 && index == 2) {
+                    tickCount = 0;
+                    clearInterval(timerId);
+                    timerId = setInterval("tickPlaying()", 1000);
+                }
             }
             this.current = index;
         };
@@ -151,13 +225,13 @@
                         <input id="btnSubmit" type="submit" value="提交编译" onclick="submitCode();" class="btn btn-default form-control" />
                     </div>
                     <div class="col-md-1">
-                        <input id="btnCompileTick" type="submit" value="CT" onclick="compileTick();" class="btn btn-default form-control" />
+                        <input id="btnCompileTick" value="CT" onclick="compileTick();" class="btn btn-default form-control" />
                     </div>
                     <div class="col-md-2">
                         <input id="btnUpload" type="submit" value="上传程序" onclick="uploadProgram();" class="btn btn-default form-control" />
                     </div>
                     <div class="col-md-1">
-                        <input id="btnRunTick" type="submit" value="RT" onclick="runTick();" class="btn btn-default form-control" />
+                        <input id="btnRunTick" value="RT" onclick="runTick();" class="btn btn-default form-control" />
                     </div>
                 </div>
                 <div class="row">
