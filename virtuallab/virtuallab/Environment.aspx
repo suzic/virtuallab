@@ -11,6 +11,7 @@
         var upload_id = "<%=CurrentLoginUser.currentUploadId %>";
         var playOK = 0;
         var current_code = <%=currentCode %>;
+        var scroll_pos = <%=currentPosTop %>;
         var timerId;
         var tickCount;
 
@@ -34,19 +35,23 @@
             outer.setSize('100%', '100%');
 
             editor.setValue(current_code);
+            editor.scrollTo(0, scroll_pos);
+
             new Tab("#Tab");
         });
 
         // 上传代码编译接口调用，后端完成
         function submitCode() {
             var codeText = editor.getValue();
-            __doPostBack("SUBMIT_CODE", codeText);
+            var position = editor.getScrollInfo();
+            __doPostBack("SUBMIT_CODE", JSON.stringify({ "code": codeText, "pos": position }));
         }
 
         // 上传程序接口调用，后端完成
         function uploadProgram() {
             var codeText = editor.getValue();
-            __doPostBack("UPLOAD_PROGRAM", codeText);
+            var position = editor.getScrollInfo();
+            __doPostBack("UPLOAD_PROGRAM", JSON.stringify({ "code": codeText, "pos": position }));
         }
 
         // 获取编译信息，前端完成
@@ -54,7 +59,7 @@
             playOK = 0;
             tickCount = 0;
             clearInterval(timerId);
-            timerId = setInterval("tickCompile()", 1000);
+            timerId = setInterval("tickCompile()", 500);
             //var codeText = editor.getValue();
             //__doPostBack("COMPILE_TICK", codeText);
             //$.ajax({
@@ -78,7 +83,7 @@
             playOK = 0;
             tickCount = 0;
             clearInterval(timerId);
-            timerId = setInterval("tickRunning()", 1000);
+            timerId = setInterval("tickRunning()", 500);
             //var codeText = editor.getValue();
             //__doPostBack("RUN_TICK", codeText);
         }
@@ -112,11 +117,12 @@
         }
 
         function tickPlaying() {
-            if (tickCount >= 10) {
+            if (tickCount >= 30) {
                 clearInterval(timerId);
                 return;
             }
-            var num = tickCount.toString();
+            var singleNum = tickCount % 10;
+            var num = singleNum.toString();
             showDigit(num + num + num + num);
             tickCount++;
         }
@@ -125,6 +131,8 @@
             var oldData = outer.getValue();
             data = oldData + data;
             outer.setValue(data);
+            var cur = outer.getCursor();
+            outer.setCursor(outer.lastLine(), cur.ch);
         }
 
         /// === show images ======
@@ -134,7 +142,8 @@
             var wT = w * total;
             var hT = h;
             var top = (stageH - hT) / 2;
-            var left = (stageW - wT) / 2 + w * index;
+            // var left = (stageW - wT) / 2 + w * index;
+            var left = 405 + w * index;
             var images = "<img src='Content/digit_num/" + num + ".png' style = 'position:absolute;";
             images += "left:" + left.toString() + "px;";
             images += "top:" + top.toString() + "px;";
@@ -189,7 +198,8 @@
                     tickCount = 0;
                     clearInterval(timerId);
                     timerId = setInterval("tickPlaying()", 1000);
-                }
+                } else
+                    showDigit("8888");
             }
             this.current = index;
         };

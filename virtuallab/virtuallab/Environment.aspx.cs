@@ -22,8 +22,25 @@ namespace virtuallab
 {
     public partial class Environment : System.Web.UI.Page
     {
+        private class SI
+        {
+            public int left { get; set; }
+            public int top { get; set; }
+            public int width { get; set; }
+            public int height { get; set; }
+            public int clientWidth { get; set; }
+            public int clientHeight { get; set; }
+        }
+
+        private class DT
+        {
+            public string code { get; set; }
+            public SI pos { get; set; }
+        }
+
         public LoginUser CurrentLoginUser;
         public string currentCode;
+        public int currentPosTop;
 
         public string BaseURL = "http://192.168.200.119:8088/address/";
         public string URIEnvironmentRequest = "environmentRequest";
@@ -76,14 +93,20 @@ namespace virtuallab
                 String key = Request.Form["__EVENTTARGET"];
                 if (!string.IsNullOrEmpty(key) && key.Equals("SUBMIT_CODE"))
                 {
-                    currentCode = Request.Form["__EVENTARGUMENT"];
+                    DT deserializedArgs = JsonConvert.DeserializeObject<DT>(Request["__EVENTARGUMENT"]);
+                    currentCode = deserializedArgs.code;
+                    SI scrollPos = deserializedArgs.pos;
                     currentCode = JsonConvert.SerializeObject(currentCode);
+                    currentPosTop = scrollPos.top;
                     CodeSubmit(); 
                 }
                 else if (!string.IsNullOrEmpty(key) && key.Equals("UPLOAD_PROGRAM"))
                 {
-                    currentCode = Request.Form["__EVENTARGUMENT"];
+                    DT deserializedArgs = JsonConvert.DeserializeObject<DT>(Request["__EVENTARGUMENT"]);
+                    currentCode = deserializedArgs.code;
+                    SI scrollPos = deserializedArgs.pos;
                     currentCode = JsonConvert.SerializeObject(currentCode);
+                    currentPosTop = scrollPos.top;
                     ProgramUpload();
                 }
                 else if (!string.IsNullOrEmpty(key) && key.Equals("COMPILE_TICK"))
