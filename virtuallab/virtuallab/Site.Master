@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%: Page.Title %>- 网络实验室</title>
+    <title><%: Page.Title %>- 在线仿真实验平台</title>
 
     <asp:PlaceHolder runat="server">
         <%: Scripts.Render("~/bundles/modernizr") %>
@@ -45,7 +45,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" runat="server" href="~/">虚拟仿真网络实验室</a>
+                    <a class="navbar-brand" runat="server" href="~/">在线仿真实验平台</a>
                 </div>
                 <div class="navbar-collapse collapse">
                     <asp:MultiView runat="server" ID="FuncMenu" ActiveViewIndex="-1">

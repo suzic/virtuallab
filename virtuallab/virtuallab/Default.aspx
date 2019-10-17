@@ -18,7 +18,7 @@
         </div>
         <div class="col-md-4">
             <h2>仿真实验项目</h2>
-            <p>网络实验室支持丰富的实验项目。来此了解所有支持的仿真实验吧！</p>
+            <p>在线仿真实验平台支持丰富的实验项目。来此了解所有支持的仿真实验吧！</p>
             <p><asp:LinkButton runat="server" OnClick="ExperiTask" CssClass="btn btn-default" Text="所有实验 &raquo;" ID="FuncExperi" /></p>
         </div>
         <div class="col-md-4">
