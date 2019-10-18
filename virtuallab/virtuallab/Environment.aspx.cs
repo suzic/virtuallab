@@ -90,6 +90,9 @@ namespace virtuallab
             // 如果不需要获取session_id的情况下，检查是否是前端操作的回调，并执行对应的动作命令
             else
             {
+                //// 暂时不显示标记
+                //lbGeneral.Visible = false;
+
                 String key = Request.Form["__EVENTTARGET"];
                 if (!string.IsNullOrEmpty(key) && key.Equals("SUBMIT_CODE"))
                 {
@@ -204,6 +207,7 @@ namespace virtuallab
             this.Page.Header.Controls.Add(CodeScrollbar);
         }
 
+        // 状态提示器
         protected void EnvironmentStateChanged(object sender, EventArgs e)
         {
             LoginUser user = sender as LoginUser;
@@ -325,18 +329,11 @@ namespace virtuallab
                 {
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
                     CurrentLoginUser.compileSuccess = true;
-                    compileResultArray.Add("");
-                    compileResultArray.Add("");
-                    compileResultArray.Add("");
-                    compileResultArray.Add("");
-                    compileResultArray.Add("");
-                    compileResultArray.Add("");
-                    compileResultArray.Add("");
-                    compileResultArray.Add("");
-                    compileResultArray.Add("");
-                    compileResultArray.Add("");
-                    compileResultArray.Add("");
-                    compileResultArray.Add("");
+                    compileResultArray.Add("\nIn compiling...\n");
+                    for (int i = 1; i <= 10; i++)
+                        compileResultArray.Add("Progress " + i.ToString() + "0 % ......\n");
+                    compileResultArray.Add("Completed.\n");
+                    Thread.Sleep(3000);
                     return;
                 }
 
@@ -427,15 +424,11 @@ namespace virtuallab
                 {
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
                     CurrentLoginUser.uploadSuccess = true;
-                    runResultArray.Add("");
-                    runResultArray.Add("");
-                    runResultArray.Add("");
-                    runResultArray.Add("");
-                    runResultArray.Add("");
-                    runResultArray.Add("");
-                    runResultArray.Add("");
-                    runResultArray.Add("");
-                    runResultArray.Add("");
+                    compileResultArray.Add("\n开始将程序上传到板卡...\n");
+                    for (int i = 1; i <= 10; i++)
+                        compileResultArray.Add("上传完成了 " + i.ToString() + "0%......\n");
+                    compileResultArray.Add("已完成，请切换到板卡效果查看.\n");
+                    Thread.Sleep(3000);
                     return;
                 }
 

@@ -9,9 +9,11 @@
         var session_id = "<%=CurrentLoginUser.currentSessionId %>";
         var compile_id = "<%=CurrentLoginUser.currentCompileId %>";
         var upload_id = "<%=CurrentLoginUser.currentUploadId %>";
-        var playOK = 0;
         var current_code = <%=currentCode %>;
         var scroll_pos = <%=currentPosTop %>;
+        // var output_string = <%=compileResultArray.ToString() %>;
+        var layer_mask;
+        var playOK = 0;
         var timerId;
         var tickCount;
 
@@ -38,6 +40,22 @@
             editor.scrollTo(0, scroll_pos);
 
             new Tab("#Tab");
+
+            layer_mask = document.getElementById("mask");
+            //if (inCompiling == "True") {
+            //    layer_mask.style.display = "block";
+            //    //compileTick();
+            //    layer_mask.onclick = function () {
+            //        layer_mask.style.display = "none";
+            //    }
+            //}
+            //else if (inRunning == "True") {
+            //    layer_mask.style.display = "block";
+            //    //runTick();
+            //    layer_mask.onclick = function () {
+            //        layer_mask.style.display = "none";
+            //    }
+            //}
         });
 
         // 上传代码编译接口调用，后端完成
@@ -56,10 +74,6 @@
 
         // 获取编译信息，前端完成
         function compileTick() {
-            playOK = 0;
-            tickCount = 0;
-            clearInterval(timerId);
-            timerId = setInterval("tickCompile()", 500);
             //var codeText = editor.getValue();
             //__doPostBack("COMPILE_TICK", codeText);
             //$.ajax({
@@ -71,9 +85,14 @@
             //        "compile_id": compile_id
             //    },
             //    success: function (data) {
-            //        getDebugOutput(data);
+                    playOK = 0;
+                    tickCount = 0;
+                    clearInterval(timerId);
+                    timerId = setInterval("tickCompile()", 500);
+            //      layer_mask.style.display = "none";
             //    },
             //    error: function (er) {
+            //        layer_mask.style.display = "none";
             //    }
             //});
         }
@@ -90,6 +109,11 @@
 
         /// === Timer related ====
         function tickCompile() {
+            //if (tickCount >= output_string.count) {
+            //    clearInterval(timerId);
+            //}
+            //var line = output_string[tickCount];
+            //setDebugOutput(line);
             if (tickCount == 0)
                 setDebugOutput("\nIn compiling...\n");
             else if (tickCount > 10) {
@@ -103,6 +127,11 @@
         }
 
         function tickRunning() {
+            //if (tickCount >= output_string.count) {
+            //    clearInterval(timerId);
+            //}
+            //var line = output_string[tickCount];
+            //setDebugOutput(line);
             if (tickCount == 0)
                 setDebugOutput("\n开始将程序上传到板卡...\n");
             else if (tickCount > 10) {
@@ -310,5 +339,7 @@
             </div>
         </div>
     </div>
-
+    <div class="mask" id="mask">
+        <h1 style="position:absolute; top:320px;left:480px;width:280px;height:50px">Waiting...</h1>
+    </div>
 </asp:Content>
