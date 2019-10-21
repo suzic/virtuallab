@@ -17,6 +17,7 @@ namespace virtuallab
     public partial class SiteMaster : MasterPage
     {
         public static LoginUser CurrentLoginUser = null;
+        public MultiView LogPart;
 
         private const string AntiXsrfTokenKey = "__AntiXsrfToken";
         private const string AntiXsrfUserNameKey = "__AntiXsrfUserName";

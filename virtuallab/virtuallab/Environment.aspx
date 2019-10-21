@@ -450,6 +450,7 @@
             </div>
             <div class="one_tab deactive">
                 <div id="stage" class="col-md-12" style="position: relative; min-width:780px; height: 852px; background-color: #ebebeb;">
+                    <img style='position:absolute;left:0px;top:0px;width:1200px;height:850px;' src='Content/zlg7290.png'/>
                 </div>
             </div>
         </div>

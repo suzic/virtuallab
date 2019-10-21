@@ -54,6 +54,9 @@ namespace virtuallab
         public List<string> compileResultArray = new List<string>();
         public List<string> runResultArray = new List<string>();
 
+        /// <summary>
+        /// 初始化页面
+        /// </summary>
         protected void Page_Init(object sender, EventArgs e)
         {
             InitNetworkParams();
@@ -74,7 +77,9 @@ namespace virtuallab
                 Response.Redirect("~/NotReady");
         }
 
-        // 页面加载，该方法先获取可用的目标开发环境；同时处理可能来自前端的接口方法回调，并启动计时器进行Tick操作
+        /// <summary>
+        /// 页面加载，该方法先获取可用的目标开发环境；同时处理可能来自前端的接口方法回调，并启动计时器进行Tick操作
+        /// </summary>
         protected void Page_Load(object sender, EventArgs e)
         {
             // 进入页面首先获取session_id，并且确保当前用户状态不是NotReady
@@ -134,6 +139,7 @@ namespace virtuallab
             }
         }
 
+        // 从参数中获得当前代码，同时保存代码编辑器滚动的垂直坐标
         private void ReloadCodeWithPosition(string info)
         {
             DT deserializedArgs = JsonConvert.DeserializeObject<DT>(info);
@@ -162,6 +168,7 @@ namespace virtuallab
                     currentCode = r.ReadToEnd();
                     // 需要使用JSON封装的方法将该字符串传至前端
                     currentCode = JsonConvert.SerializeObject(currentCode);
+                    currentPosTop = 0;
                 }
             }
         }
