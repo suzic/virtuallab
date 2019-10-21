@@ -40,6 +40,7 @@ namespace virtuallab
 
         public LoginUser CurrentLoginUser;
         public string currentCode;
+        public string currentCodeOrigin;
         public int currentPosTop;
 
         public string BaseURL = "http://192.168.200.119:8088/address/";
@@ -96,33 +97,33 @@ namespace virtuallab
                 String key = Request.Form["__EVENTTARGET"];
                 if (!string.IsNullOrEmpty(key) && key.Equals("SUBMIT_CODE"))
                 {
-                    DT deserializedArgs = JsonConvert.DeserializeObject<DT>(Request["__EVENTARGUMENT"]);
-                    currentCode = deserializedArgs.code;
-                    SI scrollPos = deserializedArgs.pos;
-                    currentCode = JsonConvert.SerializeObject(currentCode);
-                    currentPosTop = scrollPos.top;
+                    ReloadCodeWithPosition(Request["__EVENTARGUMENT"]);
                     CodeSubmit(); 
                 }
                 else if (!string.IsNullOrEmpty(key) && key.Equals("UPLOAD_PROGRAM"))
                 {
-                    DT deserializedArgs = JsonConvert.DeserializeObject<DT>(Request["__EVENTARGUMENT"]);
-                    currentCode = deserializedArgs.code;
-                    SI scrollPos = deserializedArgs.pos;
-                    currentCode = JsonConvert.SerializeObject(currentCode);
-                    currentPosTop = scrollPos.top;
+                    ReloadCodeWithPosition(Request["__EVENTARGUMENT"]);
                     ProgramUpload();
+                }
+                else if (!string.IsNullOrEmpty(key) && key.Equals("RUN_PLAY"))
+                {
+                    ReloadCodeWithPosition(Request["__EVENTARGUMENT"]);
+                    RunPlay();
                 }
                 else if (!string.IsNullOrEmpty(key) && key.Equals("COMPILE_TICK"))
                 {
-                    currentCode = Request.Form["__EVENTARGUMENT"];
-                    currentCode = JsonConvert.SerializeObject(currentCode);
+                    ReloadCodeWithPosition(Request["__EVENTARGUMENT"]);
                     CompileTick();
+                }
+                else if (!string.IsNullOrEmpty(key) && key.Equals("UPLOAD_TICK"))
+                {
+                    ReloadCodeWithPosition(Request["__EVENTARGUMENT"]);
+                    UploadTick();
                 }
                 else if (!string.IsNullOrEmpty(key) && key.Equals("RUN_TICK"))
                 {
-                    currentCode = Request.Form["__EVENTARGUMENT"];
-                    currentCode = JsonConvert.SerializeObject(currentCode);
-                    UploadTick();
+                    ReloadCodeWithPosition(Request["__EVENTARGUMENT"]);
+                    RunTick();
                 }
                 // 可能不是前端操作的回调，只是刷新了，这种情况单纯的重新加载代码
                 else
@@ -131,6 +132,15 @@ namespace virtuallab
                     ReloadCode(this, EventArgs.Empty);
                 }
             }
+        }
+
+        private void ReloadCodeWithPosition(string info)
+        {
+            DT deserializedArgs = JsonConvert.DeserializeObject<DT>(info);
+            currentCodeOrigin = deserializedArgs.code;
+            SI scrollPos = deserializedArgs.pos;
+            currentCode = JsonConvert.SerializeObject(currentCodeOrigin);
+            currentPosTop = scrollPos.top;
         }
 
         // 重新加载模板代码
@@ -298,7 +308,7 @@ namespace virtuallab
                     httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                     var body = new FormUrlEncodedContent(new Dictionary<string, string> {
                         { "session_id", CurrentLoginUser.currentSessionId.ToString() },
-                        { "code",  currentCode }
+                        { "code",  currentCodeOrigin }
                     });
 
                     // response
@@ -333,7 +343,6 @@ namespace virtuallab
                     for (int i = 1; i <= 10; i++)
                         compileResultArray.Add("Progress " + i.ToString() + "0 % ......\n");
                     compileResultArray.Add("Completed.\n");
-                    Thread.Sleep(3000);
                     return;
                 }
 
@@ -428,7 +437,6 @@ namespace virtuallab
                     for (int i = 1; i <= 10; i++)
                         compileResultArray.Add("上传完成了 " + i.ToString() + "0%......\n");
                     compileResultArray.Add("已完成，请切换到板卡效果查看.\n");
-                    Thread.Sleep(3000);
                     return;
                 }
 
@@ -470,6 +478,17 @@ namespace virtuallab
                     }
                 }
             }
+        }
+
+        // 调用开始执行程序操作
+        protected void RunPlay()
+        {
+
+        }
+
+        protected void RunTick()
+        {
+
         }
 
         #endregion

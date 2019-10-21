@@ -762,6 +762,16 @@
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\digit_num\light.png" />
+    <Content Include="Content\digit_num\p0.png" />
+    <Content Include="Content\digit_num\p1.png" />
+    <Content Include="Content\digit_num\p2.png" />
+    <Content Include="Content\digit_num\p3.png" />
+    <Content Include="Content\digit_num\p4.png" />
+    <Content Include="Content\digit_num\p5.png" />
+    <Content Include="Content\digit_num\p6.png" />
+    <Content Include="Content\digit_num\p7.png" />
+    <Content Include="Content\zlg7290.png" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\tab.css" />
     <Content Include="Default.aspx" />

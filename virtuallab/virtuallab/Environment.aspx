@@ -5,6 +5,7 @@
     <script type="text/javascript">
 
         var inCompiling = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InCompiling) %>";
+        var inUploading = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InUploading) %>";
         var inRunning = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InPlaying) %>";
         var session_id = "<%=CurrentLoginUser.currentSessionId %>";
         var compile_id = "<%=CurrentLoginUser.currentCompileId %>";
@@ -42,73 +43,97 @@
             new Tab("#Tab");
 
             layer_mask = document.getElementById("mask");
-            //if (inCompiling == "True") {
-            //    layer_mask.style.display = "block";
-            //    //compileTick();
-            //    layer_mask.onclick = function () {
-            //        layer_mask.style.display = "none";
-            //    }
-            //}
-            //else if (inRunning == "True") {
-            //    layer_mask.style.display = "block";
-            //    //runTick();
-            //    layer_mask.onclick = function () {
-            //        layer_mask.style.display = "none";
-            //    }
-            //}
+            if (inCompiling == "True") {
+                layer_mask.style.display = "block";
+                layer_mask.innerHTML = '<h1 style="position:absolute; top:320px;left:260px;width:600px;height:50px">正在等待远程主机编译结果返回...</h1>';
+                playOK = 0;
+                tickCount = 0;
+                clearInterval(timerId);
+                timerId = setTimeout(function () {
+                    layer_mask.style.display = "none";
+                    compileTick();
+                }, 5000);
+                layer_mask.onclick = function () {
+                    layer_mask.style.display = "none";
+                    compileTick();
+                }
+            }
+            else if (inUploading == "True") {
+                layer_mask.style.display = "block";
+                layer_mask.innerHTML = '<h1 style="position:absolute; top:320px;left:260px;width:600px;height:50px">正在等待远程主机上传结果返回...</h1>';
+                playOK = 0;
+                tickCount = 0;
+                clearInterval(timerId);
+                timerId = setTimeout(function () {
+                    layer_mask.style.display = "none";
+                    uploadTick();
+                }, 5000);
+                layer_mask.onclick = function () {
+                    layer_mask.style.display = "none";
+                    uploadTick();
+                }
+            }
+            else if (inRunning == "True") {
+                layer_mask.style.display = "block";
+                layer_mask.innerHTML = '<h1 style="position:absolute; top:320px;left:260px;width:600px;height:50px">正在等待远程主机运行效果返回...</h1>';
+                playOK = 0;
+                tickCount = 0;
+                clearInterval(timerId);
+                timerId = setTimeout(function () {
+                    layer_mask.style.display = "none";
+                    runTick();
+                }, 5000);
+                layer_mask.onclick = function () {
+                    layer_mask.style.display = "none";
+                    runTick();
+                }
+            }
         });
 
-        // 上传代码编译接口调用，后端完成
+        // 上传代码编译接口调用
         function submitCode() {
             var codeText = editor.getValue();
             var position = editor.getScrollInfo();
             __doPostBack("SUBMIT_CODE", JSON.stringify({ "code": codeText, "pos": position }));
         }
 
-        // 上传程序接口调用，后端完成
+        // 上传程序接口调用
         function uploadProgram() {
             var codeText = editor.getValue();
             var position = editor.getScrollInfo();
             __doPostBack("UPLOAD_PROGRAM", JSON.stringify({ "code": codeText, "pos": position }));
         }
 
-        // 获取编译信息，前端完成
+        // 播放运行
+        function runPlay() {
+            var codeText = editor.getValue();
+            var position = editor.getScrollInfo();
+            __doPostBack("RUN_PLAY", JSON.stringify({ "code": codeText, "pos": position }));
+        }
+
+        // 获取编译信息
         function compileTick() {
-            //var codeText = editor.getValue();
-            //__doPostBack("COMPILE_TICK", codeText);
-            //$.ajax({
-            //    type: "POST",
-            //    dataType: "json",
-            //    url: "http://192.168.200.119:8088/address/" + "CompileResultTick",
-            //    data: {
-            //        "session_id": session_id,
-            //        "compile_id": compile_id
-            //    },
-            //    success: function (data) {
-                    playOK = 0;
-                    tickCount = 0;
-                    clearInterval(timerId);
-                    timerId = setInterval("tickCompile()", 500);
-            //      layer_mask.style.display = "none";
-            //    },
-            //    error: function (er) {
-            //        layer_mask.style.display = "none";
-            //    }
-            //});
+            var codeText = editor.getValue();
+            var position = editor.getScrollInfo();
+            __doPostBack("COMPILE_TICK", JSON.stringify({ "code": codeText, "pos": position }));
         }
 
-        // 上传并获取运行效果，前端完成
+        // 上传程序到板卡的过程
+        function uploadTick() {
+            var codeText = editor.getValue();
+            var position = editor.getScrollInfo();
+            __doPostBack("UPLOAD_TICK", JSON.stringify({ "code": codeText, "pos": position }));
+        }
+
+        // 执行动画的过程
         function runTick() {
-            playOK = 0;
-            tickCount = 0;
-            clearInterval(timerId);
-            timerId = setInterval("tickRunning()", 500);
-            //var codeText = editor.getValue();
-            //__doPostBack("RUN_TICK", codeText);
+            var codeText = editor.getValue();
+            var position = editor.getScrollInfo();
+            __doPostBack("RUN_TICK", JSON.stringify({ "code": codeText, "pos": position }));
         }
 
-        /// === Timer related ====
-        function tickCompile() {
+        ///=========================== Timer related =================================
+        function tickCompiling() {
             //if (tickCount >= output_string.count) {
             //    clearInterval(timerId);
             //}
@@ -126,7 +151,7 @@
             tickCount++;
         }
 
-        function tickRunning() {
+        function tickUploading() {
             //if (tickCount >= output_string.count) {
             //    clearInterval(timerId);
             //}
@@ -145,14 +170,57 @@
             tickCount++;
         }
 
-        function tickPlaying() {
-            if (tickCount >= 30) {
+        function tickRunning() {
+            if (tickCount >= 40) {
                 clearInterval(timerId);
                 return;
             }
-            var singleNum = tickCount % 10;
-            var num = singleNum.toString();
-            showDigit(num + num + num + num);
+            var index = tickCount % 8;
+            var pos = parseInt(tickCount / 8);
+            var oneStr = "00000000";
+            switch (index) {
+                case 0:
+                    oneStr = "10000000";
+                    break;
+                case 1:
+                    oneStr = "11000000";
+                    break;
+                case 2:
+                    oneStr = "11100000";
+                    break;
+                case 3:
+                    oneStr = "11110000";
+                    break;
+                case 4:
+                    oneStr = "11111000";
+                    break;
+                case 5:
+                    oneStr = "11111100";
+                    break;
+                case 6:
+                    oneStr = "11111110";
+                    break;
+                case 7:
+                    oneStr = "11111111";
+                    break;
+            }
+            switch (pos) {
+                case 0:
+                    showDigit(oneStr, "00000000", "00000000", "00000000", "00000000");
+                    break;
+                case 1:
+                    showDigit("11111111", oneStr, "00000000", "00000000", "00000000");
+                    break;
+                case 2:
+                    showDigit("11111111", "11111111", oneStr, "00000000", "00000000");
+                    break;
+                case 3:
+                    showDigit("11111111", "11111111", "11111111", oneStr, "00000000");
+                    break;
+                case 4:
+                    showDigit("11111111", "11111111", "11111111", "11111111", oneStr);
+                    break;
+            }
             tickCount++;
         }
 
@@ -164,38 +232,83 @@
             outer.setCursor(outer.lastLine(), cur.ch);
         }
 
-        /// === show images ======
-        function getImg(num, stageW, stageH, index, total) {
-            var w = 90;
-            var h = 150;
-            var wT = w * total;
-            var hT = h;
-            var top = (stageH - hT) / 2;
-            // var left = (stageW - wT) / 2 + w * index;
-            var left = 405 + w * index;
-            var images = "<img src='Content/digit_num/" + num + ".png' style = 'position:absolute;";
-            images += "left:" + left.toString() + "px;";
-            images += "top:" + top.toString() + "px;";
+        ///============================ show images ==================================
+        function getImgBg() {
+            return "<img style='position:absolute;left:0px;top:0px;width:1200px;height:850px;' src='Content/zlg7290.png'/>";
+        }
+
+        function getImgNum(group, index, show) {
+            var w = 25;
+            var h = 34.5;
+            var t = 515.5;
+            var l = 567 + 22 * group;
+            var images = "<img src='Content/digit_num/p" + index + ".png' style = 'position:absolute;";
+            images += "display:" + (show == "1" ? "block;" : "none;");
+            images += "left:" + l.toString() + "px;";
+            images += "top:" + t.toString() + "px;";
             images += "width:" + w.toString() + "px;";
             images += "height:" + h.toString() + "px;";
             images += "' /> ";
             return images;
         }
 
-        function showDigit(varNumber) {
-            var stageW = $("#stage").width();
-            var stageH = $("#stage").height();
-            stageW = stageW < 780 ? 780 : stageW;
-            var len = varNumber.length;
-            var contentHtml = "";
-            for (var i = 0; i < len; i++) {
-                var num = varNumber.substr(i, 1);
-                contentHtml += getImg(num, stageW, stageH, i, len);
+        function getImgLight(index, show) {
+            var images;
+            switch (index) {
+                case 0:
+                    var images = "<img src='Content/digit_num/light.png' style = 'position:absolute;left:490px;top:721.5px;width:103px;height:50px;display:" + (show == "1" ? "block;" : "none;") + "' /> ";
+                    break;
+                case 1:
+                    var images = "<img src='Content/digit_num/light.png' style = 'position:absolute;left:535px;top:721px;width:103px;height:50px;display:" + (show == "1" ? "block;" : "none;") + "' /> ";
+                    break;
+                case 2:
+                    var images = "<img src='Content/digit_num/light.png' style = 'position:absolute;left:578.5px;top:722.5px;width:103px;height:50px;display:" + (show == "1" ? "block;" : "none;") + "' /> ";
+                    break;
+                case 3:
+                    var images = "<img src='Content/digit_num/light.png' style = 'position:absolute;left:620.5px;top:720.5px;width:103px;height:50px;display:" + (show == "1" ? "block;" : "none;") + "' /> ";
+                    break;
+                case 4:
+                    var images = "<img src='Content/digit_num/light.png' style = 'position:absolute;left:492.5px;top:767px;width:103px;height:50px;display:" + (show == "1" ? "block;" : "none;") + "' /> ";
+                    break;
+                case 5:
+                    var images = "<img src='Content/digit_num/light.png' style = 'position:absolute;left:534px;top:767.5px;width:103px;height:50px;display:" + (show == "1" ? "block;" : "none;") + "' /> ";
+                    break;
+                case 6:
+                    var images = "<img src='Content/digit_num/light.png' style = 'position:absolute;left:578.5px;top:768px;width:103px;height:50px;display:" + (show == "1" ? "block;" : "none;") + "' /> ";
+                    break;
+                case 7:
+                    var images = "<img src='Content/digit_num/light.png' style = 'position:absolute;left:621.5px;top:769px;width:103px;height:50px;display:" + (show == "1" ? "block;" : "none;") + "' /> ";
+                    break;
+            }
+            return images;
+        }
+
+        function showDigit(code1, code2, code3, code4, code5) {
+            var contentHtml = getImgBg();
+            for (var i = 0; i < 8; i++) {
+                var num = code1.substr(i, 1);
+                contentHtml += getImgNum(0, i, num);
+            }
+            for (var j = 0; j < 8; j++) {
+                var num = code2.substr(j, 1);
+                contentHtml += getImgNum(1, j, num);
+            }
+            for (var m = 0; m < 8; m++) {
+                var num = code3.substr(m, 1);
+                contentHtml += getImgNum(2, m, num);
+            }
+            for (var n = 0; n < 8; n++) {
+                var num = code4.substr(n, 1);
+                contentHtml += getImgNum(3, n, num);
+            }
+            for (var l = 0; l < 8; l++) {
+                var num = code5.substr(l, 1);
+                contentHtml += getImgLight(l, num);
             }
             $("#stage").html(contentHtml);
         }
 
-        /// === JS Tab functions ====
+        ///========================= JS Tab functions ================================
         function Tab(tabId, active, tab) {
             this.init(tabId, active, tab);
         }
@@ -223,12 +336,14 @@
                 this.tabTitle[this.current].classList.remove("active");
                 this.tabPanel[this.current].classList.remove("active");
                 this.tabPanel[this.current].classList.add("deactive");
-                if (playOK == 1 && index == 2) {
+                //if (playOK == 1 && index == 2)
+                {
                     tickCount = 0;
                     clearInterval(timerId);
-                    timerId = setInterval("tickPlaying()", 1000);
-                } else
-                    showDigit("8888");
+                    timerId = setInterval("tickRunning()", 1000);
+                } 
+                //else
+                //    showDigit("10000000", "01000000", "00001000", "00100000", "00000000");
             }
             this.current = index;
         };
