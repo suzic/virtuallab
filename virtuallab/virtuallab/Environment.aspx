@@ -215,9 +215,14 @@
             }
             var line = tickImageArray[tickImageCount];
             var one = line.split("-");
-            showDigit(one[0], one[1], one[2], one[3], one[4]);
+            if (one == null || one.length < 6)
+                return;
+            showDigit(one[1], one[2], one[3], one[4], one[5]);
+            var gap = parseInt(one[0]);
+            if (gap == null || gap < 100)
+                gap = 100;
             tickImageCount++;
-            timerImageId = setTimeout("tickRunning()", 1000);
+            timerImageId = setTimeout("tickRunning()", gap);
         }
 
         function setOutputAppend(target, data) {

@@ -59,7 +59,6 @@ namespace virtuallab
         {
             get { return JsonConvert.SerializeObject(animateString.ToString()); }
         }
-
         public string outputFormatted
         {
             get { return JsonConvert.SerializeObject(outputString.ToString()); }
@@ -631,6 +630,7 @@ namespace virtuallab
             string line;
             for (int index = 0; index < 40; index++)
             {
+                line = "500-";
                 switch (index % 8)
                 {
                     case 0:
@@ -664,22 +664,22 @@ namespace virtuallab
                 switch (index / 8)
                 {
                     case 0:
-                        line = oneStr + "-00000000" + "-00000000" + "-00000000" + "-00000000";
+                        line += oneStr + "-00000000" + "-00000000" + "-00000000" + "-00000000";
                         break;
                     case 1:
-                        line = "00000000-" + oneStr + "-00000000" + "-00000000" + "-00000000";
+                        line += "00000000-" + oneStr + "-00000000" + "-00000000" + "-00000000";
                         break;
                     case 2:
-                        line = "00000000-" + "00000000-" + oneStr + "-00000000" + "-00000000";
+                        line += "00000000-" + "00000000-" + oneStr + "-00000000" + "-00000000";
                         break;
                     case 3:
-                        line = "00000000-" + "00000000-" + "00000000-" + oneStr + "-00000000";
+                        line += "00000000-" + "00000000-" + "00000000-" + oneStr + "-00000000";
                         break;
                     case 4:
-                        line = "00000000-" + "00000000-" + "00000000-" + "00000000-" + oneStr;
+                        line += "00000000-" + "00000000-" + "00000000-" + "00000000-" + oneStr;
                         break;
                     default:
-                        line = "00000000-" + "00000000-" + "00000000-" + "00000000-" + "00000000";
+                        line += "00000000-" + "00000000-" + "00000000-" + "00000000-" + "00000000";
                         break;
                 }
                 animateString.AppendLine(line);
