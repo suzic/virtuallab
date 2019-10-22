@@ -1,17 +1,21 @@
 ﻿<%@ Page Title="进行实验" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Environment.aspx.cs" Inherits="virtuallab.Environment" %>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
-    <%--<script type="text/javascript" src="Scripts/environment.js"></script>--%>
     <script type="text/javascript">
 
+        var cm_editor;
+        var cm_outer;
+        var cm_console;
         var inCompiling = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InCompiling) %>";
         var inUploading = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InUploading) %>";
         var inRunning = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InPlaying) %>";
         var session_id = "<%=CurrentLoginUser.currentSessionId %>";
         var compile_id = "<%=CurrentLoginUser.currentCompileId %>";
         var upload_id = "<%=CurrentLoginUser.currentUploadId %>";
+        var run_id = "<%=CurrentLoginUser.currentRunId %>";
         var current_code = <%=currentCode %>;
         var scroll_pos = <%=currentPosTop %>;
+        var default_tab = <%=defaultTab %>;
         // var output_string = <%=compileResultArray.ToString() %>;
         var layer_mask;
         var playOK = 0;
@@ -19,7 +23,13 @@
         var tickCount;
 
         $(document).ready(function () {
-            editor = CodeMirror.fromTextArea(document.getElementById('code_text'), {
+            initCodeEditor();
+            new Tab("#Tab", default_tab);
+            showWaitingLayers();
+        });
+
+        function initCodeEditor() {
+            cm_editor = CodeMirror.fromTextArea(document.getElementById('code_text'), {
                 mode: 'text/x-c++src',
                 lineNumbers: true,
                 theme: 'mdn-like',
@@ -28,24 +38,31 @@
                 smartIdent: true,
                 indentWithTabs: true
             });
-            editor.setSize('100%', '100%');
-            outer = CodeMirror.fromTextArea(document.getElementById('debug_text'), {
+            cm_editor.setSize('100%', '100%');
+            cm_outer = CodeMirror.fromTextArea(document.getElementById('debug_text'), {
                 mode: 'textile',
                 theme: 'zenburn',
                 identUnit: 4,
                 readOnly: true
             });
-            outer.setSize('100%', '100%');
+            cm_outer.setSize('100%', '100%');
+            cm_console = CodeMirror.fromTextArea(document.getElementById('run_console'), {
+                mode: 'textile',
+                theme: 'zenburn',
+                identUnit: 4,
+                readOnly: true
+            });
+            cm_console.setSize('100%', '100%');
 
-            editor.setValue(current_code);
-            editor.scrollTo(0, scroll_pos);
+            cm_editor.setValue(current_code);
+            cm_editor.scrollTo(0, scroll_pos);
+        }
 
-            new Tab("#Tab");
-
-            layer_mask = document.getElementById("mask");
+        function showWaitingLayers() {
+            layer_mask = document.getElementById('mask');
             if (inCompiling == "True") {
                 layer_mask.style.display = "block";
-                layer_mask.innerHTML = '<h1 style="position:absolute; top:320px;left:260px;width:600px;height:50px">正在等待远程主机编译结果返回...</h1>';
+                layer_mask.innerHTML = '<div style="position:absolute; top:320px;left:260px;width:600px;height:50px"><h1>正在等待远程主机编译结果返回...</h1></div>';
                 playOK = 0;
                 tickCount = 0;
                 clearInterval(timerId);
@@ -60,7 +77,7 @@
             }
             else if (inUploading == "True") {
                 layer_mask.style.display = "block";
-                layer_mask.innerHTML = '<h1 style="position:absolute; top:320px;left:260px;width:600px;height:50px">正在等待远程主机上传结果返回...</h1>';
+                layer_mask.innerHTML = '<div style="position:absolute; top:320px;left:260px;width:600px;height:50px"><h1>正在等待远程主机上传结果返回...</h1></div>';
                 playOK = 0;
                 tickCount = 0;
                 clearInterval(timerId);
@@ -75,7 +92,7 @@
             }
             else if (inRunning == "True") {
                 layer_mask.style.display = "block";
-                layer_mask.innerHTML = '<h1 style="position:absolute; top:320px;left:260px;width:600px;height:50px">正在等待远程主机运行效果返回...</h1>';
+                layer_mask.innerHTML = '<div style="position:absolute; top:320px;left:260px;width:600px;height:50px"><h1>正在等待远程主机运行效果返回...</h1></div>';
                 playOK = 0;
                 tickCount = 0;
                 clearInterval(timerId);
@@ -88,48 +105,49 @@
                     runTick();
                 }
             }
-        });
+
+        }
 
         // 上传代码编译接口调用
         function submitCode() {
-            var codeText = editor.getValue();
-            var position = editor.getScrollInfo();
-            __doPostBack("SUBMIT_CODE", JSON.stringify({ "code": codeText, "pos": position }));
+            var codeText = cm_editor.getValue();
+            var position = cm_editor.getScrollInfo();
+            __doPostBack("SUBMIT_CODE", JSON.stringify({ "code": codeText, "pos": position, "tab":0 }));
         }
 
         // 上传程序接口调用
         function uploadProgram() {
-            var codeText = editor.getValue();
-            var position = editor.getScrollInfo();
-            __doPostBack("UPLOAD_PROGRAM", JSON.stringify({ "code": codeText, "pos": position }));
+            var codeText = cm_editor.getValue();
+            var position = cm_editor.getScrollInfo();
+            __doPostBack("UPLOAD_PROGRAM", JSON.stringify({ "code": codeText, "pos": position, "tab": 0 }));
         }
 
-        // 播放运行
+        // 播放运行接口调用
         function runPlay() {
-            var codeText = editor.getValue();
-            var position = editor.getScrollInfo();
-            __doPostBack("RUN_PLAY", JSON.stringify({ "code": codeText, "pos": position }));
+            var codeText = cm_editor.getValue();
+            var position = cm_editor.getScrollInfo();
+            __doPostBack("RUN_PLAY", JSON.stringify({ "code": codeText, "pos": position, "tab": 2 }));
         }
 
-        // 获取编译信息
+        // 获取编译信息的过程
         function compileTick() {
-            var codeText = editor.getValue();
-            var position = editor.getScrollInfo();
-            __doPostBack("COMPILE_TICK", JSON.stringify({ "code": codeText, "pos": position }));
+            var codeText = cm_editor.getValue();
+            var position = cm_editor.getScrollInfo();
+            __doPostBack("COMPILE_TICK", JSON.stringify({ "code": codeText, "pos": position, "tab": 0 }));
         }
 
         // 上传程序到板卡的过程
         function uploadTick() {
-            var codeText = editor.getValue();
-            var position = editor.getScrollInfo();
-            __doPostBack("UPLOAD_TICK", JSON.stringify({ "code": codeText, "pos": position }));
+            var codeText = cm_editor.getValue();
+            var position = cm_editor.getScrollInfo();
+            __doPostBack("UPLOAD_TICK", JSON.stringify({ "code": codeText, "pos": position, "tab": 0 }));
         }
 
         // 执行动画的过程
         function runTick() {
-            var codeText = editor.getValue();
-            var position = editor.getScrollInfo();
-            __doPostBack("RUN_TICK", JSON.stringify({ "code": codeText, "pos": position }));
+            var codeText = cm_editor.getValue();
+            var position = cm_editor.getScrollInfo();
+            __doPostBack("RUN_TICK", JSON.stringify({ "code": codeText, "pos": position, "tab": 2 }));
         }
 
         ///=========================== Timer related =================================
@@ -225,11 +243,11 @@
         }
 
         function setDebugOutput(data) {
-            var oldData = outer.getValue();
+            var oldData = cm_outer.getValue();
             data = oldData + data;
-            outer.setValue(data);
-            var cur = outer.getCursor();
-            outer.setCursor(outer.lastLine(), cur.ch);
+            cm_outer.setValue(data);
+            var cur = cm_outer.getCursor();
+            cm_outer.setCursor(cm_outer.lastLine(), cur.ch);
         }
 
         ///============================ show images ==================================
@@ -321,6 +339,12 @@
             var elem = document.querySelector(tabId);
             this.tabTitle = elem.querySelectorAll(this.titles);
             this.tabPanel = $(".one_tab");
+            for (var i = 0; i < this.tabPanel.length; i++) {
+                if (i == active)
+                    this.tabPanel[i].classList.add("active");
+                else
+                    this.tabPanel[i].classList.add("deactive");
+            }
             this.active(active);
             this.event();
         };
@@ -367,7 +391,7 @@
             <div class="col-md-2">板卡效果</div>
         </div>
         <div class="tab_panel">
-            <div class="one_tab col-md-12 active">
+            <div class="one_tab col-md-12">
                 <div class="row" style="background-color:#ebebeb; position: relative; padding-top: 10px; padding-bottom: 10px;">
                     <div class="col-md-2">
                         <asp:Button ID="btnReload" runat="server" OnClick="ReloadCode" Text="重新加载模板代码" CssClass="btn btn-default form-control" />
@@ -385,20 +409,19 @@
                         <input id="btnUpload" type="submit" value="上传程序" onclick="uploadProgram();" class="btn btn-default form-control" />
                     </div>
                     <div class="col-md-1">
-                        <input id="btnRunTick" value="RT" onclick="runTick();" class="btn btn-default form-control" />
+                        <input id="btnUploadTick" value="UT" onclick="uploadTick();" class="btn btn-default form-control" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-8" style="height: 800px; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
-                        <textarea id="code_text" class="form-control">
-                    </textarea>
+                        <textarea id="code_text" class="form-control"></textarea>
                     </div>
                     <div class="col-md-4" style="height: 800px; padding-left: 5px; padding-right: 0px">
                         <textarea id="debug_text" class="form-control"></textarea>
                     </div>
                 </div>
             </div>
-            <div class="one_tab deactive">
+            <div class="one_tab">
                 <div class="col-md-12"; style="overflow-y: scroll; position: relative; height: 852px; background-color: #ebebeb;">
                     <h4>实验步骤1 内容简介</h4>
                     阅读实验原理，了解zlg7290的读写流程和I2C总线的使用方法<br />
@@ -448,14 +471,26 @@
                     数码管驱动zlg7290.c实现了设备文件操作控制，用户态可以调用zlg7290_hw_write()，zlg7290_hw_read()和zlg_led_ioctl()函数来对数码管进行读写操作，阅读ZLG7290数码管驱动的代码程序清单1.1，了解其实现的具体方法。
                 </div>
             </div>
-            <div class="one_tab deactive">
-                <div id="stage" class="col-md-12" style="position: relative; min-width:780px; height: 852px; background-color: #ebebeb;">
-                    <img style='position:absolute;left:0px;top:0px;width:1200px;height:850px;' src='Content/zlg7290.png'/>
+            <div class="one_tab">
+                <div id="stage" class="col-md-12" style="position: relative; min-width: 780px; height: 852px; background-color: #ebebeb;">
+                    <img style='position: absolute; left: 0px; top: 0px; width: 1200px; height: 850px;' src='Content/zlg7290.png' />
+                </div>
+                <div class="col-md-offset-1 col-md-10" style="position: absolute; top: 46px; padding-top: 10px; padding-bottom: 10px; background-color: #ffffff; filter: alpha(opacity=80); -moz-opacity: 0.5; opacity: 0.8;">
+                    <div class="col-md-2">
+                        <input id="btnRun" type="submit" value="运行程序" onclick="runPlay();" class="btn btn-default form-control" />
+                    </div>
+                    <div class="col-md-1">
+                        <input id="btnRunTick" value="RT" onclick="runTick();" class="btn btn-default form-control" />
+                    </div>
+                    <div class="col-md-9" style="height: 320px; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
+                        <textarea id="run_console" class="form-control"></textarea>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="mask" id="mask">
-        <h1 style="position:absolute; top:320px;left:480px;width:280px;height:50px">Waiting...</h1>
+
+    <div class="mask" id="mask" style="display:none;">
+        <div style="position:absolute; top:320px;left:480px;width:280px;height:50px"><h1>Waiting...</h1></div>
     </div>
 </asp:Content>

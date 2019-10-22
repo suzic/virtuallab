@@ -34,6 +34,7 @@ namespace virtuallab
 
         private class DT
         {
+            public int tab { get; set; }
             public string code { get; set; }
             public SI pos { get; set; }
         }
@@ -42,6 +43,7 @@ namespace virtuallab
         public string currentCode;
         public string currentCodeOrigin;
         public int currentPosTop;
+        public int defaultTab;
 
         public string BaseURL = "http://192.168.200.119:8088/address/";
         public string URIEnvironmentRequest = "environmentRequest";
@@ -143,6 +145,7 @@ namespace virtuallab
         private void ReloadCodeWithPosition(string info)
         {
             DT deserializedArgs = JsonConvert.DeserializeObject<DT>(info);
+            defaultTab = deserializedArgs.tab;
             currentCodeOrigin = deserializedArgs.code;
             SI scrollPos = deserializedArgs.pos;
             currentCode = JsonConvert.SerializeObject(currentCodeOrigin);
@@ -335,6 +338,10 @@ namespace virtuallab
                         CurrentLoginUser.currentState = EnvironmentState.InEditing;
                 }
             }
+            else
+            {
+                compileResultArray.Add("ERROR：当前状态不允许进行编译。\n");
+            }
         }
 
         // 编译结果心跳检查
@@ -390,6 +397,10 @@ namespace virtuallab
                     }
                 }
             }
+            else
+            {
+                compileResultArray.Add("ERROR：没有正在进行的编译.\n");
+            }
         }
 
         // 代码上传到板卡
@@ -429,6 +440,10 @@ namespace virtuallab
                         CurrentLoginUser.currentState = EnvironmentState.InEditing;
                 }
             }
+            else
+            {
+                compileResultArray.Add("ERROR：当前无法上传程序。\n");
+            }
         }
 
         // 上传结果心跳检查
@@ -443,11 +458,11 @@ namespace virtuallab
                     compileResultArray.Add("\n开始将程序上传到板卡...\n");
                     for (int i = 1; i <= 10; i++)
                         compileResultArray.Add("上传完成了 " + i.ToString() + "0%......\n");
-                    compileResultArray.Add("已完成，请切换到板卡效果查看.\n");
+                    compileResultArray.Add("已完成，请切换到板卡页面可以运行了.\n");
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine("============= Run Tick ===============");
+                System.Diagnostics.Debug.WriteLine("============= Upload Tick ===============");
                 using (var httpClient = new HttpClient())
                 {
                     httpClient.BaseAddress = new Uri(BaseURL);
@@ -485,17 +500,112 @@ namespace virtuallab
                     }
                 }
             }
+            else
+            {
+                compileResultArray.Add("ERROR：没有正在进行的上传。\n");
+            }
         }
 
         // 调用开始执行程序操作
         protected void RunPlay()
         {
+            if (CurrentLoginUser.currentState == EnvironmentState.InEditing && CurrentLoginUser.uploadSuccess)
+            {
+                CurrentLoginUser.currentState = EnvironmentState.InPlaying;
+                CurrentLoginUser.playSuccess = false;
+                if (!EnableService)
+                {
+                    CurrentLoginUser.currentRunId = "test_run_id_sz19";
+                    return;
+                }
 
+                System.Diagnostics.Debug.WriteLine("============= Run Program ===============");
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.BaseAddress = new Uri(BaseURL);
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var body = new FormUrlEncodedContent(new Dictionary<string, string> {
+                        { "session_id", CurrentLoginUser.currentSessionId.ToString() }
+                    });
+
+                    // response
+                    var response = httpClient.PostAsync(URIProgramUpload, body).Result;
+                    var data = response.Content.ReadAsStringAsync().Result;
+                    var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
+                    var result = (JObject)formatData["data"];
+                    bool success = (int)result["fail"] == 0;
+                    if (success)
+                    {
+                        CurrentLoginUser.currentRunId = result["run_id"].ToString();
+                        System.Diagnostics.Debug.Write("-------- run_id = " + CurrentLoginUser.currentRunId + "\n");
+                    }
+                    else
+                        CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                }
+            }
+            else
+            {
+                compileResultArray.Add("ERROR：当前无法上传程序到板卡。\n");
+            }
         }
 
         protected void RunTick()
         {
+            if (CurrentLoginUser.currentState == EnvironmentState.InPlaying)
+            {
+                if (!EnableService)
+                {
+                    CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                    CurrentLoginUser.playSuccess = true;
+                    compileResultArray.Add("\n程序执行输出结果...\n");
+                    for (int i = 1; i <= 10; i++)
+                        compileResultArray.Add("输出了 " + i.ToString() + "0%......\n");
+                    compileResultArray.Add("全部输出已完成.\n");
+                    return;
+                }
 
+                System.Diagnostics.Debug.WriteLine("============= Upload Tick ===============");
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.BaseAddress = new Uri(BaseURL);
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var body = new FormUrlEncodedContent(new Dictionary<string, string> {
+                        { "session", CurrentLoginUser.currentSessionId.ToString() },
+                        { "upload_id", CurrentLoginUser.currentUploadId.ToString() }
+                    });
+
+                    // response
+                    var response = httpClient.PostAsync(URIRunResultTick, body).Result;
+                    var data = response.Content.ReadAsStringAsync().Result;
+                    var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
+                    var result = (JObject)formatData["data"];
+                    bool success = (int)result["fail"] == 0;
+                    if (success)
+                    {
+                        int finishInt = (int)result["finish"];
+                        string finishFlag = finishInt == 0 ? "未完成" : finishInt == 1 ? "成功" : "失败";
+                        System.Diagnostics.Debug.WriteLine(">>>> Finished :" + finishFlag);
+                        string resultInfo = result["result_json"].ToString();
+                        System.Diagnostics.Debug.WriteLine("-------- Result info ----------------");
+                        System.Diagnostics.Debug.WriteLine(resultInfo);
+
+                        if (finishInt != 0)
+                        {
+                            CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                            CurrentLoginUser.playSuccess = (finishInt == 1);
+                        }
+                    }
+                    else
+                    {
+                        CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                        CurrentLoginUser.playSuccess = false;
+                    }
+                }
+            }
+            else
+            {
+                compileResultArray.Add("ERROR：没有正在运行的程序.\n");
+            }
         }
 
         #endregion

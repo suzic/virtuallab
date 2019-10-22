@@ -117,6 +117,8 @@ namespace virtuallab
                 Request.Cookies.Add(new HttpCookie("CompileID"));
             if (Request.Cookies["UploadID"] == null)
                 Request.Cookies.Add(new HttpCookie("UploadID"));
+            if (Request.Cookies["RunID"] == null)
+                Request.Cookies.Add(new HttpCookie("RunID"));
             if (Request.Cookies["CodeURI"] == null)
                 Request.Cookies.Add(new HttpCookie("CodeURI"));
 
@@ -140,6 +142,7 @@ namespace virtuallab
                 Request.Cookies["SessionID"].Value = CurrentLoginUser.currentSessionId;
                 Request.Cookies["CompileID"].Value = CurrentLoginUser.currentCompileId;
                 Request.Cookies["UploadID"].Value = CurrentLoginUser.currentUploadId;
+                Request.Cookies["RunID"].Value = CurrentLoginUser.currentRunId;
                 Request.Cookies["CodeURI"].Value = CurrentLoginUser.currentCodeUri;
                 return;
             }
@@ -231,11 +234,13 @@ namespace virtuallab
             CurrentLoginUser.currentSessionId = "";
             CurrentLoginUser.currentCompileId = "";
             CurrentLoginUser.currentUploadId = "";
+            CurrentLoginUser.currentRunId = "";
             CurrentLoginUser.currentCodeUri = "";
 
             CurrentLoginUser.currentState = EnvironmentState.NotReady;
             CurrentLoginUser.compileSuccess = false;
             CurrentLoginUser.uploadSuccess = false;
+            CurrentLoginUser.playSuccess = false;
 
             LogPart.ActiveViewIndex = 1;
             FuncMenu.ActiveViewIndex = userType;

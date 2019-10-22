@@ -38,10 +38,12 @@ namespace virtuallab.Models
         public string currentSessionId;
         public string currentCompileId;
         public string currentUploadId;
+        public string currentRunId;
         public string currentCodeUri;
 
         public bool compileSuccess;
         public bool uploadSuccess;
+        public bool playSuccess;
 
         public EnvironmentState _currentState;
         public EnvironmentState currentState

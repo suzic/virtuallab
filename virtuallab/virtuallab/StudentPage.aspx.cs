@@ -37,6 +37,10 @@ namespace virtuallab
                 CurrentLoginUser.currentSessionId = "";
                 CurrentLoginUser.currentCompileId = "";
                 CurrentLoginUser.currentUploadId = "";
+                CurrentLoginUser.currentRunId = "";
+                CurrentLoginUser.compileSuccess = false;
+                CurrentLoginUser.uploadSuccess = false;
+                CurrentLoginUser.playSuccess = false;
             }
             Response.Redirect("~/Environment");
         }
