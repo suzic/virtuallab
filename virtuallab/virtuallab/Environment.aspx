@@ -342,11 +342,11 @@
             var elem = document.querySelector(tabId);
             this.tabTitle = elem.querySelectorAll(this.titles);
             this.tabPanel = $(".one_tab");
-            for (var i = 0; i < this.tabPanel.length; i++) {
-                if (i == active) {
-                    this.tabPanel[i].classList.remove("deactive");
-                    this.tabPanel[i].classList.add("active");
-                }
+            if (active != 0) {
+                this.tabPanel[0].classList.remove("active");
+                this.tabPanel[0].classList.add("deactive");
+                this.tabPanel[active].classList.remove("deactive");
+                this.tabPanel[active].classList.add("active");
             }
             this.active(active);
             this.event();
@@ -400,7 +400,7 @@
             <div class="col-md-2">板卡效果</div>
         </div>
         <div class="tab_panel">
-            <div class="one_tab col-md-12 deactive">
+            <div class="one_tab col-md-12 active">
                 <div class="row" style="background-color:#ebebeb; position: relative; padding-top: 10px; padding-bottom: 10px;">
                     <div class="col-md-2">
                         <asp:Button ID="btnReload" runat="server" OnClick="ReloadCode" Text="重新加载模板代码" CssClass="btn btn-default form-control" />
