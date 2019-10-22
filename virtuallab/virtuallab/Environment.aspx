@@ -3,19 +3,22 @@
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <script type="text/javascript">
 
-        var cm_editor;
-        var cm_outer;
-        var cm_console;
-        var inCompiling = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InCompiling) %>";
-        var inUploading = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InUploading) %>";
-        var inRunning = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InPlaying) %>";
         var session_id = "<%=CurrentLoginUser.currentSessionId %>";
         var compile_id = "<%=CurrentLoginUser.currentCompileId %>";
         var upload_id = "<%=CurrentLoginUser.currentUploadId %>";
         var run_id = "<%=CurrentLoginUser.currentRunId %>";
+
+        var cm_editor;
+        var cm_outer;
+        var cm_console;
         var current_code = <%=currentCode %>;
         var scroll_pos = <%=currentPosTop %>;
         var default_tab = <%=defaultTab %>;
+
+        var inCompiling = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InCompiling) %>";
+        var inUploading = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InUploading) %>";
+        var inRunning = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InPlaying) %>";
+
         // var output_string = <%=compileResultArray.ToString() %>;
         var layer_mask;
         var playOK = 0;
@@ -340,10 +343,10 @@
             this.tabTitle = elem.querySelectorAll(this.titles);
             this.tabPanel = $(".one_tab");
             for (var i = 0; i < this.tabPanel.length; i++) {
-                if (i == active)
+                if (i == active) {
+                    this.tabPanel[i].classList.remove("deactive");
                     this.tabPanel[i].classList.add("active");
-                else
-                    this.tabPanel[i].classList.add("deactive");
+                }
             }
             this.active(active);
             this.event();
@@ -356,18 +359,24 @@
             this.tabTitle[index].classList.add("active");
             this.tabPanel[index].classList.remove("deactive");
             this.tabPanel[index].classList.add("active");
+            if (index == 2)
+                document.getElementById("playCtrl").style.display = "block";
+            else
+                document.getElementById("playCtrl").style.display = "none";
+
             if (typeof this.current === "number") {
                 this.tabTitle[this.current].classList.remove("active");
                 this.tabPanel[this.current].classList.remove("active");
                 this.tabPanel[this.current].classList.add("deactive");
-                //if (playOK == 1 && index == 2)
-                {
+                if (/*playOK == 1 && */index == 2) {
+                    document.getElementById("playCtrl").style.display = "block";
                     tickCount = 0;
                     clearInterval(timerId);
                     timerId = setInterval("tickRunning()", 1000);
-                } 
-                //else
-                //    showDigit("10000000", "01000000", "00001000", "00100000", "00000000");
+                }
+                else {
+                    showDigit("00000000", "00000000", "00000000", "00000000", "00000000");
+                }
             }
             this.current = index;
         };
@@ -391,7 +400,7 @@
             <div class="col-md-2">板卡效果</div>
         </div>
         <div class="tab_panel">
-            <div class="one_tab col-md-12">
+            <div class="one_tab col-md-12 deactive">
                 <div class="row" style="background-color:#ebebeb; position: relative; padding-top: 10px; padding-bottom: 10px;">
                     <div class="col-md-2">
                         <asp:Button ID="btnReload" runat="server" OnClick="ReloadCode" Text="重新加载模板代码" CssClass="btn btn-default form-control" />
@@ -421,7 +430,7 @@
                     </div>
                 </div>
             </div>
-            <div class="one_tab">
+            <div class="one_tab deactive">
                 <div class="col-md-12"; style="overflow-y: scroll; position: relative; height: 852px; background-color: #ebebeb;">
                     <h4>实验步骤1 内容简介</h4>
                     阅读实验原理，了解zlg7290的读写流程和I2C总线的使用方法<br />
@@ -471,11 +480,11 @@
                     数码管驱动zlg7290.c实现了设备文件操作控制，用户态可以调用zlg7290_hw_write()，zlg7290_hw_read()和zlg_led_ioctl()函数来对数码管进行读写操作，阅读ZLG7290数码管驱动的代码程序清单1.1，了解其实现的具体方法。
                 </div>
             </div>
-            <div class="one_tab">
+            <div class="one_tab deactive">
                 <div id="stage" class="col-md-12" style="position: relative; min-width: 780px; height: 852px; background-color: #ebebeb;">
                     <img style='position: absolute; left: 0px; top: 0px; width: 1200px; height: 850px;' src='Content/zlg7290.png' />
                 </div>
-                <div class="col-md-offset-1 col-md-10" style="position: absolute; top: 46px; padding-top: 10px; padding-bottom: 10px; background-color: #ffffff; filter: alpha(opacity=80); -moz-opacity: 0.5; opacity: 0.8;">
+                <div id="playCtrl" class="col-md-offset-1 col-md-10" style="display:none;position: absolute; top: 46px; padding-top: 10px; padding-bottom: 10px; background-color: #ffffff; filter: alpha(opacity=80); -moz-opacity: 0.5; opacity: 0.8;">
                     <div class="col-md-2">
                         <input id="btnRun" type="submit" value="运行程序" onclick="runPlay();" class="btn btn-default form-control" />
                     </div>
@@ -489,7 +498,6 @@
             </div>
         </div>
     </div>
-
     <div class="mask" id="mask" style="display:none;">
         <div style="position:absolute; top:320px;left:480px;width:280px;height:50px"><h1>Waiting...</h1></div>
     </div>
