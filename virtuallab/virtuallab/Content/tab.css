@@ -48,9 +48,9 @@
     width: 100%;
     height: 100%;
     background-color: #ccc;
-    filter: alpha(opacity=50);
-    -moz-opacity: 0.5;
-    opacity: 0.5;
+    filter: alpha(opacity=90);
+    -moz-opacity: 0.9;
+    opacity: 0.9;
     position: absolute;
     left: 0px;
     top: 0px;

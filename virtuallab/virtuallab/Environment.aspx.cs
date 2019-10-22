@@ -53,8 +53,17 @@ namespace virtuallab
         public string URIRunResultTick = "RunResultTick";
 
         public bool EnableService = true;
-        public List<string> compileResultArray = new List<string>();
-        public List<string> runResultArray = new List<string>();
+        public StringBuilder outputString = new StringBuilder();
+        public StringBuilder animateString = new StringBuilder();
+        public string runResultFormatted
+        {
+            get { return JsonConvert.SerializeObject(animateString.ToString()); }
+        }
+
+        public string outputFormatted
+        {
+            get { return JsonConvert.SerializeObject(outputString.ToString()); }
+        }
 
         /// <summary>
         /// 初始化页面
@@ -340,7 +349,7 @@ namespace virtuallab
             }
             else
             {
-                compileResultArray.Add("ERROR：当前状态不允许进行编译。\n");
+                outputString.AppendLine("ERROR：当前状态不允许进行编译。");
             }
         }
 
@@ -353,10 +362,12 @@ namespace virtuallab
                 {
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
                     CurrentLoginUser.compileSuccess = true;
-                    compileResultArray.Add("\nIn compiling...\n");
+                    outputString.AppendLine("");
+                    outputString.AppendLine("In compiling...");
                     for (int i = 1; i <= 10; i++)
-                        compileResultArray.Add("Progress " + i.ToString() + "0 % ......\n");
-                    compileResultArray.Add("Completed.\n");
+                        outputString.AppendLine("Progress " + i.ToString() + "0 % ......");
+                    outputString.AppendLine("Completed.");
+                    outputString.AppendLine("");
                     return;
                 }
 
@@ -399,7 +410,7 @@ namespace virtuallab
             }
             else
             {
-                compileResultArray.Add("ERROR：没有正在进行的编译.\n");
+                outputString.AppendLine("ERROR：没有正在进行的编译。");
             }
         }
 
@@ -442,7 +453,7 @@ namespace virtuallab
             }
             else
             {
-                compileResultArray.Add("ERROR：当前无法上传程序。\n");
+                outputString.AppendLine("ERROR：你还没有编译完成，当前无法上传程序。");
             }
         }
 
@@ -455,10 +466,12 @@ namespace virtuallab
                 {
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
                     CurrentLoginUser.uploadSuccess = true;
-                    compileResultArray.Add("\n开始将程序上传到板卡...\n");
+                    outputString.AppendLine("");
+                    outputString.AppendLine("开始将程序上传到板卡...");
                     for (int i = 1; i <= 10; i++)
-                        compileResultArray.Add("上传完成了 " + i.ToString() + "0%......\n");
-                    compileResultArray.Add("已完成，请切换到板卡页面可以运行了.\n");
+                        outputString.AppendLine("上传完成了 " + i.ToString() + "0%......");
+                    outputString.AppendLine("已完成，请切换到板卡页面可以运行了.");
+                    outputString.AppendLine("");
                     return;
                 }
 
@@ -502,7 +515,7 @@ namespace virtuallab
             }
             else
             {
-                compileResultArray.Add("ERROR：没有正在进行的上传。\n");
+                outputString.AppendLine("ERROR：没有正在进行的上传。");
             }
         }
 
@@ -545,7 +558,7 @@ namespace virtuallab
             }
             else
             {
-                compileResultArray.Add("ERROR：当前无法上传程序到板卡。\n");
+                outputString.AppendLine("ERROR：你还没有上传程序到板卡，当前无法运行。");
             }
         }
 
@@ -557,10 +570,14 @@ namespace virtuallab
                 {
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
                     CurrentLoginUser.playSuccess = true;
-                    compileResultArray.Add("\n程序执行输出结果...\n");
+
+                    outputString.AppendLine("");
+                    outputString.AppendLine("程序执行输出结果...");
                     for (int i = 1; i <= 10; i++)
-                        compileResultArray.Add("输出了 " + i.ToString() + "0%......\n");
-                    compileResultArray.Add("全部输出已完成.\n");
+                        outputString.AppendLine("输出了 " + i.ToString() + "0%......");
+                    outputString.AppendLine("全部输出已完成.");
+                    outputString.AppendLine("");
+                    SetupDemoData();
                     return;
                 }
 
@@ -604,7 +621,68 @@ namespace virtuallab
             }
             else
             {
-                compileResultArray.Add("ERROR：没有正在运行的程序.\n");
+                outputString.AppendLine("ERROR：没有正在运行的程序.");
+            }
+        }
+
+        private void SetupDemoData()
+        {
+            string oneStr;
+            string line;
+            for (int index = 0; index < 40; index++)
+            {
+                switch (index % 8)
+                {
+                    case 0:
+                        oneStr = "10000000";
+                        break;
+                    case 1:
+                        oneStr = "11000000";
+                        break;
+                    case 2:
+                        oneStr = "11100000";
+                        break;
+                    case 3:
+                        oneStr = "11110000";
+                        break;
+                    case 4:
+                        oneStr = "11111000";
+                        break;
+                    case 5:
+                        oneStr = "11111100";
+                        break;
+                    case 6:
+                        oneStr = "11111110";
+                        break;
+                    case 7:
+                        oneStr = "11111111";
+                        break;
+                    default:
+                        oneStr = "00000000";
+                        break;
+                }
+                switch (index / 8)
+                {
+                    case 0:
+                        line = oneStr + "-00000000" + "-00000000" + "-00000000" + "-00000000";
+                        break;
+                    case 1:
+                        line = "00000000-" + oneStr + "-00000000" + "-00000000" + "-00000000";
+                        break;
+                    case 2:
+                        line = "00000000-" + "00000000-" + oneStr + "-00000000" + "-00000000";
+                        break;
+                    case 3:
+                        line = "00000000-" + "00000000-" + "00000000-" + oneStr + "-00000000";
+                        break;
+                    case 4:
+                        line = "00000000-" + "00000000-" + "00000000-" + "00000000-" + oneStr;
+                        break;
+                    default:
+                        line = "00000000-" + "00000000-" + "00000000-" + "00000000-" + "00000000";
+                        break;
+                }
+                animateString.AppendLine(line);
             }
         }
 

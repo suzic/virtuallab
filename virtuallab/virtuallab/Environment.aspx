@@ -14,16 +14,21 @@
         var current_code = <%=currentCode %>;
         var scroll_pos = <%=currentPosTop %>;
         var default_tab = <%=defaultTab %>;
+        var output_string = <%=outputFormatted %>;
+        var animate_string = <%=runResultFormatted %>;
 
         var inCompiling = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InCompiling) %>";
         var inUploading = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InUploading) %>";
         var inRunning = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InPlaying) %>";
 
-        // var output_string = <%=compileResultArray.ToString() %>;
         var layer_mask;
-        var playOK = 0;
+        var timerImageId;
         var timerId;
-        var tickCount;
+        var timerTextId;
+        var tickImageCount;
+        var tickTextCount;
+        var tickStringArray;
+        var tickImageArray;
 
         $(document).ready(function () {
             initCodeEditor();
@@ -61,54 +66,80 @@
             cm_editor.scrollTo(0, scroll_pos);
         }
 
+        function startAnimation() {
+            if (output_string != null && output_string.length > 0) {
+                tickStringArray = output_string.split("\n");
+                tickTextCount = 0;
+                clearInterval(timerTextId);
+                if (default_tab == 2) {
+                    timerTextId = setInterval("consoleTick()", 100);
+                }
+                else
+                    timerTextId = setInterval("outerTick()", 100);
+            }
+            if (animate_string != null && animate_string.length > 0) {
+                if (default_tab == 2) {
+                    tickImageArray = animate_string.split("\n");
+                    tickImageCount = 0;
+                    clearTimeout(timerImageId);
+                    timerImageId = setTimeout("tickRunning()", 2000);
+                }
+            }
+        }
+
         function showWaitingLayers() {
             layer_mask = document.getElementById('mask');
+            tickCount = 0;
+            clearTimeout(timerId);
+
             if (inCompiling == "True") {
-                layer_mask.style.display = "block";
-                layer_mask.innerHTML = '<div style="position:absolute; top:320px;left:260px;width:600px;height:50px"><h1>正在等待远程主机编译结果返回...</h1></div>';
-                playOK = 0;
-                tickCount = 0;
-                clearInterval(timerId);
+                layer_mask.innerHTML = "正在等待远程主机编译结果返回......";
                 timerId = setTimeout(function () {
                     layer_mask.style.display = "none";
                     compileTick();
                 }, 5000);
                 layer_mask.onclick = function () {
+                    clearTimeout(timerId);
                     layer_mask.style.display = "none";
                     compileTick();
                 }
             }
             else if (inUploading == "True") {
-                layer_mask.style.display = "block";
-                layer_mask.innerHTML = '<div style="position:absolute; top:320px;left:260px;width:600px;height:50px"><h1>正在等待远程主机上传结果返回...</h1></div>';
-                playOK = 0;
-                tickCount = 0;
-                clearInterval(timerId);
+                layer_mask.innerHTML = "正在等待远程主机上传结果返回......";
                 timerId = setTimeout(function () {
                     layer_mask.style.display = "none";
                     uploadTick();
                 }, 5000);
                 layer_mask.onclick = function () {
+                    clearTimeout(timerId);
                     layer_mask.style.display = "none";
                     uploadTick();
                 }
             }
             else if (inRunning == "True") {
-                layer_mask.style.display = "block";
-                layer_mask.innerHTML = '<div style="position:absolute; top:320px;left:260px;width:600px;height:50px"><h1>正在等待远程主机运行效果返回...</h1></div>';
-                playOK = 0;
-                tickCount = 0;
-                clearInterval(timerId);
+                layer_mask.innerHTML = "正在等待远程主机运行效果返回......";
                 timerId = setTimeout(function () {
                     layer_mask.style.display = "none";
                     runTick();
                 }, 5000);
                 layer_mask.onclick = function () {
+                    clearTimeout(timerId);
                     layer_mask.style.display = "none";
                     runTick();
                 }
             }
-
+            else {
+                layer_mask.innerHTML = "已接收数据，加载中......";
+                timerId = setTimeout(function () {
+                    layer_mask.style.display = "none";
+                    startAnimation();
+                }, 2000);
+                layer_mask.onclick = function () {
+                    clearTimeout(timerId);
+                    layer_mask.style.display = "none";
+                    startAnimation();
+                }
+            }
         }
 
         // 上传代码编译接口调用
@@ -154,103 +185,47 @@
         }
 
         ///=========================== Timer related =================================
-        function tickCompiling() {
-            //if (tickCount >= output_string.count) {
-            //    clearInterval(timerId);
-            //}
-            //var line = output_string[tickCount];
-            //setDebugOutput(line);
-            if (tickCount == 0)
-                setDebugOutput("\nIn compiling...\n");
-            else if (tickCount > 10) {
-                setDebugOutput("Completed.\n");
-                clearInterval(timerId);
+        function outerTick() {
+            if (tickTextCount >= tickStringArray.length) {
+                clearInterval(timerTextId);
+                tickTextCount = 0;
+                return;
             }
-            else {
-                setDebugOutput("Progress " + tickCount.toString() + "0%......\n");
-            }
-            tickCount++;
+            var line = tickStringArray[tickTextCount];
+            setOutputAppend(cm_outer, line);
+            tickTextCount++;
         }
 
-        function tickUploading() {
-            //if (tickCount >= output_string.count) {
-            //    clearInterval(timerId);
-            //}
-            //var line = output_string[tickCount];
-            //setDebugOutput(line);
-            if (tickCount == 0)
-                setDebugOutput("\n开始将程序上传到板卡...\n");
-            else if (tickCount > 10) {
-                playOK = 1;
-                setDebugOutput("已完成，请切换到板卡效果查看.\n");
-                clearInterval(timerId);
+        function consoleTick() {
+            if (tickTextCount >= tickStringArray.length) {
+                clearInterval(timerTextId);
+                tickTextCount = 0;
+                return;
             }
-            else {
-                setDebugOutput("上传完成了 " + tickCount.toString() + "0%......\n");
-            }
-            tickCount++;
+            var line = tickStringArray[tickTextCount];
+            setOutputAppend(cm_console, line);
+            tickTextCount++;
         }
 
         function tickRunning() {
-            if (tickCount >= 40) {
-                clearInterval(timerId);
+            if (tickImageCount >= tickImageArray.length) {
+                clearTimeout(timerImageId);
+                tickImageCount = 0;
                 return;
             }
-            var index = tickCount % 8;
-            var pos = parseInt(tickCount / 8);
-            var oneStr = "00000000";
-            switch (index) {
-                case 0:
-                    oneStr = "10000000";
-                    break;
-                case 1:
-                    oneStr = "11000000";
-                    break;
-                case 2:
-                    oneStr = "11100000";
-                    break;
-                case 3:
-                    oneStr = "11110000";
-                    break;
-                case 4:
-                    oneStr = "11111000";
-                    break;
-                case 5:
-                    oneStr = "11111100";
-                    break;
-                case 6:
-                    oneStr = "11111110";
-                    break;
-                case 7:
-                    oneStr = "11111111";
-                    break;
-            }
-            switch (pos) {
-                case 0:
-                    showDigit(oneStr, "00000000", "00000000", "00000000", "00000000");
-                    break;
-                case 1:
-                    showDigit("11111111", oneStr, "00000000", "00000000", "00000000");
-                    break;
-                case 2:
-                    showDigit("11111111", "11111111", oneStr, "00000000", "00000000");
-                    break;
-                case 3:
-                    showDigit("11111111", "11111111", "11111111", oneStr, "00000000");
-                    break;
-                case 4:
-                    showDigit("11111111", "11111111", "11111111", "11111111", oneStr);
-                    break;
-            }
-            tickCount++;
+            var line = tickImageArray[tickImageCount];
+            var one = line.split("-");
+            showDigit(one[0], one[1], one[2], one[3], one[4]);
+            tickImageCount++;
+            timerImageId = setTimeout("tickRunning()", 1000);
         }
 
-        function setDebugOutput(data) {
-            var oldData = cm_outer.getValue();
+        function setOutputAppend(target, data) {
+            var oldData = target.getValue();
             data = oldData + data;
-            cm_outer.setValue(data);
-            var cur = cm_outer.getCursor();
-            cm_outer.setCursor(cm_outer.lastLine(), cur.ch);
+            target.setValue(data);
+            var cur = target.getCursor();
+            target.setCursor(target.lastLine(), cur.ch);
         }
 
         ///============================ show images ==================================
@@ -368,13 +343,8 @@
                 this.tabTitle[this.current].classList.remove("active");
                 this.tabPanel[this.current].classList.remove("active");
                 this.tabPanel[this.current].classList.add("deactive");
-                if (/*playOK == 1 && */index == 2) {
+                if (index == 2) {
                     document.getElementById("playCtrl").style.display = "block";
-                    tickCount = 0;
-                    clearInterval(timerId);
-                    timerId = setInterval("tickRunning()", 1000);
-                }
-                else {
                     showDigit("00000000", "00000000", "00000000", "00000000", "00000000");
                 }
             }
@@ -498,7 +468,7 @@
             </div>
         </div>
     </div>
-    <div class="mask" id="mask" style="display:none;">
-        <div style="position:absolute; top:320px;left:480px;width:280px;height:50px"><h1>Waiting...</h1></div>
+    <div class="mask" id="mask" style="display:block;text-align:center;line-height:800px;min-height:800px;font-size:2em;">
+        Waiting...
     </div>
 </asp:Content>
