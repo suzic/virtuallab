@@ -45,12 +45,13 @@ namespace virtuallab
         public int currentPosTop;
         public int defaultTab;
 
-        public string BaseURL = "http://192.168.200.119:8088/address/";
-        public string URIEnvironmentRequest = "environmentRequest";
-        public string URICodeSubmit = "codeSubmit";
-        public string URIProgramUpload = "ProgramUpload";
-        public string URICompileResultTick = "CompileResultTick";
-        public string URIRunResultTick = "RunResultTick";
+        public string BaseURL;
+        public string URIEnvironmentRequest;
+        public string URICodeSubmit;
+        public string URICompileResultTick;
+        public string URIProgramUpload;
+        public string URIRun;
+        public string URIRunResultTick;
 
         public bool EnableService = true;
         public StringBuilder outputString = new StringBuilder();
@@ -190,8 +191,9 @@ namespace virtuallab
             BaseURL = System.Configuration.ConfigurationManager.AppSettings["BaseURL"];
             URIEnvironmentRequest = System.Configuration.ConfigurationManager.AppSettings["URIEnvironmentRequest"];
             URICodeSubmit = System.Configuration.ConfigurationManager.AppSettings["URICodeSubmit"];
-            URIProgramUpload = System.Configuration.ConfigurationManager.AppSettings["URIProgramUpload"];
             URICompileResultTick = System.Configuration.ConfigurationManager.AppSettings["URICompileResultTick"];
+            URIProgramUpload = System.Configuration.ConfigurationManager.AppSettings["URIProgramUpload"];
+            URIRun = System.Configuration.ConfigurationManager.AppSettings["URIRun"];
             URIRunResultTick = System.Configuration.ConfigurationManager.AppSettings["URIRunResultTick"];
             EnableService = System.Configuration.ConfigurationManager.AppSettings["EnableService"].Equals("1");
         }
@@ -461,7 +463,8 @@ namespace virtuallab
         {
             if (CurrentLoginUser.currentState == EnvironmentState.InUploading)
             {
-                if (!EnableService)
+                // NOTE: 现在暂时没有upload tick过程，因此无论是否EnableSevice均走模拟数据
+                //if (!EnableService)
                 {
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
                     CurrentLoginUser.uploadSuccess = true;
@@ -541,7 +544,7 @@ namespace virtuallab
                     });
 
                     // response
-                    var response = httpClient.PostAsync(URIProgramUpload, body).Result;
+                    var response = httpClient.PostAsync(URIRun, body).Result;
                     var data = response.Content.ReadAsStringAsync().Result;
                     var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
                     var result = (JObject)formatData["data"];

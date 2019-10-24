@@ -5,7 +5,7 @@
     <hr />
     <div class="row">
         <div class="col-md-12">
-        <asp:GridView ID="gvStudents" runat="server" AllowPaging="True" AllowSorting="True" AutoGenerateColumns="False" CssClass="table col-md-12" DataSourceID="sdsStudentList" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="4" ForeColor="Black" GridLines="Horizontal" ShowFooter="True" PageSize="20">
+        <asp:GridView ID="gvStudents" runat="server" AllowPaging="True" AllowSorting="True" AutoGenerateColumns="False" CssClass="table col-md-12" DataSourceID="sdsStudentList" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="4" ForeColor="Black" GridLines="Horizontal" ShowFooter="True" PageSize="12">
             <Columns>
                 <asp:TemplateField HeaderText="ID" InsertVisible="False" SortExpression="id_student" Visible="False">
                     <ItemTemplate>

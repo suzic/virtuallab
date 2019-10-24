@@ -1,3 +1,143 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <time.h>
+#include <string.h>
+
+#define WRITE_DPRAM _IO('Z', 0)
+#define zlglog_path  "./zlg.txt"
+#define ledlog_path  "./led.txt"
+//数码管计数，写入日志
+//加入流水灯，写入日志
+unsigned char hex_map[16] = {
+	0xfc, 0x0c, 0xda, 0xf2, 0x66, 0xb6, 0xbe, 0xe0, 
+	0xfe, 0xf6, 0xee, 0x3e, 0x9c, 0x7a, 0x9e, 0x8e
+};
+
+unsigned char bit_map[8] = {
+	0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01
+};
+
+int  number_tester(int num)
+{
+	if(num<0)return 0;
+	if(num>15)return 0;
+	return num;
+}
+int write_zlg7290_log(unsigned char *buf)
+{
+	int fd;
+	fd=open(zlglog_path,O_RDWR|O_CREAT);
+	if(fd==-1)
+	{
+		printf("file open error!");return -1;
+	}
+	write(fd,buf,4);
+	close(fd);
+	return 0;
+}
+
+unsigned char led[8]={0};
+int write_ledlog(void)  //lednum:0 to 7;value:0 or 1
+{
+	int i,fd;
+	unsigned char buffer[8];
+	fd=open(ledlog_path,O_RDWR|O_CREAT);
+	if(fd==-1)
+	{
+		printf("file open error!");return -1;
+	}
+	write(fd,led,8);
+	//printf("Led%d write log value=%d\n",lednum,value);
+	close(fd);
+	return 0;
+}
+void set_led(int lednum,unsigned char value)
+{
+	//if(lednum<0||lednum>7){printf("Led number error,please check!");return;}
+	if(lednum>=0&&lednum<=7)led[lednum]=value;
+	if(write_ledlog()<0)printf("Led write log error!");
+	//printf("Led%d set value=%d\n",lednum,value);
+}
+
+void zlg7290_show(int num1,int num2,int num3,int num4)
+{
+	unsigned char buf[4] = {0};
+	int fd = open("/dev/zlg7290_led", O_RDWR);
+	if (fd < 0) {
+		perror("open");
+		exit(1);
+	}
+	buf[0]=hex_map[number_tester(num1)];
+	buf[1]=hex_map[number_tester(num2)];
+	buf[2]=hex_map[number_tester(num3)];
+	buf[3]=hex_map[number_tester(num4)];
+	ioctl(fd,WRITE_DPRAM,buf);
+	if(write_zlg7290_log(buf)<0)printf("Zlg7290 write log error!");
+	close(fd);
+	
+}
+
+void show_number(int num)
+{
+	int i,n;
+	int number[4];
+	n=num;
+	if(num<0){printf("Error:number<0");return;}
+	for(i=0;i<4;i++)
+	{
+		number[3-i]=n%10;
+		n=(n-n%10)/10;
+	}
+	zlg7290_show(number[0],number[1],number[2],number[3]);
+	
+}
+
+void zlg7290_shutdown()
+{
+	char buf[8] = {0};
+	int fd = open("/dev/zlg7290_led", O_RDWR);
+	if (fd < 0) {
+		perror("open");
+		exit(1);
+	}
+	memset(buf, 0, 8);
+	ioctl(fd, WRITE_DPRAM, buf);
+	close(fd);
+	if(write_zlg7290_log(buf)<0)printf("Zlg7290 write log error!");
+}
+int main(int argc, const char *argv[])
+{
+	int i,led_index=0;
+	int n;
+	for(i=0;i<60;i++)
+	{
+		show_number(i);
+		set_led(led_index,1);
+		led_index++;
+		if(led_index==8)
+		{
+			for(n=0;n<8;n++)set_led(n,0);
+			led_index=0;
+		}
+		sleep(1);
+	}
+	zlg7290_shutdown();
+	return 0;
+}
+
+//====================//
+
+/*
+ * MYZR Technology Co.,Ltd
+ * http://www.myzr.com.cn
+ * Tang Bin <tangb@myzr.com.cn>
+ */
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/i2c.h>
@@ -10,6 +150,7 @@
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/platform_device.h>
+
 #include <linux/module.h>
 #include <linux/cdev.h>
 #include <linux/fs.h>
@@ -18,10 +159,12 @@
 
 #define ZLG7290_NAME		"zlg7290"
 #define ZLG7290_LED_NAME	"zlg7290_led"
+
 #define REG_SYSTEM		0x00
 #define REG_KEY_VAL		0x01
 #define REG_REPEAT_CNT	0x02
 #define REG_FUNC_KEY	0x03
+
 #define REG_CMD_BUF0	0x07
 #define REG_CMD_BUF1	0x08
 #define REG_FLASH_ONOFF	0x0C
@@ -34,25 +177,25 @@
 #define REG_DP_RAM5		0x15
 #define REG_DP_RAM6		0x16
 #define REG_DP_RAM7		0x17
+
 #define ZLG7290_LED_MAJOR	800
 #define ZLG7290_LED_MINOR	0
 #define ZLG7290_LED_DEVICES	1
+
 #define WRITE_DPRAM _IO('Z', 0)
-/*****************************************************************
-*定义数码管的机构体，封装了I2C client和字符设备描述cdev
-******************************************************************/
+
 struct zlg7290
 {
-	struct i2c_client *client;
-	
-	struct input_dev *input;
+	struct i2c_client* client;
+
+	struct input_dev* input;
 	struct delayed_work work;
 	unsigned long delay;
-	
+
 	struct cdev cdev;
 };
 
-struct zlg7290 *ptr_zlg7290;
+struct zlg7290* ptr_zlg7290;
 
 unsigned int key_value[65] = {
 	0,
@@ -64,22 +207,19 @@ unsigned int key_value[65] = {
 	41, 42, 43, 44, 45, 46, 47, 48,
 	49, 50, 51, 52, 53, 54, 55, 56,
 	57, 58, 59, 60, 61, 62, 63, 64,
-}; 
-/******************************************************************************************/
-函数名称：zlg7290_hw_write
-函数功能：将buf中的数据写入到指定的数码管中
-/******************************************************************************************/
-static int zlg7290_hw_write(struct zlg7290 *zlg7290,  int len, size_t *retlen, char *buf)
+};
+
+static int zlg7290_hw_write(struct zlg7290* zlg7290, int len, size_t* retlen, char* buf)
 {
-	struct i2c_client *client = zlg7290->client;
+	struct i2c_client* client = zlg7290->client;
 	int ret;
 
 	struct i2c_msg msg[] = {
 		{ client->addr, 0, len, buf},
 	};
 
-	ret =i2c_transfer(client->adapter, msg, 1);
-	if (ret < 0) 
+	ret = i2c_transfer(client->adapter, msg, 1);
+	if (ret < 0)
 	{
 		dev_err(&client->dev, "i2c write error!\n");
 		return -EIO;
@@ -88,21 +228,19 @@ static int zlg7290_hw_write(struct zlg7290 *zlg7290,  int len, size_t *retlen, c
 	*retlen = len;
 	return 0;
 }
-/******************************************************************************************/
-函数名称：zlg7290_hw_read
-函数功能：将当前数码管的值读到buf中
-/******************************************************************************************/
-static int zlg7290_hw_read(struct zlg7290 *zlg7290, int len, size_t *retlen, char *buf)
-{
-	struct i2c_client *client = zlg7290->client;
-	int ret;
-//仿照zlg7290_hw_write()函数，将zlg7290_hw_read()函数补充完整。
-	struct i2c_msg msg[] =                  
-                           				
-                                            ;
 
-	ret =                                        ;
-	if (ret < 0) 
+static int zlg7290_hw_read(struct zlg7290* zlg7290, int len, size_t* retlen, char* buf)
+{
+	struct i2c_client* client = zlg7290->client;
+	int ret;
+
+	struct i2c_msg msg[] = {
+		{ client->addr, 0, len, buf},
+		{ client->addr, I2C_M_RD, len, buf },
+	};
+
+	ret = i2c_transfer(client->adapter, msg, 2);
+	if (ret < 0)
 	{
 		dev_err(&client->dev, "i2c read error!\n");
 		return -EIO;
@@ -111,26 +249,26 @@ static int zlg7290_hw_read(struct zlg7290 *zlg7290, int len, size_t *retlen, cha
 	*retlen = len;
 	return 0;
 }
-//数码管led 打开函数
-static int zlg7290_led_open(struct inode *inode, struct file *file)
-{
-	return 0;
-}
-//数码管led 释放函数
-static int zlg7290_led_release(struct inode *inode, struct file *file)
+
+static int zlg7290_led_open(struct inode* inode, struct file* file)
 {
 	return 0;
 }
 
-static void zlg7290_kpad_work(struct work_struct *work) 
+static int zlg7290_led_release(struct inode* inode, struct file* file)
 {
-	struct zlg7290 *zlg7290 = container_of(work, struct zlg7290, work.work);
+	return 0;
+}
+
+static void zlg7290_kpad_work(struct work_struct* work)
+{
+	struct zlg7290* zlg7290 = container_of(work, struct zlg7290, work.work);
 	unsigned char val = 0;
 	size_t len;
 
 	val = REG_SYSTEM;
 	zlg7290_hw_read(zlg7290, 1, &len, &val);
-	if(val & 0x1) {
+	if (val & 0x1) {
 		val = REG_KEY_VAL;
 		zlg7290_hw_read(zlg7290, 1, &len, &val);
 
@@ -143,77 +281,66 @@ static void zlg7290_kpad_work(struct work_struct *work)
 
 		if (val > 56) {
 			switch (val) {
-				case 0xFE: val = 57; break;
-				case 0xFD: val = 58; break;
-				case 0xFB: val = 59; break;
-				case 0xF7: val = 60; break;
-				case 0xEF: val = 61; break;
-				case 0xDF: val = 62; break;
-				case 0xBF: val = 63; break;
-				case 0x7F: val = 64; break;
+			case 0xFE: val = 57; break;
+			case 0xFD: val = 58; break;
+			case 0xFB: val = 59; break;
+			case 0xF7: val = 60; break;
+			case 0xEF: val = 61; break;
+			case 0xDF: val = 62; break;
+			case 0xBF: val = 63; break;
+			case 0x7F: val = 64; break;
 			}
 		}
 
 		input_report_key(zlg7290->input, key_value[val], 1);
 		input_report_key(zlg7290->input, key_value[val], 0);
 		input_sync(zlg7290->input);
-	} 
+	}
 	return;
-	
+
 rework:
 	schedule_delayed_work(&zlg7290->work, zlg7290->delay);
 }
-/******************************************************************************************/
-函数名称：zlg7290_led_ioctl
-函数功能：用户态调用，将数据写入数码管
-函数输入：
-filp：设备指针
-cmd：对设备的控制命令，一般为WRITE_DPRAM
-arg：写入到数码管的数据，无符号整形
-用户态编程主要通过ioctl函数来对数码管进行操作。
-/******************************************************************************************/
-static long 
-zlg7290_led_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+
+static long
+zlg7290_led_ioctl(struct file* filp, unsigned int cmd, unsigned long arg)
 {
-	unsigned char data_buf[8] = {0};
-	unsigned char write_val[2] = {0};
+	unsigned char data_buf[8] = { 0 };
+	unsigned char write_val[2] = { 0 };
 	ssize_t len = 0;
 	int i = 0;
-	switch(cmd){
-		case WRITE_DPRAM:
-//将输入的字符拷贝至data_buf
-			if(copy_from_user(data_buf, (void *)arg, 8))
-				return -EFAULT;
-			//将8位数码管的每一位写入
-			for(i = 0; i < 8; i++)
-			{
-//对write_val进行赋值，第一个字符代表数码管的位数，第二个字符是该位数码管的值，数码管首位的地址为 REG_DP_RAM0
-				                         ;
-				                         ;
-//调用zlg7290_hw_write函数将val写入到数码管中
-				                          ;
-//休眠1ms
-					                ;
-			} 
-			break;
-		default:
-			dev_err(&ptr_zlg7290->client->dev, "unsupported command!\n");
-			break;
+
+	switch (cmd) {
+	case WRITE_DPRAM:
+		if (copy_from_user(data_buf, (void*)arg, 8))
+			return -EFAULT;
+
+		for (i = 0; i < 8; i++)
+		{
+			write_val[0] = REG_DP_RAM0 + i;
+			write_val[1] = data_buf[i];
+			zlg7290_hw_write(ptr_zlg7290, 2, &len, write_val);
+			msleep(1);
+		}
+		break;
+	default:
+		dev_err(&ptr_zlg7290->client->dev, "unsupported command!\n");
+		break;
 	}
+
 	return 0;
 }
+
 static struct file_operations zlg7290_led_fops = {
 	.owner = THIS_MODULE,
 	.open = zlg7290_led_open,
 	.release = zlg7290_led_release,
 	.unlocked_ioctl = zlg7290_led_ioctl,
 };
-/******************************************************************************************/
 
-/******************************************************************************************/
-static int register_zlg7290_led(struct zlg7290 *zlg7290) 
+static int register_zlg7290_led(struct zlg7290* zlg7290)
 {
-	struct cdev *zlg7290_cdev;
+	struct cdev* zlg7290_cdev;
 	int ret;
 	dev_t devid;
 
@@ -240,43 +367,43 @@ err_unreg_chrdev:
 	return ret;
 }
 
-static int unregister_zlg7290_led(struct zlg7290 *zlg7290) 
+static int unregister_zlg7290_led(struct zlg7290* zlg7290)
 {
 	cdev_del(&zlg7290->cdev);
-	
+
 	unregister_chrdev_region(MKDEV(ZLG7290_LED_MAJOR, ZLG7290_LED_MINOR), ZLG7290_LED_DEVICES);
-	
+
 	return 0;
 }
 
-irqreturn_t zlg7290_kpad_irq(int irq, void *handle)
+irqreturn_t zlg7290_kpad_irq(int irq, void* handle)
 {
-	struct zlg7290 *zlg7290 = handle;
-	
+	struct zlg7290* zlg7290 = handle;
+
 	schedule_delayed_work(&zlg7290->work, zlg7290->delay);
-	
+
 	return IRQ_HANDLED;
 }
 
-static int 
-zlg7290_probe(struct i2c_client *client, const struct i2c_device_id *id)
+static int
+zlg7290_probe(struct i2c_client* client, const struct i2c_device_id* id)
 {
-	struct input_dev *input_dev;
+	struct input_dev* input_dev;
 	int ret = 0;
-	
+
 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE)) {
 		dev_err(&client->dev, "%s adapter not supported\n",
 			dev_driver_string(&client->adapter->dev));
 		return -ENODEV;
 	}
-	
+
 	ptr_zlg7290 = kzalloc(sizeof(struct zlg7290), GFP_KERNEL);
 	input_dev = input_allocate_device();
 	if (!ptr_zlg7290 || !input_dev) {
 		ret = -ENOMEM;
 		goto err_free_mem;
 	}
-	
+
 	input_dev->name = client->name;
 	input_dev->phys = "zlg7290-keys/input0";
 	input_dev->dev.parent = &client->dev;
@@ -285,8 +412,8 @@ zlg7290_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	input_dev->id.product = 0x0001;
 	input_dev->id.version = 0x0001;
 	input_dev->evbit[0] = BIT_MASK(EV_KEY);
-	
-	for(ret = 1; ret <= 64; ret++) {
+
+	for (ret = 1; ret <= 64; ret++) {
 		input_dev->keybit[BIT_WORD(key_value[ret])] |= BIT_MASK(key_value[ret]);
 	}
 
@@ -299,15 +426,15 @@ zlg7290_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	ptr_zlg7290->client = client;
 	ptr_zlg7290->input = input_dev;
 	i2c_set_clientdata(client, ptr_zlg7290);
-	
-	ret = request_threaded_irq(client->irq, NULL, zlg7290_kpad_irq, 
-					IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
-					input_dev->name, ptr_zlg7290);
+
+	ret = request_threaded_irq(client->irq, NULL, zlg7290_kpad_irq,
+		IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+		input_dev->name, ptr_zlg7290);
 	if (ret) {
 		dev_err(&client->dev, "irq %d busy?\n", client->irq);
 		goto err_free_irq;
 	}
-	
+
 	INIT_DELAYED_WORK(&ptr_zlg7290->work, zlg7290_kpad_work);
 	ptr_zlg7290->delay = msecs_to_jiffies(30);
 	device_init_wakeup(&client->dev, 1);
@@ -330,18 +457,18 @@ err_free_mem:
 	return ret;
 }
 
-static int zlg7290_remove(struct i2c_client *client) 
+static int zlg7290_remove(struct i2c_client* client)
 {
-	struct zlg7290 *zlg7290 = i2c_get_clientdata(client);
-	
+	struct zlg7290* zlg7290 = i2c_get_clientdata(client);
+
 	unregister_zlg7290_led(zlg7290);
-	
+
 	free_irq(client->irq, NULL);
 	i2c_set_clientdata(client, NULL);
-	
+
 	input_unregister_device(zlg7290->input);
 	input_free_device(zlg7290->input);
-	
+
 	kfree(zlg7290);
 	return 0;
 }
@@ -354,26 +481,26 @@ MODULE_DEVICE_TABLE(i2c, zlg7290_id);
 
 #ifdef CONFIG_OF
 static const struct of_device_id zlg7290_dt_ids[] = {
-	{ .compatible = "myzr,zlg7290", },
+	{.compatible = "myzr,zlg7290", },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, zlg7290_dt_ids);
 #endif
 
-static struct i2c_driver zlg7290_driver= {
-	.driver	= {
-		.name	= ZLG7290_NAME,
-		.owner	= THIS_MODULE,
+static struct i2c_driver zlg7290_driver = {
+	.driver = {
+		.name = ZLG7290_NAME,
+		.owner = THIS_MODULE,
 		.of_match_table = of_match_ptr(zlg7290_dt_ids),
 	},
-	.probe		= zlg7290_probe,
-	.id_table	= zlg7290_id,
-	.remove		= zlg7290_remove,
+	.probe = zlg7290_probe,
+	.id_table = zlg7290_id,
+	.remove = zlg7290_remove,
 };
 
 module_i2c_driver(zlg7290_driver);
 
-MODULE_AUTHOR("buaa");
+MODULE_AUTHOR("Tang Bin <tangb@myzr.com.cn>");
 MODULE_DESCRIPTION("Keypad & Leds driver for ZLG7290");
 MODULE_LICENSE("GPL");
 

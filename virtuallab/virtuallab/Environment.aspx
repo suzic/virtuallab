@@ -146,7 +146,7 @@
         function submitCode() {
             var codeText = cm_editor.getValue();
             var position = cm_editor.getScrollInfo();
-            __doPostBack("SUBMIT_CODE", JSON.stringify({ "code": codeText, "pos": position, "tab":0 }));
+            __doPostBack("SUBMIT_CODE", JSON.stringify({ "code": codeText, "pos": position, "tab": 0 }));
         }
 
         // 上传程序接口调用
@@ -234,10 +234,6 @@
         }
 
         ///============================ show images ==================================
-        function getImgBg() {
-            return "<img style='position:absolute;left:0px;top:0px;width:1200px;height:850px;' src='Content/zlg7290.png'/>";
-        }
-
         function getImgNum(group, index, show) {
             var w = 25;
             var h = 34.5;
@@ -254,7 +250,7 @@
         }
 
         function getImgLight(index, show) {
-            var images;
+            var images = "";
             switch (index) {
                 case 0:
                     var images = "<img src='Content/digit_num/light.png' style = 'position:absolute;left:490px;top:721.5px;width:103px;height:50px;display:" + (show == "1" ? "block;" : "none;") + "' /> ";
@@ -285,7 +281,7 @@
         }
 
         function showDigit(code1, code2, code3, code4, code5) {
-            var contentHtml = getImgBg();
+            var contentHtml = "";
             for (var i = 0; i < 8; i++) {
                 var num = code1.substr(i, 1);
                 contentHtml += getImgNum(0, i, num);
@@ -380,50 +376,60 @@
                     <div class="col-md-2">
                         <asp:Button ID="btnReload" runat="server" OnClick="ReloadCode" Text="重新加载模板代码" CssClass="btn btn-default form-control" />
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <asp:Label ID="lbGeneral" class="btn" runat="server" Text=""></asp:Label>
                     </div>
                     <div class="col-md-2">
                         <input id="btnSubmit" type="submit" value="提交编译" onclick="submitCode();" class="btn btn-default form-control" />
                     </div>
-                    <div class="col-md-1">
+                    <%--<div class="col-md-1">
                         <input id="btnCompileTick" value="CT" onclick="compileTick();" class="btn btn-default form-control" />
-                    </div>
+                    </div>--%>
                     <div class="col-md-2">
                         <input id="btnUpload" type="submit" value="上传程序" onclick="uploadProgram();" class="btn btn-default form-control" />
                     </div>
-                    <div class="col-md-1">
+                    <%--<div class="col-md-1">
                         <input id="btnUploadTick" value="UT" onclick="uploadTick();" class="btn btn-default form-control" />
-                    </div>
+                    </div>--%>
                 </div>
                 <div class="row">
-                    <div class="col-md-8" style="height: 800px; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
+                    <div class="col-md-8" style="height:700px; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
                         <textarea id="code_text" class="form-control"></textarea>
                     </div>
-                    <div class="col-md-4" style="height: 800px; padding-left: 5px; padding-right: 0px">
+                    <div class="col-md-4" style="height:700px; padding-left: 5px; padding-right: 0px">
                         <textarea id="debug_text" class="form-control"></textarea>
                     </div>
                 </div>
             </div>
             <div class="one_tab deactive">
-                <div class="col-md-12"; style="overflow-y: scroll; position: relative; height: 852px; background-color: #ebebeb;">
+                <div class="col-md-12"; style="overflow-y: scroll; position: relative; height: 752px; background-color: #ebebeb;">
                     <h4>实验步骤1 内容简介</h4>
-                    阅读实验原理，了解zlg7290的读写流程和I2C总线的使用方法<br />
-                    根据实验步骤完成对zlg7290的读写程序设计和验证<br />
+                    阅读实验原理，了解zlg7290的读写流程和I2C总线的使用方法
+                    <br />
+                    根据实验步骤完成对zlg7290的读写程序设计和验证
+                    <br />
                     <br />
                     <h4>实验步骤2 实验目的</h4>
-                    了解zlg7290的控制流程</h4>掌握使用I2C总线读写zlg7290的静态驱动程序设计方法<br />
+                    了解zlg7290的控制流程
+                    <br />
+                    掌握使用I2C总线读写zlg7290的静态驱动程序设计方法
+                    <br />
                     <br />
                     <h4>实验环境</h4>
-                    硬件：装有Linux操作系统的开发板<br />
-                    软件：Ubuntu12.0，IDE，putty<br />
+                    硬件：装有Linux操作系统的开发板
+                    <br />
+                    软件：Ubuntu12.0，IDE，putty
+                    <br />
+                    经由北京航空航天大学计算机学院的自主开发所提供的WEB服务，学员现在可通过网上实验室提供的远程终端，只要可以打开浏览器，就可以完成这些需要特殊软硬件环境的开发实践了。
+                    <br />
                     <br />
                     <h4>实验原理</h4>
-                    【ZLG7290介绍】 ZLG7290 是广州周立功单片机发展有限公司自行设计的数码管显示驱动及键盘扫描管理芯片。能够直接驱动8位共阴极数码管（或64只独立的LED），同时还可以扫面管理多大64只按键。其中有8只按键可以作为功能键使用，就像电脑键盘上的Ctrl，Shift、Alt键一样。另外ZLG7290 内部还设有连击计数器，能够使某键按下后不松手而连续有效。该芯片为工业级芯片，抗干扰能力强，在工业测控中已有大量应用。该器件通过I2C总线接口进行操作，ZLG7290引脚图如图1。 
-                <br />
-                    <asp:Image ID="Image1" runat="server" ImageUrl="~/Content/board.png" />
+                    【ZLG7290介绍】 ZLG7290 是广州周立功单片机发展有限公司自行设计的数码管显示驱动及键盘扫描管理芯片。能够直接驱动8位共阴极数码管（或64只独立的LED），同时还可以扫面管理多大64只按键。其中有8只按键可以作为功能键使用，就像电脑键盘上的Ctrl，Shift、Alt键一样。另外ZLG7290 内部还设有连击计数器，能够使某键按下后不松手而连续有效。该芯片为工业级芯片，抗干扰能力强，在工业测控中已有大量应用。该器件通过I2C总线接口进行操作，ZLG7290引脚图如图1。
                     <br />
-                    <h4>表 11.4说明了ZLG7290各引脚的功能。</h4>
+                    <img src="/Content/board.png" style="width: 288px; height: 238px; margin: 10px;" />
+                    <br />
+                    <h4>下表说明了ZLG7290各引脚的功能</h4>
+                    <br />
                     <table style="width: 100%;" class="table">
                         <tr>
                             <td>引脚序号</td>
@@ -450,30 +456,131 @@
                             <td>DIG2/KC2</td>
                             <td>数码管位选信号2／键盘列信号2</td>
                         </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>DIG1/KC1</td>
+                            <td>数码管位选信号1／键盘列信号1</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>DIG0/KC0</td>
+                            <td>数码管位选信号0／键盘列信号0</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>SE/KR4</td>
+                            <td>数码管e 段／键盘行信号4</td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td>SF/KR5</td>
+                            <td>数码管f 段／键盘行信号5</td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td>SF/KR6</td>
+                            <td>数码管g 段／键盘行信号6</td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td>DP/KR7</td>
+                            <td>数码管dp 段／键盘行信号7</td>
+                        </tr>
+                        <tr>
+                            <td>11</td>
+                            <td>GND</td>
+                            <td>接地</td>
+                        </tr>
+                        <tr>
+                            <td>12</td>
+                            <td>DIG6/KC6</td>
+                            <td>数码管位选信号6／键盘列信号6</td>
+                        </tr>
+                        <tr>
+                            <td>13</td>
+                            <td>DIG7/KC7</td>
+                            <td>数码管位选信号7／键盘列信号7</td>
+                        </tr>
+                        <tr>
+                            <td>14</td>
+                            <td>INT</td>
+                            <td>键盘中断请求信号，低电平（下降沿）有效</td>
+                        </tr>
+                        <tr>
+                            <td>15</td>
+                            <td>RST</td>
+                            <td>复位信号，低电平有效</td>
+                        </tr>
+                        <tr>
+                            <td>16</td>
+                            <td>Vcc</td>
+                            <td>电源，＋3.3～5.5V</td>
+                        </tr>
+                        <tr>
+                            <td>17</td>
+                            <td>OSC1</td>
+                            <td>晶振输入信号</td>
+                        </tr>
+                        <tr>
+                            <td>18</td>
+                            <td>OSC2</td>
+                            <td>晶振输出信号</td>
+                        </tr>
+                        <tr>
+                            <td>19</td>
+                            <td>SCL</td>
+                            <td>I2C 总线时钟信号</td>
+                        </tr>
+                        <tr>
+                            <td>20</td>
+                            <td>SDA</td>
+                            <td>I2C 总线数据信号</td>
+                        </tr>
+                        <tr>
+                            <td>21</td>
+                            <td>DIG5/KC5</td>
+                            <td>数码管位选信号5／键盘列信号5</td>
+                        </tr>
+                        <tr>
+                            <td>22</td>
+                            <td>DIG4/KC4</td>
+                            <td>数码管位选信号4／键盘列信号4</td>
+                        </tr>
+                        <tr>
+                            <td>23</td>
+                            <td>SA/KR0</td>
+                            <td>数码管a 段／键盘行信号0</td>
+                        </tr>
+                        <tr>
+                            <td>24</td>
+                            <td>SB/KR1</td>
+                            <td>数码管b 段／键盘行信号1</td>
+                        </tr>
                     </table>
                     <br />
-                    数码管驱动zlg7290.c实现了设备文件操作控制，用户态可以调用zlg7290_hw_write()，zlg7290_hw_read()和zlg_led_ioctl()函数来对数码管进行读写操作，阅读ZLG7290数码管驱动的代码程序清单1.1，了解其实现的具体方法。
+                    <h4>数码管驱动zlg7290.c实现了设备文件操作控制，用户态可以调用zlg7290_hw_write()，zlg7290_hw_read()和zlg_led_ioctl()函数来对数码管进行读写操作，阅读ZLG7290数码管驱动的代码程序清单，了解其实现的具体方法。</h4>
+                    <br />
                 </div>
             </div>
             <div class="one_tab deactive">
-                <div id="stage" class="col-md-12" style="position: relative; min-width: 780px; height: 852px; background-color: #ebebeb;">
-                    <img style='position: absolute; left: 0px; top: 0px; width: 1200px; height: 850px;' src='Content/zlg7290.png' />
+                <img style="position:absolute;left:0px; width:1200px;" src="Content/zlg7290.png" />
+                <div id="stage" class="col-md-12" style="position: relative; min-width: 780px; height: 752px; background-color:rgba(0, 0, 0, 0.00);">
                 </div>
-                <div id="playCtrl" class="col-md-offset-1 col-md-10" style="display:none;position: absolute; top: 46px; padding-top: 10px; padding-bottom: 10px; background-color: #ffffff; filter: alpha(opacity=80); -moz-opacity: 0.5; opacity: 0.8;">
+                <div id="playCtrl" class="col-md-12" style="display:none;position:absolute; top:34px; padding-top: 10px; padding-bottom: 10px; background-color: #ebebeb; filter: alpha(opacity=80); -moz-opacity: 0.5; opacity: 0.8;">
                     <div class="col-md-2">
                         <input id="btnRun" type="submit" value="运行程序" onclick="runPlay();" class="btn btn-default form-control" />
                     </div>
-                    <div class="col-md-1">
+                    <%--<div class="col-md-1">
                         <input id="btnRunTick" value="RT" onclick="runTick();" class="btn btn-default form-control" />
-                    </div>
-                    <div class="col-md-9" style="height: 320px; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
+                    </div>--%>
+                    <div class="col-md-10" style="height: 320px; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
                         <textarea id="run_console" class="form-control"></textarea>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="mask" id="mask" style="display:block;text-align:center;line-height:800px;min-height:800px;font-size:2em;">
+    <div class="mask" id="mask" style="display:block;text-align:center;line-height:650px;min-height:650px;font-size:2em;">
         Waiting...
     </div>
 </asp:Content>

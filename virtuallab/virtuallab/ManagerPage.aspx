@@ -5,7 +5,7 @@
     <hr />
     <div class="row">
         <div class="col-md-8">
-            <asp:GridView ID="gvExperiment" runat="server" AllowPaging="True" AllowSorting="True" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="4" CssClass="table col-md-12" DataSourceID="sdsExperiment" ForeColor="Black" GridLines="Horizontal" AutoGenerateColumns="False" PageSize="20" ShowFooter="True" DataKeyNames="id_experiment" OnSelectedIndexChanged="gvExperiment_SelectedIndexChanged" SelectedIndex="0" OnRowDataBound="gvExperiment_RowDataBound" OnDataBinding="gvExperiment_DataBinding" OnDataBound="gvExperiment_DataBound">
+            <asp:GridView ID="gvExperiment" runat="server" AllowPaging="True" AllowSorting="True" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="4" CssClass="table col-md-12" DataSourceID="sdsExperiment" ForeColor="Black" GridLines="Horizontal" AutoGenerateColumns="False" PageSize="12" ShowFooter="True" DataKeyNames="id_experiment" OnSelectedIndexChanged="gvExperiment_SelectedIndexChanged" SelectedIndex="0" OnRowDataBound="gvExperiment_RowDataBound" OnDataBinding="gvExperiment_DataBinding" OnDataBound="gvExperiment_DataBound">
                 <Columns>
                     <asp:TemplateField HeaderText="ID" SortExpression="id_experiment" Visible="False">
                         <ItemTemplate>
@@ -76,7 +76,7 @@
                         <tr>
                             <td class="col-md-3">详细描述</td>
                             <td class="col-md-9">
-                                <asp:TextBox ID="tbDetail" runat="server" Width="100%" Height="100%" Text='<%# Bind("memo", "{0}") %>' BackColor="Silver" BorderStyle="None" Rows="28" TextMode="MultiLine" Wrap="False"></asp:TextBox>
+                                <asp:TextBox ID="tbDetail" runat="server" Width="100%" Height="100%" Text='<%# Bind("memo", "{0}") %>' BackColor="Silver" BorderStyle="None" Rows="14" TextMode="MultiLine" Wrap="False"></asp:TextBox>
                         </tr>
                         <tr>
                             <td>代码模板</td>
