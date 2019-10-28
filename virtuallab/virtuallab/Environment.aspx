@@ -291,23 +291,23 @@
         function showDigit(code1, code2, code3, code4, code5) {
             var contentHtml = "";
             for (var i = 0; i < 8; i++) {
-                var num = code1.substr(i, 1);
+                var num = code2.substr(i, 1);
                 contentHtml += getImgNum(0, i, num);
             }
             for (var j = 0; j < 8; j++) {
-                var num = code2.substr(j, 1);
+                var num = code3.substr(j, 1);
                 contentHtml += getImgNum(1, j, num);
             }
             for (var m = 0; m < 8; m++) {
-                var num = code3.substr(m, 1);
+                var num = code4.substr(m, 1);
                 contentHtml += getImgNum(2, m, num);
             }
             for (var n = 0; n < 8; n++) {
-                var num = code4.substr(n, 1);
+                var num = code5.substr(n, 1);
                 contentHtml += getImgNum(3, n, num);
             }
             for (var l = 0; l < 8; l++) {
-                var num = code5.substr(l, 1);
+                var num = code1.substr(l, 1);
                 contentHtml += getImgLight(l, num);
             }
             $("#stage").html(contentHtml);

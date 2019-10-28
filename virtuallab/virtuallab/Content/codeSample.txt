@@ -9,7 +9,7 @@
 #include <string.h>
 
 #define WRITE_DPRAM _IO('Z', 0)
-#define zlglog_path  "./zlg.txt"
+#define zlglog_path  "/mnt/zlg.txt"
 #define ledlog_path  "./led.txt"
 //数码管计数，写入日志
 //加入流水灯，写入日志
@@ -114,7 +114,7 @@ int main(int argc, const char *argv[])
 {
 	int i,led_index=0;
 	int n;
-	for(i=0;i<60;i++)
+	for(i=0;i<10;i++)
 	{
 		show_number(i);
 		set_led(led_index,1);
