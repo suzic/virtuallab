@@ -93,40 +93,43 @@
             clearTimeout(timerId);
 
             if (inCompiling == "True") {
-                layer_mask.innerHTML = "正在等待远程主机编译结果返回......";
+                layer_mask.innerHTML = '正在等待远程主机编译结果返回......' + '<br/>'
+                    + '<input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="position:absolute;top:400px;left:600px;width:160px;" />';
                 timerId = setTimeout(function () {
                     layer_mask.style.display = "none";
                     compileTick();
                 }, 5000);
-                layer_mask.onclick = function () {
-                    clearTimeout(timerId);
-                    layer_mask.style.display = "none";
-                    compileTick();
-                }
+                //layer_mask.onclick = function () {
+                //    clearTimeout(timerId);
+                //    layer_mask.style.display = "none";
+                //    compileTick();
+                //}
             }
             else if (inUploading == "True") {
-                layer_mask.innerHTML = "正在等待远程主机上传结果返回......";
+                layer_mask.innerHTML = '正在等待远程主机上传结果返回......' + '<br/>'
+                    + '<input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="position:absolute;top:400px;left:600px;width:160px;" />';
                 timerId = setTimeout(function () {
                     layer_mask.style.display = "none";
                     uploadTick();
                 }, 5000);
-                layer_mask.onclick = function () {
-                    clearTimeout(timerId);
-                    layer_mask.style.display = "none";
-                    uploadTick();
-                }
+                //layer_mask.onclick = function () {
+                //    clearTimeout(timerId);
+                //    layer_mask.style.display = "none";
+                //    uploadTick();
+                //}
             }
             else if (inRunning == "True") {
-                layer_mask.innerHTML = "正在等待远程主机运行效果返回......";
+                layer_mask.innerHTML = '正在等待远程主机运行效果返回......' + '<br/>'
+                    + '<input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="position:absolute;top:400px;left:600px;width:160px;" />';
                 timerId = setTimeout(function () {
                     layer_mask.style.display = "none";
                     runTick();
                 }, 5000);
-                layer_mask.onclick = function () {
-                    clearTimeout(timerId);
-                    layer_mask.style.display = "none";
-                    runTick();
-                }
+                //layer_mask.onclick = function () {
+                //    clearTimeout(timerId);
+                //    layer_mask.style.display = "none";
+                //    runTick();
+                //}
             }
             else {
                 layer_mask.innerHTML = "已接收数据，加载中......";
@@ -140,6 +143,11 @@
                     startAnimation();
                 }
             }
+        }
+
+        function abortWaiting() {
+            clearTimeout(timerId);
+            layer_mask.style.display = "none";
         }
 
         // 上传代码编译接口调用
@@ -227,7 +235,7 @@
 
         function setOutputAppend(target, data) {
             var oldData = target.getValue();
-            data = oldData + data;
+            data = oldData + "\n" + data;
             target.setValue(data);
             var cur = target.getCursor();
             target.setCursor(target.lastLine(), cur.ch);
@@ -335,10 +343,8 @@
             this.tabTitle[index].classList.add("active");
             this.tabPanel[index].classList.remove("deactive");
             this.tabPanel[index].classList.add("active");
-            if (index == 2)
-                document.getElementById("playCtrl").style.display = "block";
-            else
-                document.getElementById("playCtrl").style.display = "none";
+            document.getElementById("introTitle").style.display = (index == 1) ? "block" : "none";
+            document.getElementById("playCtrl").style.display = (index == 2) ? "block" : "none";
 
             if (typeof this.current === "number") {
                 this.tabTitle[this.current].classList.remove("active");
@@ -348,6 +354,8 @@
                     document.getElementById("playCtrl").style.display = "block";
                     showDigit("00000000", "00000000", "00000000", "00000000", "00000000");
                 }
+                else if (index == 1)
+                    document.getElementById("introTitle").style.display = "block";
             }
             this.current = index;
         };
@@ -402,7 +410,11 @@
                 </div>
             </div>
             <div class="one_tab deactive">
-                <div class="col-md-12"; style="overflow-y: scroll; position: relative; height: 752px; background-color: #ebebeb;">
+                <div class="col-md-12"; style="overflow-y: scroll; position: relative; height: 752px; background-color: #f8f8f8;">
+                    <br />
+                    <br />
+                    <br />
+                    <br />
                     <h4>实验步骤1 内容简介</h4>
                     阅读实验原理，了解zlg7290的读写流程和I2C总线的使用方法
                     <br />
@@ -478,7 +490,7 @@
                         </tr>
                         <tr>
                             <td>9</td>
-                            <td>SF/KR6</td>
+                            <td>SG/KR6</td>
                             <td>数码管g 段／键盘行信号6</td>
                         </tr>
                         <tr>
@@ -558,14 +570,15 @@
                         </tr>
                     </table>
                     <br />
-                    <h4>数码管驱动zlg7290.c实现了设备文件操作控制，用户态可以调用zlg7290_hw_write()，zlg7290_hw_read()和zlg_led_ioctl()函数来对数码管进行读写操作，阅读ZLG7290数码管驱动的代码程序清单，了解其实现的具体方法。</h4>
                     <br />
+                </div>
+                <div id="introTitle" class="col-md-12" style="display:none;position:absolute; top:34px; padding-top: 10px; padding-bottom: 10px; background-color: #ebebeb; filter: alpha(opacity=80); -moz-opacity: 0.5; opacity: 0.8;">
+                    <h4>数码管驱动zlg7290.c实现了设备文件操作控制，用户态可以调用zlg7290_hw_write()，zlg7290_hw_read()和zlg_led_ioctl()函数来对数码管进行读写操作，阅读ZLG7290数码管驱动的代码程序清单，了解其实现的具体方法。</h4>
                 </div>
             </div>
             <div class="one_tab deactive">
                 <img style="position:absolute;left:0px; width:1200px;" src="Content/zlg7290.png" />
-                <div id="stage" class="col-md-12" style="position: relative; min-width: 780px; height: 752px; background-color:rgba(0, 0, 0, 0.00);">
-                </div>
+                <div id="stage" class="col-md-12" style="position: relative; min-width: 780px; height: 752px; background-color:rgba(0, 0, 0, 0.00);"></div>
                 <div id="playCtrl" class="col-md-12" style="display:none;position:absolute; top:34px; padding-top: 10px; padding-bottom: 10px; background-color: #ebebeb; filter: alpha(opacity=80); -moz-opacity: 0.5; opacity: 0.8;">
                     <div class="col-md-2">
                         <input id="btnRun" type="submit" value="运行程序" onclick="runPlay();" class="btn btn-default form-control" />
@@ -582,5 +595,6 @@
     </div>
     <div class="mask" id="mask" style="display:block;text-align:center;line-height:650px;min-height:650px;font-size:2em;">
         Waiting...
+        <input type="submit" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="position:absolute;align-content:center;" />
     </div>
 </asp:Content>

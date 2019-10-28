@@ -363,12 +363,12 @@ namespace virtuallab
                 {
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
                     CurrentLoginUser.compileSuccess = true;
-                    outputString.AppendLine("");
-                    outputString.AppendLine("In compiling...");
+                    outputString.Append("\n");
+                    outputString.Append("In compiling...\n");
                     for (int i = 1; i <= 10; i++)
-                        outputString.AppendLine("Progress " + i.ToString() + "0 % ......");
-                    outputString.AppendLine("Completed.");
-                    outputString.AppendLine("");
+                        outputString.Append("Progress " + i.ToString() + "0 % ......\n");
+                    outputString.Append("Completed.\n");
+                    outputString.Append("\n");
                     return;
                 }
 
@@ -393,6 +393,7 @@ namespace virtuallab
                         string infoBuffer = result["info_buffer"].ToString();
                         int finishInt = (int)result["finish"];
                         string finishFlag = finishInt == 0 ? "未完成" : finishInt == 1 ? "成功" : "失败";
+                        outputString.AppendFormat(infoBuffer);
                         System.Diagnostics.Debug.WriteLine("-------- infoBuffer ----------------");
                         System.Diagnostics.Debug.WriteLine(infoBuffer);
                         System.Diagnostics.Debug.WriteLine(">>>> Finished :" + finishFlag);
@@ -445,8 +446,8 @@ namespace virtuallab
                     bool success = (int)result["fail"] == 0;
                     if (success)
                     {
-                        CurrentLoginUser.currentUploadId = result["upload_id"].ToString();
-                        System.Diagnostics.Debug.Write("-------- upload_id = " + CurrentLoginUser.currentUploadId + "\n");
+                        //CurrentLoginUser.currentUploadId = result["upload_id"].ToString();
+                        //System.Diagnostics.Debug.Write("-------- upload_id = " + CurrentLoginUser.currentUploadId + "\n");
                     }
                     else
                         CurrentLoginUser.currentState = EnvironmentState.InEditing;
@@ -468,12 +469,12 @@ namespace virtuallab
                 {
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
                     CurrentLoginUser.uploadSuccess = true;
-                    outputString.AppendLine("");
-                    outputString.AppendLine("开始将程序上传到板卡...");
+                    outputString.Append("\n");
+                    outputString.Append("开始将程序上传到板卡...\n");
                     for (int i = 1; i <= 10; i++)
-                        outputString.AppendLine("上传完成了 " + i.ToString() + "0%......");
-                    outputString.AppendLine("已完成，请切换到板卡页面可以运行了.");
-                    outputString.AppendLine("");
+                        outputString.Append("上传完成了 " + i.ToString() + "0%......\n");
+                    outputString.Append("已完成，请切换到板卡页面可以运行了.\n");
+                    outputString.Append("\n");
                     return;
                 }
 
@@ -564,6 +565,7 @@ namespace virtuallab
             }
         }
 
+        // 运行结果心跳检查
         protected void RunTick()
         {
             if (CurrentLoginUser.currentState == EnvironmentState.InPlaying)
@@ -573,30 +575,36 @@ namespace virtuallab
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
                     CurrentLoginUser.playSuccess = true;
 
-                    outputString.AppendLine("");
-                    outputString.AppendLine("程序执行输出结果...");
+                    outputString.Append("\n");
+                    outputString.Append("程序执行输出结果...\n");
                     for (int i = 1; i <= 10; i++)
-                        outputString.AppendLine("输出了 " + i.ToString() + "0%......");
-                    outputString.AppendLine("全部输出已完成.");
-                    outputString.AppendLine("");
+                        outputString.Append("输出了 " + i.ToString() + "0%......\n");
+                    outputString.Append("全部输出已完成.\n");
+                    outputString.Append("\n");
                     SetupDemoData();
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine("============= Upload Tick ===============");
+                System.Diagnostics.Debug.WriteLine("============= Run Tick ===============");
                 using (var httpClient = new HttpClient())
                 {
                     httpClient.BaseAddress = new Uri(BaseURL);
                     httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                     var body = new FormUrlEncodedContent(new Dictionary<string, string> {
                         { "session", CurrentLoginUser.currentSessionId.ToString() },
-                        { "upload_id", CurrentLoginUser.currentUploadId.ToString() }
+                        { "upload_id", CurrentLoginUser.currentRunId.ToString() }
                     });
 
                     // response
                     var response = httpClient.PostAsync(URIRunResultTick, body).Result;
                     var data = response.Content.ReadAsStringAsync().Result;
                     var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
+                    bool hasContent = formatData.ContainsKey("data");
+                    if (!hasContent)
+                    {
+                        System.Diagnostics.Debug.WriteLine(">>>> Finished : NO Content DATA");
+                        return;
+                    }
                     var result = (JObject)formatData["data"];
                     bool success = (int)result["fail"] == 0;
                     if (success)
@@ -604,9 +612,15 @@ namespace virtuallab
                         int finishInt = (int)result["finish"];
                         string finishFlag = finishInt == 0 ? "未完成" : finishInt == 1 ? "成功" : "失败";
                         System.Diagnostics.Debug.WriteLine(">>>> Finished :" + finishFlag);
-                        string resultInfo = result["result_json"].ToString();
+                        var effectInfo = (JArray)result["effect"];
+                        var consoleInfo = (JArray)result["console"];
                         System.Diagnostics.Debug.WriteLine("-------- Result info ----------------");
-                        System.Diagnostics.Debug.WriteLine(resultInfo);
+                        SetupAnimationData(effectInfo);
+                        foreach (var info in effectInfo)
+                            System.Diagnostics.Debug.WriteLine("EFFECT: " + info.ToString());
+                        SetupOutputData(consoleInfo);
+                        foreach (var text in consoleInfo)
+                            System.Diagnostics.Debug.WriteLine("CONSOLE: " + text.ToString());
 
                         if (finishInt != 0)
                         {
@@ -625,6 +639,25 @@ namespace virtuallab
             {
                 outputString.AppendLine("ERROR：没有正在运行的程序.");
             }
+        }
+
+        private void SetupAnimationData(JArray data)
+        {
+            animateString.Clear();
+            string line;
+            foreach (JObject info in data)
+            {
+                line = info["wait"].ToString();
+                var digits = info["value"].ToString().Split(',');
+                foreach (string part in digits)
+                    line += "-" + part;
+                animateString.AppendLine(line);
+            }
+        }
+
+        private void SetupOutputData(JArray data)
+        {
+
         }
 
         private void SetupDemoData()
