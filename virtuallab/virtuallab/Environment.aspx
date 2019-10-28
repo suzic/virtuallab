@@ -94,9 +94,8 @@
 
             if (inCompiling == "True") {
                 layer_mask.innerHTML = '正在等待远程主机编译结果返回......' + '<br/>'
-                    + '<input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="position:absolute;top:400px;left:600px;width:160px;" />';
+                    + '<div class="col-md-12" style="align-content:center;position:absolute;top:400px;"><input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="width:200px;"/></div>';
                 timerId = setTimeout(function () {
-                    layer_mask.style.display = "none";
                     compileTick();
                 }, 5000);
                 //layer_mask.onclick = function () {
@@ -107,9 +106,8 @@
             }
             else if (inUploading == "True") {
                 layer_mask.innerHTML = '正在等待远程主机上传结果返回......' + '<br/>'
-                    + '<input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="position:absolute;top:400px;left:600px;width:160px;" />';
+                    + '<div class="col-md-12" style="align-content:center;position:absolute;top:400px;"><input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="width:200px;"/></div>';
                 timerId = setTimeout(function () {
-                    layer_mask.style.display = "none";
                     uploadTick();
                 }, 5000);
                 //layer_mask.onclick = function () {
@@ -120,9 +118,8 @@
             }
             else if (inRunning == "True") {
                 layer_mask.innerHTML = '正在等待远程主机运行效果返回......' + '<br/>'
-                    + '<input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="position:absolute;top:400px;left:600px;width:160px;" />';
+                    + '<div class="col-md-12" style="align-content:center;position:absolute;top:400px;"><input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="width:200px;"/></div>';
                 timerId = setTimeout(function () {
-                    layer_mask.style.display = "none";
                     runTick();
                 }, 5000);
                 //layer_mask.onclick = function () {
@@ -594,7 +591,7 @@
         </div>
     </div>
     <div class="mask" id="mask" style="display:block;text-align:center;line-height:650px;min-height:650px;font-size:2em;">
-        Waiting...
+        Waiting...<div style="align-content:center"></div>
         <input type="submit" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="position:absolute;align-content:center;" />
     </div>
 </asp:Content>
