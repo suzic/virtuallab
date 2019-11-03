@@ -12,6 +12,9 @@ using virtuallab.Models;
 
 namespace virtuallab
 {
+    /// <summary>
+    /// 管理员的主页面后台代码，主要管理实验列表
+    /// </summary>
     public partial class ManagerPage : System.Web.UI.Page
     {
         public LoginUser CurrentLoginUser;

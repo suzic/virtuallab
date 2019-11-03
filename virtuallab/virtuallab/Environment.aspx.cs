@@ -2,6 +2,9 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,8 +23,14 @@ using virtuallab.Models;
 
 namespace virtuallab
 {
+    /// <summary>
+    /// 开发环境页面的后台代码
+    /// </summary>
     public partial class Environment : System.Web.UI.Page
     {
+        /// <summary>
+        /// 内置结构类型SI，用于记录代码编辑界面的位置信息以便在页面刷新后可以还原
+        /// </summary>
         private class SI
         {
             public int left { get; set; }
@@ -32,6 +41,9 @@ namespace virtuallab
             public int clientHeight { get; set; }
         }
 
+        /// <summary>
+        /// 内置结构类型DT，用于与前端交换界面TAB状态，代码内容，以及编辑器的位置信息
+        /// </summary>
         private class DT
         {
             public int tab { get; set; }
@@ -267,6 +279,80 @@ namespace virtuallab
             }
         }
 
+        /// <summary>
+        /// 学生每次实验将更新自己的任务数据
+        /// </summary>
+        protected void SaveRecordInfo()
+        {
+            string sConnString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            SqlConnection sSqlConn = new SqlConnection(sConnString);
+
+            try
+            {
+                sSqlConn.Open();
+                SqlCommand cmd = sSqlConn.CreateCommand();
+                cmd.CommandText = "SELECT id_record FROM [bhRecord] WHERE (fid_task = @id_task and is_result = 1)";
+                cmd.Parameters.Clear();
+                cmd.Parameters.Add("@id_task", SqlDbType.Int).Value = CurrentLoginUser.currentTaskId;
+                var retId = cmd.ExecuteScalar();
+
+                // 如果没有数据，那么新建一条记录
+                if (retId == null)
+                {
+                    InsertRecord(cmd);
+                }
+                // 如果有数据，且数据的id和当前session id相同，表明是同一次实验，仅针对此次实验进行更新即可
+                else if (retId.ToString().Equals(CurrentLoginUser.currentSessionId))
+                {
+                    UpdateRecord(cmd);
+                }
+                // 如果有数据，但是数据的id和当前session id不同，表明是再次实验，首先要将上次的is_result清除为0，然后新建数据
+                else
+                {
+                    ResetOldRecord(cmd, retId.ToString());
+                    InsertRecord(cmd);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                sSqlConn.Close();
+            }
+        }
+
+        protected void InsertRecord(SqlCommand cmd)
+        {
+            cmd.CommandText = "INSERT INTO bhRecord(id_record, fid_task, submit_times, final_code_uri, result_json_uri, finish_date, score, is_result) VALUES (@id, @task, @times, @code_uri, 'result_json_uri', @date, '0', 1)";
+            cmd.Parameters.Clear();
+            cmd.Parameters.Add("@id", SqlDbType.VarChar, 40).Value = CurrentLoginUser.currentSessionId;
+            cmd.Parameters.Add("@task", SqlDbType.Int).Value = int.Parse(CurrentLoginUser.currentTaskId);
+            cmd.Parameters.Add("@times", SqlDbType.Int).Value = 1;
+            cmd.Parameters.Add("@code_uri", SqlDbType.VarChar, 64).Value = CurrentLoginUser.currentCodeUri;
+            cmd.Parameters.Add("@date", SqlDbType.DateTime).Value = DateTime.Now;
+            cmd.ExecuteNonQuery();
+        }
+
+        protected void UpdateRecord(SqlCommand cmd)
+        {
+            cmd.CommandText = "UPDATE bhRecord SET final_code_uri = @code_uri, submit_times = submit_times + 1 finish_date = @date WHERE (id_record = @id_record)";
+            cmd.Parameters.Clear();
+            cmd.Parameters.Add("@code_uri", SqlDbType.VarChar, 64).Value = CurrentLoginUser.currentCodeUri;
+            cmd.Parameters.Add("@id_record", SqlDbType.VarChar, 40).Value = CurrentLoginUser.currentSessionId;
+            cmd.Parameters.Add("@date", SqlDbType.DateTime).Value = DateTime.Now;
+            cmd.ExecuteNonQuery();
+        }
+
+        protected void ResetOldRecord(SqlCommand cmd, string oldId)
+        {
+            cmd.CommandText = "UPDATE bhRecord SET is_result = 0 WHERE (id_record = @id_record)";
+            cmd.Parameters.Clear();
+            cmd.Parameters.Add("@id_record", SqlDbType.VarChar, 40).Value = oldId;
+            cmd.ExecuteNonQuery();
+        }
+
         #region 网络请求方法
 
         // 初始化开发环境，获取session_id的网络请求
@@ -317,6 +403,7 @@ namespace virtuallab
                 {
                     CurrentLoginUser.currentCompileId = "test_compile_sz19";
                     CurrentLoginUser.currentCodeUri = "test_code_uri_sz19";
+                    SaveRecordInfo();
                     return;
                 }
 
@@ -343,6 +430,7 @@ namespace virtuallab
                         CurrentLoginUser.currentCodeUri = result["code_url"].ToString();
                         System.Diagnostics.Debug.Write("-------- compile_id = " + CurrentLoginUser.currentCompileId + "\n");
                         System.Diagnostics.Debug.Write("-------- code_uri = " + CurrentLoginUser.currentCodeUri + "\n");
+                        SaveRecordInfo();
                     }
                     else
                         CurrentLoginUser.currentState = EnvironmentState.InEditing;

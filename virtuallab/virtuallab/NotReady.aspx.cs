@@ -8,6 +8,9 @@ using virtuallab.Models;
 
 namespace virtuallab
 {
+    /// <summary>
+    /// 未就绪页面后台代码。当学生进入暂未支持的实验后所显示的页面
+    /// </summary>
     public partial class NotReady : System.Web.UI.Page
     {
         public LoginUser CurrentLoginUser;
@@ -37,6 +40,9 @@ namespace virtuallab
             }
         }
 
+        /// <summary>
+        /// 返回学生的主页面
+        /// </summary>
         protected void GotoTaskView(object sender, EventArgs e)
         {
             Response.Redirect("~/StudentPage");

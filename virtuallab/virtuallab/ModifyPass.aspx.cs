@@ -11,6 +11,9 @@ using virtuallab.Models;
 
 namespace virtuallab
 {
+    /// <summary>
+    /// 学生修改密码的界面
+    /// </summary>
     public partial class ModifyPass : System.Web.UI.Page
     {
         public LoginUser CurrentLoginUser;
@@ -29,6 +32,9 @@ namespace virtuallab
 
         }
 
+        /// <summary>
+        /// 执行修改密码相关的SQL操作
+        /// </summary>
         protected void ChangePassword_Click(object sender, EventArgs e)
         {
             // 获取数据库读取连接字符串并建立连接

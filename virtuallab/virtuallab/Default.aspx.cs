@@ -8,8 +8,14 @@ using virtuallab.Models;
 
 namespace virtuallab
 {
+    /// <summary>
+    /// 默认页面的后台代码
+    /// </summary>
     public partial class _Default : Page
     {
+        /// <summary>
+        /// 当前登录用户对象
+        /// </summary>
         public LoginUser CurrentLoginUser;
 
         protected void Page_Init(object sender, EventArgs e)

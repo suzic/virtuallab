@@ -11,6 +11,9 @@ using virtuallab.Models;
 
 namespace virtuallab
 {
+    /// <summary>
+    /// 学生列表页面的后台代码
+    /// </summary>
     public partial class StudentList : System.Web.UI.Page
     {
         public LoginUser CurrentLoginUser;
@@ -29,6 +32,9 @@ namespace virtuallab
 
         }
 
+        /// <summary>
+        /// 插入学生数据的SQL操作
+        /// </summary>
         protected void InsertStudent(object sender, CommandEventArgs e)
         {
             string sConnString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -61,6 +67,9 @@ namespace virtuallab
             //gvStudents.SelectedIndex = gvStudents.Rows.Count - 1;
         }
 
+        /// <summary>
+        /// 更新学生数据的SQL操作
+        /// </summary>
         protected void UpdateStudent(object sender, CommandEventArgs e)
         {
             string sConnString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -102,6 +111,9 @@ namespace virtuallab
             }
         }
 
+        /// <summary>
+        /// 对学生进行启用/禁用操作
+        /// </summary>
         protected void EnableStudent(object sender, CommandEventArgs e)
         {
             string sConnString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;

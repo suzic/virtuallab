@@ -14,8 +14,14 @@ using virtuallab.Models;
 
 namespace virtuallab
 {
+    /// <summary>
+    /// 主页面框架后台代码
+    /// </summary>
     public partial class SiteMaster : MasterPage
     {
+        /// <summary>
+        /// 用于缓存当前登录用户对象
+        /// </summary>
         public static LoginUser CurrentLoginUser = null;
         public MultiView LogPart;
 
@@ -23,6 +29,9 @@ namespace virtuallab
         private const string AntiXsrfUserNameKey = "__AntiXsrfUserName";
         private string _antiXsrfTokenValue;
 
+        /// <summary>
+        /// 页面的数据初始化
+        /// </summary>
         protected void Page_Init(object sender, EventArgs e)
         {
             // 以下代码可帮助防御 XSRF 攻击
@@ -55,6 +64,9 @@ namespace virtuallab
             Page.PreLoad += master_Page_PreLoad;
         }
 
+        /// <summary>
+        /// 框架页面加载
+        /// </summary>
         protected void master_Page_PreLoad(object sender, EventArgs e)
         {
             if (!IsPostBack)
@@ -74,16 +86,25 @@ namespace virtuallab
             }
         }
 
+        /// <summary>
+        /// 页面加载
+        /// </summary>
         protected void Page_Load(object sender, EventArgs e)
         {
             LoadCookiedUser();
         }
 
+        /// <summary>
+        /// 登出操作（未登录状态下，避免Cookie存储登录状态而做的清理）
+        /// </summary>
         protected void Unnamed_LoggingOut(object sender, LoginCancelEventArgs e)
         {
             Context.GetOwinContext().Authentication.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
         }
 
+        /// <summary>
+        /// 登出操作
+        /// </summary>
         protected void LoggingOut(object sender, EventArgs e)
         {
             LogPart.ActiveViewIndex = 0;
@@ -94,6 +115,9 @@ namespace virtuallab
             Response.Redirect("~/");
         }
 
+        /// <summary>
+        /// 将当前登录用户信息和Cookie信息进行同步
+        /// </summary>
         protected void LoadCookiedUser()
         {
             LogPart.ActiveViewIndex = 0;

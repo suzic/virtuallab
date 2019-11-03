@@ -8,6 +8,9 @@ using virtuallab.Models;
 
 namespace virtuallab
 {
+    /// <summary>
+    /// 学生首页的后台代码
+    /// </summary>
     public partial class StudentPage : System.Web.UI.Page
     {
         public LoginUser CurrentLoginUser;
@@ -26,14 +29,20 @@ namespace virtuallab
             CurrentLoginUser = SiteMaster.CurrentLoginUser;
         }
 
+        /// <summary>
+        /// 学生选择任务进入操作
+        /// </summary>
         protected void lbEnterTask_Command(object sender, CommandEventArgs e)
         {
-            string expId = e.CommandArgument.ToString();
+            // string expId = e.CommandArgument.ToString();
+            int nIndex = ((GridViewRow)((LinkButton)sender).NamingContainer).RowIndex;
+            string expId = gvMyTasks.DataKeys[nIndex][0].ToString();
+            string taskId = gvMyTasks.DataKeys[nIndex][1].ToString();
             if (string.IsNullOrEmpty(CurrentLoginUser.currentExperimentId)
                 || !CurrentLoginUser.currentExperimentId.Equals(expId))
             {
                 CurrentLoginUser.currentExperimentId = expId;
-                CurrentLoginUser.currentTaskId = "";
+                CurrentLoginUser.currentTaskId = taskId;
                 CurrentLoginUser.currentSessionId = "";
                 CurrentLoginUser.currentCompileId = "";
                 CurrentLoginUser.currentUploadId = "";

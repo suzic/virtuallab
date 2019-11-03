@@ -10,7 +10,11 @@ using virtuallab.Models;
 
 namespace virtuallab.Models
 {
-    // 可以通过将更多属性添加到用户类来为用户添加用户数据，请访问 https://go.microsoft.com/fwlink/?LinkID=317594 了解详细信息。
+    /// <summary>
+    /// 应用程序的用户对象。该对象基于.NET预置接口模型IdentityUser生成
+    /// 可以通过将更多属性添加到用户类来为用户添加用户数据。
+    /// 不过由于目前的网站用户体系是封闭的，未与通用模型联通，以完成第三方用户接口，所以暂不使用
+    /// </summary>
     public class ApplicationUser : IdentityUser
     {
         public ClaimsIdentity GenerateUserIdentity(ApplicationUserManager manager)
@@ -41,7 +45,7 @@ namespace virtuallab.Models
     }
 }
 
-#region 帮助器
+#region 用于标记模型操作相关的帮助类
 namespace virtuallab
 {
     public static class IdentityHelper

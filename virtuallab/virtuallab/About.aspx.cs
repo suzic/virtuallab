@@ -7,6 +7,9 @@ using System.Web.UI.WebControls;
 
 namespace virtuallab
 {
+    /// <summary>
+    /// “关于”页面的后台代码
+    /// </summary>
     public partial class About : Page
     {
         protected void Page_Load(object sender, EventArgs e)
