@@ -337,7 +337,7 @@ namespace virtuallab
 
         protected void UpdateRecord(SqlCommand cmd)
         {
-            cmd.CommandText = "UPDATE bhRecord SET final_code_uri = @code_uri, submit_times = submit_times + 1 finish_date = @date WHERE (id_record = @id_record)";
+            cmd.CommandText = "UPDATE bhRecord SET final_code_uri = @code_uri, submit_times = submit_times + 1, finish_date = @date WHERE (id_record = @id_record)";
             cmd.Parameters.Clear();
             cmd.Parameters.Add("@code_uri", SqlDbType.VarChar, 64).Value = CurrentLoginUser.currentCodeUri;
             cmd.Parameters.Add("@id_record", SqlDbType.VarChar, 40).Value = CurrentLoginUser.currentSessionId;

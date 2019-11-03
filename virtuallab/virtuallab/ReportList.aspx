@@ -1,6 +1,51 @@
 ﻿<%@ Page Title="报告列表" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="ReportList.aspx.cs" Inherits="virtuallab.ReportList" %>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
+    <script type="text/javascript">
+        var current_code = <%=currentCode %>;
+        var layer_mask;
+        var timerImageId;
+        var timerId;
+        var timerTextId;
+        var tickImageCount;
+        var tickTextCount;
+        var tickStringArray;
+        var tickImageArray;
+
+        $(document).ready(function () {
+            initCodeEditor();
+            layer_mask = document.getElementById('mask');
+            if (current_code != "") {
+                layer_mask.style.display = "block";
+                cm_editor.setValue(current_code);
+            }
+            else
+                layer_mask.style.display = "none";
+        });
+
+        function initCodeEditor() {
+            cm_editor = CodeMirror.fromTextArea(document.getElementById('code_text'), {
+                mode: 'text/x-c++src',
+                lineNumbers: true,
+                theme: 'mdn-like',
+                matchBrackets: true,
+                identUnit: 4,
+                smartIdent: true,
+                indentWithTabs: true
+            });
+            cm_editor.setSize('100%', '100%');
+        }
+
+        function showWaitingLayers() {
+            layer_mask.style.display = "block";
+        }
+
+        function closeCode() {
+            layer_mask.style.display = "none";
+        }
+
+    </script>
+
     <h2>学员实验报告</h2>
     <hr />
     <div class="row">
@@ -39,7 +84,7 @@
                 </asp:TemplateField>
                 <asp:TemplateField HeaderText="实验数据">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbCode" runat="server" CommandArgument='<%# Eval("final_code_uri") %>' CssClass="col-md-6">实验代码</asp:LinkButton>
+                        <asp:LinkButton ID="lbCode" runat="server" CommandArgument='<%# Eval("final_code_uri") %>' OnCommand="lbCode_Command" CssClass="col-md-6">实验代码</asp:LinkButton>
                         <asp:LinkButton ID="lbReport" runat="server" CommandArgument='<%# Eval("result_json_uri") %>' CssClass="col-md-6">报告</asp:LinkButton>
                     </ItemTemplate>
                     <HeaderStyle CssClass="col-md-3" />
@@ -61,4 +106,17 @@
         </div>
         <asp:SqlDataSource ID="sdsReports" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" SelectCommand="SELECT [id_experiment], [title], [id_task], [score], [id_student], [name], [complete], [id_record], [finish_date], [result_json_uri], [final_code_uri] FROM [bh_view_manager_reports]"></asp:SqlDataSource>
     </div>
+    <div class="row" id="mask" style="position:absolute; display:block; left:80px; top:120px; width:900px;">
+        <div class="row">
+            <div class="col-md-12"  style="height:750px; border-style:solid; border-width:thin; background-color:#ebebeb" >
+                <textarea id="code_text" class="form-control"></textarea>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12" style="padding-left:0px;">
+                <input type="button" value="关闭" onclick="closeCode();" class="btn btn-default form-control" style="position:absolute;align-content:center;" />
+            </div>
+        </div>
+    </div>
+
 </asp:Content>
