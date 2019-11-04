@@ -327,10 +327,10 @@ namespace virtuallab
         {
             cmd.CommandText = "INSERT INTO bhRecord(id_record, fid_task, submit_times, final_code_uri, result_json_uri, finish_date, score, is_result) VALUES (@id, @task, @times, @code_uri, 'result_json_uri', @date, '0', 1)";
             cmd.Parameters.Clear();
-            cmd.Parameters.Add("@id", SqlDbType.VarChar, 40).Value = CurrentLoginUser.currentSessionId;
+            cmd.Parameters.Add("@id", SqlDbType.VarChar, 50).Value = CurrentLoginUser.currentSessionId;
             cmd.Parameters.Add("@task", SqlDbType.Int).Value = int.Parse(CurrentLoginUser.currentTaskId);
             cmd.Parameters.Add("@times", SqlDbType.Int).Value = 1;
-            cmd.Parameters.Add("@code_uri", SqlDbType.VarChar, 64).Value = CurrentLoginUser.currentCodeUri;
+            cmd.Parameters.Add("@code_uri", SqlDbType.VarChar, 256).Value = CurrentLoginUser.currentCodeUri;
             cmd.Parameters.Add("@date", SqlDbType.DateTime).Value = DateTime.Now;
             cmd.ExecuteNonQuery();
         }
@@ -339,8 +339,8 @@ namespace virtuallab
         {
             cmd.CommandText = "UPDATE bhRecord SET final_code_uri = @code_uri, submit_times = submit_times + 1, finish_date = @date WHERE (id_record = @id_record)";
             cmd.Parameters.Clear();
-            cmd.Parameters.Add("@code_uri", SqlDbType.VarChar, 64).Value = CurrentLoginUser.currentCodeUri;
-            cmd.Parameters.Add("@id_record", SqlDbType.VarChar, 40).Value = CurrentLoginUser.currentSessionId;
+            cmd.Parameters.Add("@code_uri", SqlDbType.VarChar, 256).Value = CurrentLoginUser.currentCodeUri;
+            cmd.Parameters.Add("@id_record", SqlDbType.VarChar, 50).Value = CurrentLoginUser.currentSessionId;
             cmd.Parameters.Add("@date", SqlDbType.DateTime).Value = DateTime.Now;
             cmd.ExecuteNonQuery();
         }
@@ -349,7 +349,7 @@ namespace virtuallab
         {
             cmd.CommandText = "UPDATE bhRecord SET is_result = 0 WHERE (id_record = @id_record)";
             cmd.Parameters.Clear();
-            cmd.Parameters.Add("@id_record", SqlDbType.VarChar, 40).Value = oldId;
+            cmd.Parameters.Add("@id_record", SqlDbType.VarChar, 50).Value = oldId;
             cmd.ExecuteNonQuery();
         }
 

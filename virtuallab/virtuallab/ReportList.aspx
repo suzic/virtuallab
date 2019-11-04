@@ -108,7 +108,7 @@
     </div>
     <div class="row" id="mask" style="position:absolute; display:block; left:80px; top:120px; width:900px;">
         <div class="row">
-            <div class="col-md-12"  style="height:750px; border-style:solid; border-width:thin; background-color:#ebebeb" >
+            <div class="col-md-12"  style="height:750px; padding:15px; border-style:solid; border-width:thin; background-color:#ebebeb" >
                 <textarea id="code_text" class="form-control"></textarea>
             </div>
         </div>
