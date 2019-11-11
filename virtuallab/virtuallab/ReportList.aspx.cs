@@ -1,6 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -72,6 +75,9 @@ namespace virtuallab
             this.Page.Header.Controls.Add(CodeScrollbar);
         }
 
+        /// <summary>
+        /// 查看学生的代码
+        /// </summary>
         protected void lbCode_Command(object sender, CommandEventArgs e)
         {
             HttpWebRequest myHttpWebRequest = System.Net.WebRequest.Create(Request.Url.GetLeftPart(UriPartial.Authority) + "/Content/codeSample.txt") as HttpWebRequest;
@@ -91,6 +97,33 @@ namespace virtuallab
                     // 需要使用JSON封装的方法将该字符串传至前端
                     currentCode = JsonConvert.SerializeObject(currentCode);
                 }
+            }
+        }
+
+        protected void lbScoreConfirm(object sender, CommandEventArgs e)
+        {
+            string sConnString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            SqlConnection sSqlConn = new SqlConnection(sConnString);
+            int nIndex = ((GridViewRow)((LinkButton)sender).NamingContainer).RowIndex;
+            int id_task = int.Parse(gvRepots.DataKeys[nIndex][0].ToString());
+            TextBox tbScore = (TextBox)gvRepots.Rows[nIndex].FindControl("tbScore");
+            try
+            {
+                sSqlConn.Open();
+                SqlCommand cmd = sSqlConn.CreateCommand();
+                cmd.CommandText = "UPDATE bhTask SET score = @score WHERE (id_task = @id_task)";
+                cmd.Parameters.Clear();
+                cmd.Parameters.Add("@id_task", SqlDbType.Int).Value = id_task;
+                cmd.Parameters.Add("@score", SqlDbType.Int).Value = int.Parse(tbScore.Text);
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                sSqlConn.Close();
             }
         }
     }

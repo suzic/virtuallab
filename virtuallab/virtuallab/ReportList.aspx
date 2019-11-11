@@ -69,12 +69,6 @@
                 </asp:TemplateField>
                 <asp:BoundField DataField="id_task" HeaderText="id_task" ReadOnly="True" SortExpression="id_task" Visible="False" />
                 <asp:BoundField DataField="complete" HeaderText="complete" SortExpression="complete" Visible="False" />
-                <asp:TemplateField ConvertEmptyStringToNull="False" HeaderText="成绩" SortExpression="score">
-                    <ItemTemplate>
-                        <asp:Label ID="lbScore" runat="server" CssClass="col-md-12" Text='<%# Eval("score", "{0}") %>'></asp:Label>
-                    </ItemTemplate>
-                    <HeaderStyle CssClass="col-md-1" />
-                </asp:TemplateField>
                 <asp:BoundField DataField="id_record" HeaderText="id_record" ReadOnly="True" SortExpression="id_record" Visible="False" />
                 <asp:TemplateField ConvertEmptyStringToNull="False" HeaderText="完成时间" SortExpression="finish_date">
                     <ItemTemplate>
@@ -85,9 +79,22 @@
                 <asp:TemplateField HeaderText="实验数据">
                     <ItemTemplate>
                         <asp:LinkButton ID="lbCode" runat="server" CommandArgument='<%# Eval("final_code_uri") %>' OnCommand="lbCode_Command" CssClass="col-md-6">实验代码</asp:LinkButton>
-                        <asp:LinkButton ID="lbReport" runat="server" CommandArgument='<%# Eval("result_json_uri") %>' CssClass="col-md-6">报告</asp:LinkButton>
+                        <asp:LinkButton ID="lbReport" runat="server" CommandArgument='<%# Eval("result_json_uri") %>' CssClass="col-md-6" CommandName="Edit">打分</asp:LinkButton>
                     </ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:LinkButton ID="lbUpdate" runat="server" CssClass="col-md-6" CausesValidation="True" CommandName="Cancel" OnCommand="lbScoreConfirm" ForeColor="Red" ValidationGroup="2" >确定</asp:LinkButton>
+                        <asp:LinkButton ID="lbCancel" runat="server" CssClass="col-md-6" CausesValidation="False" CommandName="Cancel">取消</asp:LinkButton>
+                    </EditItemTemplate>
                     <HeaderStyle CssClass="col-md-3" />
+                </asp:TemplateField>
+                <asp:TemplateField ConvertEmptyStringToNull="False" HeaderText="成绩" SortExpression="score">
+                    <EditItemTemplate>
+                        <asp:TextBox ID="tbScore" runat="server" Text='<%# Bind("score", "{0}") %>' Width="100%"></asp:TextBox>
+                    </EditItemTemplate>
+                    <ItemTemplate>
+                        <asp:Label ID="lbScore" runat="server" CssClass="col-md-12" Text='<%# Eval("score", "{0}") %>'></asp:Label>
+                    </ItemTemplate>
+                    <HeaderStyle CssClass="col-md-1" />
                 </asp:TemplateField>
             </Columns>
             <EmptyDataTemplate>
