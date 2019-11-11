@@ -333,6 +333,12 @@ namespace virtuallab
             cmd.Parameters.Add("@code_uri", SqlDbType.VarChar, 256).Value = CurrentLoginUser.currentCodeUri;
             cmd.Parameters.Add("@date", SqlDbType.DateTime).Value = DateTime.Now;
             cmd.ExecuteNonQuery();
+
+            // 只要插入了一个任务的完成记录，任务就设置为完成状态了。
+            cmd.CommandText = "UPDATE bhTask SET complete = 1 WHERE (id_task = @task)";
+            cmd.Parameters.Clear();
+            cmd.Parameters.Add("@task", SqlDbType.Int).Value = int.Parse(CurrentLoginUser.currentTaskId);
+            cmd.ExecuteNonQuery();
         }
 
         protected void UpdateRecord(SqlCommand cmd)
