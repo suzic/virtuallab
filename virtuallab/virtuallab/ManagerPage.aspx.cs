@@ -140,7 +140,59 @@ namespace virtuallab
         /// </summary>
         protected void DistributeTasks(object sender, CommandEventArgs e)
         {
+            string sConnString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+            SqlConnection sSqlStuLoader = new SqlConnection(sConnString);
+            SqlConnection sSqlTaskGenerator = new SqlConnection(sConnString);
+            try
+            {
+                sSqlStuLoader.Open();
+                SqlCommand cmd = sSqlStuLoader.CreateCommand();
 
+                cmd.CommandText = "SELECT id_student FROM [bhStudent] WHERE (record_status = 1)";
+                cmd.Parameters.Clear();
+                var Reader = cmd.ExecuteReader();
+
+                int nIndex = ((GridViewRow)((LinkButton)sender).NamingContainer).RowIndex;
+                int id_experiment = int.Parse(gvExperiment.DataKeys[nIndex][0].ToString());
+                int id_manager = CurrentLoginUser.userId;
+
+                sSqlTaskGenerator.Open();
+                SqlCommand tester = sSqlTaskGenerator.CreateCommand();
+                while (Reader.Read())
+                {
+                    int id_student = Reader.GetInt32(0);
+                    tester.CommandText = "SELECT id_task FROM [bhTask] WHERE (fid_experiment = @id_exp and fid_student = @id_stu)";
+                    tester.Parameters.Clear();
+                    tester.Parameters.Add("@id_exp", SqlDbType.Int).Value = id_experiment;
+                    tester.Parameters.Add("@id_stu", SqlDbType.Int).Value = id_student;
+                    var task = tester.ExecuteScalar();
+                    if (task == null)
+                    {
+                        tester.CommandText = "INSERT INTO bhTask (fid_experiment, fid_student, fid_manager, score, complete) VALUES (@id_exp, @id_stu, @id_mng, 0, 0)";
+                        tester.Parameters.Clear();
+                        tester.Parameters.Add("@id_exp", SqlDbType.Int).Value = id_experiment;
+                        tester.Parameters.Add("@id_stu", SqlDbType.Int).Value = id_student;
+                        tester.Parameters.Add("@id_mng", SqlDbType.Int).Value = id_manager;
+                        tester.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                sSqlStuLoader.Close();
+                sSqlTaskGenerator.Close();
+            }
+
+            // Refresh
+            int oldIndex = gvExperiment.PageIndex;
+            int oldSelectIndex = gvExperiment.SelectedIndex;
+            gvExperiment.DataBind();
+            gvExperiment.PageIndex = oldIndex;
+            gvExperiment.SelectedIndex = oldSelectIndex;
         }
 
         /// <summary>
