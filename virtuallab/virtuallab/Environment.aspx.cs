@@ -370,7 +370,7 @@ namespace virtuallab
             if (!EnableService)
             {
                 CurrentLoginUser.currentState = EnvironmentState.InEditing;
-                CurrentLoginUser.currentSessionId = "test_session_sz19";
+                CurrentLoginUser.currentSessionId = (CurrentLoginUser.currentTaskId + "test_session_sz19");
                 return;
             }
 
