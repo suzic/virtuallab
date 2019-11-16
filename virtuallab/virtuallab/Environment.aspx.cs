@@ -51,7 +51,10 @@ namespace virtuallab
             public SI pos { get; set; }
         }
 
-        public LoginUser CurrentLoginUser;
+        public LoginUser CurrentLoginUser
+        {
+            get { return ((SiteMaster)Master).CurrentLoginUser; }
+        }
         public string currentCode;
         public string currentCodeOrigin;
         public int currentPosTop;
@@ -85,7 +88,6 @@ namespace virtuallab
             InitNetworkParams();
             InitCodeMirrorStyles();
 
-            CurrentLoginUser = SiteMaster.CurrentLoginUser;
             if (CurrentLoginUser != null)
                 CurrentLoginUser.StateChangedEvent += new StateChanged(EnvironmentStateChanged);
 

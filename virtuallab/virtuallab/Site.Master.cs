@@ -22,7 +22,30 @@ namespace virtuallab
         /// <summary>
         /// 用于缓存当前登录用户对象
         /// </summary>
-        public static LoginUser CurrentLoginUser = null;
+        private LoginUser currentLoginUser;
+        public LoginUser CurrentLoginUser
+        {
+            get
+            {
+                if (currentLoginUser == null && Session["user"] != null && (Session["user"] is LoginUser))
+                    currentLoginUser = (LoginUser)Session["user"];
+                return currentLoginUser; 
+            }
+        }
+        public void ResetLoginUser()
+        {
+            currentLoginUser = null;
+            Session.Remove("user");
+        }
+        public void CreateCurrentLoginUser(LoginUser user)
+        {
+            currentLoginUser = user;
+            if (Session["user"] != null)
+                Session["user"] = currentLoginUser;
+            else
+                Session.Add("user", currentLoginUser);
+        }
+
         public MultiView LogPart;
 
         private const string AntiXsrfTokenKey = "__AntiXsrfToken";
@@ -108,22 +131,15 @@ namespace virtuallab
         protected void LoggingOut(object sender, EventArgs e)
         {
             LogPart.ActiveViewIndex = 0;
-            CurrentLoginUser = null;
+            ResetLoginUser();
+
             Request.Cookies["LoginStudent"].Value = "";
             Request.Cookies["LoginManager"].Value = "";
-
             Response.Redirect("~/");
         }
 
-        /// <summary>
-        /// 将当前登录用户信息和Cookie信息进行同步
-        /// </summary>
-        protected void LoadCookiedUser()
+        protected void InitCookieStructure()
         {
-            LogPart.ActiveViewIndex = 0;
-            FuncMenu.ActiveViewIndex = -1;
-
-            // 无论何时，均先设置好本页面的Cookie结构
             if (Request.Cookies["UserID"] == null)
                 Request.Cookies.Add(new HttpCookie("UserID"));
             if (Request.Cookies["LoginStudent"] == null)
@@ -145,6 +161,18 @@ namespace virtuallab
                 Request.Cookies.Add(new HttpCookie("RunID"));
             if (Request.Cookies["CodeURI"] == null)
                 Request.Cookies.Add(new HttpCookie("CodeURI"));
+        }
+
+        /// <summary>
+        /// 将当前登录用户信息和Cookie信息进行同步
+        /// </summary>
+        protected void LoadCookiedUser()
+        {
+            // 无论何时，均先设置好本页面的Cookie结构
+            InitCookieStructure();
+
+            LogPart.ActiveViewIndex = 0;
+            FuncMenu.ActiveViewIndex = -1;
 
             // 存在已登录对象的情况，通过对象重设Cookies
             if (CurrentLoginUser != null)
@@ -177,7 +205,7 @@ namespace virtuallab
                 return;
 
             int userType = 0;
-            string cmdString = null;
+            string cmdString;
             string currentAlias = Request.Cookies["LoginStudent"].Value;
             if (currentAlias != null && !currentAlias.Equals(string.Empty))
             {
@@ -192,9 +220,6 @@ namespace virtuallab
                 else
                     return;
             }
-
-            // 开始重建登录对象
-            CurrentLoginUser = new LoginUser();
 
             // 获取数据库读取连接字符串并建立连接
             string sConnString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
@@ -229,45 +254,48 @@ namespace virtuallab
                 return;
 
             // 创建登录用户对象，并使用ds来初始化所有数据
-            CurrentLoginUser = new LoginUser();
+            LoginUser loginUser = new LoginUser();
 
-            CurrentLoginUser.type = userType;
-            // CurrentLoginUser.alias = outDS.Tables["BHUSER"].Rows[0]["alias"].ToString(); 可以不必反写一次
-            CurrentLoginUser.name = outDS.Tables["BHUSER"].Rows[0]["name"].ToString();
+            loginUser.type = userType;
+            // loginUser.alias = outDS.Tables["BHUSER"].Rows[0]["alias"].ToString(); 可以不必反写一次
+            loginUser.name = outDS.Tables["BHUSER"].Rows[0]["name"].ToString();
 
             if (outDS.Tables["BHUSER"].Columns.Contains("gender"))
-                CurrentLoginUser.gender = (short)outDS.Tables["BHUSER"].Rows[0]["gender"];
+                loginUser.gender = (short)outDS.Tables["BHUSER"].Rows[0]["gender"];
             if (outDS.Tables["BHUSER"].Columns.Contains("grade"))
-                CurrentLoginUser.grade = outDS.Tables["BHUSER"].Rows[0]["grade"].ToString();
+                loginUser.grade = outDS.Tables["BHUSER"].Rows[0]["grade"].ToString();
             if (outDS.Tables["BHUSER"].Columns.Contains("belong"))
-                CurrentLoginUser.belong = outDS.Tables["BHUSER"].Rows[0]["belong"].ToString();
+                loginUser.belong = outDS.Tables["BHUSER"].Rows[0]["belong"].ToString();
 
-            CurrentLoginUser.phone = outDS.Tables["BHUSER"].Rows[0]["phone"].ToString();
-            CurrentLoginUser.email = outDS.Tables["BHUSER"].Rows[0]["email"].ToString();
-            CurrentLoginUser.password = outDS.Tables["BHUSER"].Rows[0]["password"].ToString();
+            loginUser.phone = outDS.Tables["BHUSER"].Rows[0]["phone"].ToString();
+            loginUser.email = outDS.Tables["BHUSER"].Rows[0]["email"].ToString();
+            loginUser.password = outDS.Tables["BHUSER"].Rows[0]["password"].ToString();
 
             // 尝试从Cookie中恢复当前登录对象的实验信息
-            //CurrentLoginUser.currentExperimentId = Request.Cookies["ExperimentID"].Value;
-            //CurrentLoginUser.currentTaskId = Request.Cookies["TaskID"].Value;
-            //CurrentLoginUser.currentSessionId = Request.Cookies["SessionID"].Value;
-            //CurrentLoginUser.currentCompileId = Request.Cookies["CompileID"].Value;
-            //CurrentLoginUser.currentUploadId = Request.Cookies["UploadID"].Value;
-            //CurrentLoginUser.currentCodeUri = Request.Cookies["CodeURI"].Value;
-            CurrentLoginUser.currentExperimentId = "";
-            CurrentLoginUser.currentTaskId = "";
-            CurrentLoginUser.currentSessionId = "";
-            CurrentLoginUser.currentCompileId = "";
-            CurrentLoginUser.currentUploadId = "";
-            CurrentLoginUser.currentRunId = "";
-            CurrentLoginUser.currentCodeUri = "";
+            //loginUser.currentExperimentId = Request.Cookies["ExperimentID"].Value;
+            //loginUser.currentTaskId = Request.Cookies["TaskID"].Value;
+            //loginUser.currentSessionId = Request.Cookies["SessionID"].Value;
+            //loginUser.currentCompileId = Request.Cookies["CompileID"].Value;
+            //loginUser.currentUploadId = Request.Cookies["UploadID"].Value;
+            //loginUser.currentCodeUri = Request.Cookies["CodeURI"].Value;
+            loginUser.currentExperimentId = "";
+            loginUser.currentTaskId = "";
+            loginUser.currentSessionId = "";
+            loginUser.currentCompileId = "";
+            loginUser.currentUploadId = "";
+            loginUser.currentRunId = "";
+            loginUser.currentCodeUri = "";
 
-            CurrentLoginUser.currentState = EnvironmentState.NotReady;
-            CurrentLoginUser.compileSuccess = false;
-            CurrentLoginUser.uploadSuccess = false;
-            CurrentLoginUser.playSuccess = false;
+            loginUser.currentState = EnvironmentState.NotReady;
+            loginUser.compileSuccess = false;
+            loginUser.uploadSuccess = false;
+            loginUser.playSuccess = false;
 
             LogPart.ActiveViewIndex = 1;
             FuncMenu.ActiveViewIndex = userType;
+
+            // 将创建好的User对象交付Master框架完成最后创建。该过程将会把此用户对象写入Session
+            ((SiteMaster)Master).CreateCurrentLoginUser(loginUser);
         }
     }
 }

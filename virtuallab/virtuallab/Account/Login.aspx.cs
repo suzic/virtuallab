@@ -72,7 +72,7 @@ namespace virtuallab.Account
         protected SignInStatus LocalSignIn(string alias, string password)
         {
             SignInStatus status = SignInStatus.Failure;
-            SiteMaster.CurrentLoginUser = null;
+            ((SiteMaster)Master).ResetLoginUser();
 
             int userType = 0;
             string cmdString = null;
@@ -124,26 +124,27 @@ namespace virtuallab.Account
             if (password.Equals(correctPassword))
             {
                 // 创建登录用户对象，并使用ds来初始化所有数据
-                SiteMaster.CurrentLoginUser = new LoginUser();
+                LoginUser loginUser = new LoginUser();
 
-                SiteMaster.CurrentLoginUser.type = userType;
+                loginUser.type = userType;
                 if (userType == 1)
-                    SiteMaster.CurrentLoginUser.userId = (int)outDS.Tables["BHUSER"].Rows[0]["id_student"];
+                    loginUser.userId = (int)outDS.Tables["BHUSER"].Rows[0]["id_student"];
                 else // userType == 0
-                    SiteMaster.CurrentLoginUser.userId = (int)outDS.Tables["BHUSER"].Rows[0]["id_manager"];
-                SiteMaster.CurrentLoginUser.alias = outDS.Tables["BHUSER"].Rows[0]["alias"].ToString();
-                SiteMaster.CurrentLoginUser.name = outDS.Tables["BHUSER"].Rows[0]["name"].ToString();
+                    loginUser.userId = (int)outDS.Tables["BHUSER"].Rows[0]["id_manager"];
+                loginUser.alias = outDS.Tables["BHUSER"].Rows[0]["alias"].ToString();
+                loginUser.name = outDS.Tables["BHUSER"].Rows[0]["name"].ToString();
 
                 if (outDS.Tables["BHUSER"].Columns.Contains("gender"))
-                    SiteMaster.CurrentLoginUser.gender = (short)(outDS.Tables["BHUSER"].Rows[0]["gender"]);
+                    loginUser.gender = (short)(outDS.Tables["BHUSER"].Rows[0]["gender"]);
                 if (outDS.Tables["BHUSER"].Columns.Contains("grade"))
-                    SiteMaster.CurrentLoginUser.grade = outDS.Tables["BHUSER"].Rows[0]["grade"].ToString();
+                    loginUser.grade = outDS.Tables["BHUSER"].Rows[0]["grade"].ToString();
                 if (outDS.Tables["BHUSER"].Columns.Contains("belong"))
-                    SiteMaster.CurrentLoginUser.belong = outDS.Tables["BHUSER"].Rows[0]["belong"].ToString();
+                    loginUser.belong = outDS.Tables["BHUSER"].Rows[0]["belong"].ToString();
 
-                SiteMaster.CurrentLoginUser.phone = outDS.Tables["BHUSER"].Rows[0]["phone"].ToString();
-                SiteMaster.CurrentLoginUser.email = outDS.Tables["BHUSER"].Rows[0]["email"].ToString();
-                SiteMaster.CurrentLoginUser.password = outDS.Tables["BHUSER"].Rows[0]["password"].ToString();
+                loginUser.phone = outDS.Tables["BHUSER"].Rows[0]["phone"].ToString();
+                loginUser.email = outDS.Tables["BHUSER"].Rows[0]["email"].ToString();
+                loginUser.password = outDS.Tables["BHUSER"].Rows[0]["password"].ToString();
+                ((SiteMaster)Master).CreateCurrentLoginUser(loginUser);
 
                 int ValidStudent = 1;
                 if (outDS.Tables["BHUSER"].Columns.Contains("record_status"))

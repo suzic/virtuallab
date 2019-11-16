@@ -16,11 +16,13 @@ namespace virtuallab
         /// <summary>
         /// 当前登录用户对象
         /// </summary>
-        public LoginUser CurrentLoginUser;
+        public LoginUser CurrentLoginUser
+        {
+            get { return ((SiteMaster)Master).CurrentLoginUser; }
+        }
 
         protected void Page_Init(object sender, EventArgs e)
         {
-            CurrentLoginUser = SiteMaster.CurrentLoginUser;
             if (CurrentLoginUser == null)
             {
                 FuncMain.Text = "登录使用 &raquo;";

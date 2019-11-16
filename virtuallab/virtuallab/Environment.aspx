@@ -334,7 +334,7 @@
         };
 
         Tab.prototype.active = function (index) {
-            if (index === this.current)
+            if (index == this.current || index < 0 || index >= this.tabTitle.length)
                 return;
 
             this.tabTitle[index].classList.add("active");
@@ -360,11 +360,16 @@
         Tab.prototype.event = function () {
             var len = this.tabTitle.length;
             var that = this;
-            for (let i = 0; i < len; i++) {
-                this.tabTitle[i].addEventListener("click", function () {
-                    that.active.call(that, i);
-                })
-            }
+
+            this.tabTitle[0].addEventListener("click", function () {
+                that.active.call(that, 0);
+            });
+            this.tabTitle[1].addEventListener("click", function () {
+                that.active.call(that, 1);
+            });
+            this.tabTitle[2].addEventListener("click", function () {
+                that.active.call(that, 2);
+            });
         };
 
     </script>
@@ -376,7 +381,7 @@
             <div class="col-md-2">板卡效果</div>
         </div>
         <div class="tab_panel">
-            <div class="one_tab col-md-12 active">
+            <div class="one_tab active">
                 <div class="row" style="background-color:#ebebeb; position: relative; padding-top: 10px; padding-bottom: 10px;">
                     <div class="col-md-2">
                         <asp:Button ID="btnReload" runat="server" OnClick="ReloadCode" Text="重新加载模板代码" CssClass="btn btn-default form-control" />
@@ -407,7 +412,7 @@
                 </div>
             </div>
             <div class="one_tab deactive">
-                <div class="col-md-12"; style="overflow-y: scroll; position: relative; height: 752px; background-color: #f8f8f8;">
+                <div class="col-md-12" style="overflow-y: scroll; position: relative; height: 752px; background-color: #f8f8f8;">
                     <br />
                     <br />
                     <br />

@@ -16,11 +16,13 @@ namespace virtuallab
     /// </summary>
     public partial class ModifyPass : System.Web.UI.Page
     {
-        public LoginUser CurrentLoginUser;
+        public LoginUser CurrentLoginUser
+        {
+            get { return ((SiteMaster)Master).CurrentLoginUser; }
+        }
 
         protected void Page_Init(object sender, EventArgs e)
         {
-            CurrentLoginUser = SiteMaster.CurrentLoginUser;
             if (CurrentLoginUser == null)
                 Response.Redirect("~/");
             else if (CurrentLoginUser.type == 0)
@@ -67,8 +69,7 @@ namespace virtuallab
                     cmd.Parameters.Add("@id_student", SqlDbType.Int).Value = Convert.ToInt32(Request.Cookies["UserID"].Value);
                     cmd.ExecuteNonQuery();
 
-                    CurrentLoginUser = null;
-                    SiteMaster.CurrentLoginUser = null;
+                    ((SiteMaster)Master).ResetLoginUser();
                     ((SiteMaster)Master).LogPart.ActiveViewIndex = 0;
                     Request.Cookies["LoginStudent"].Value = "";
                     Request.Cookies["LoginManager"].Value = "";

@@ -16,13 +16,15 @@ namespace virtuallab
 {
     public partial class ReportList : System.Web.UI.Page
     {
-        public LoginUser CurrentLoginUser;
+        public LoginUser CurrentLoginUser
+        {
+            get { return ((SiteMaster)Master).CurrentLoginUser; }
+        }
         public string currentCode;
 
         protected void Page_Init(object sender, EventArgs e)
         {
             currentCode = JsonConvert.SerializeObject("");
-            CurrentLoginUser = SiteMaster.CurrentLoginUser;
             if (CurrentLoginUser == null)
                 Response.Redirect("~/");
             else if (CurrentLoginUser.type == 1)

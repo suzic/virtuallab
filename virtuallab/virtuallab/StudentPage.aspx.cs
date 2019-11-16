@@ -13,11 +13,13 @@ namespace virtuallab
     /// </summary>
     public partial class StudentPage : System.Web.UI.Page
     {
-        public LoginUser CurrentLoginUser;
+        public LoginUser CurrentLoginUser
+        {
+            get { return ((SiteMaster)Master).CurrentLoginUser; }
+        }
 
         protected void Page_Init(object sender, EventArgs e)
         {
-            CurrentLoginUser = SiteMaster.CurrentLoginUser;
             if (CurrentLoginUser == null)
                 Response.Redirect("~/");
             else if (CurrentLoginUser.type == 0)
@@ -26,7 +28,6 @@ namespace virtuallab
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            CurrentLoginUser = SiteMaster.CurrentLoginUser;
         }
 
         /// <summary>
