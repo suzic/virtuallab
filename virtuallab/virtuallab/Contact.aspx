@@ -10,7 +10,7 @@
     <address>北京海淀区知春路</address>
 
     <address>
-        <strong>账号负责:</strong><a href="mailto:Account@example.com">Account@example.com</a><br />
-        <strong>技术支持:</strong><a href="mailto:Support@example.com">Support@example.com</a>
+        <strong>账号负责:</strong><a href="mailto:sjg@buaa.edu.cn">sjg@buaa.edu.cn</a><br />
+        <strong>技术支持:</strong><a href="mailto:suzicletter@msn.com">suzicletter@msn.com</a>
     </address>
 </asp:Content>
