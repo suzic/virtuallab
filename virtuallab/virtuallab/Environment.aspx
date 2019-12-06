@@ -17,6 +17,7 @@
         var output_string = <%=outputFormatted %>;
         var animate_string = <%=runResultFormatted %>;
 
+        var inError = <%=InError %>;
         var inCompiling = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InCompiling) %>";
         var inUploading = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InUploading) %>";
         var inRunning = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InPlaying) %>";
@@ -92,7 +93,14 @@
             tickCount = 0;
             clearTimeout(timerId);
 
-            if (inCompiling == "True") {
+            if (inError != 0) {
+                layer_mask.innerHTML = '您提交的代码无法编译，或当前编译服务无法连接。' + '<br/>'
+                timerId = setTimeout(function () {
+                    layer_mask.style.display = "none";
+                    startAnimation();
+                }, 2000);
+            }
+            else if (inCompiling == "True") {
                 layer_mask.innerHTML = '正在等待远程主机编译结果返回......' + '<br/>'
                     + '<div class="col-md-12" style="align-content:center;position:absolute;top:400px;"><input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="width:200px;"/></div>';
                 timerId = setTimeout(function () {

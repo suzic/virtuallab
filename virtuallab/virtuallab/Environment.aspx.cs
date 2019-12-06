@@ -59,6 +59,7 @@ namespace virtuallab
         public string currentCodeOrigin;
         public int currentPosTop;
         public int defaultTab;
+        public int InError = 0;
 
         public string BaseURL;
         public string URIEnvironmentRequest;
@@ -374,9 +375,11 @@ namespace virtuallab
                 return;
             }
 
+            InError = 0;
             System.Diagnostics.Debug.WriteLine("============= Environment Request ===============");
-            using (var httpClient = new HttpClient())
+            try
             {
+                var httpClient = new HttpClient();
                 httpClient.BaseAddress = new Uri(BaseURL);
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 var body = new FormUrlEncodedContent(new Dictionary<string, string> {
@@ -398,6 +401,11 @@ namespace virtuallab
                     System.Diagnostics.Debug.Write("-------- session_id = " + CurrentLoginUser.currentSessionId + "\n");
                 }
             }
+            catch
+            {
+                InError = 1;
+                CurrentLoginUser.currentState = EnvironmentState.NotReady;
+            }
         }
 
         // 代码提交，后台将会执行编译动作
@@ -415,10 +423,12 @@ namespace virtuallab
                     return;
                 }
 
+                InError = 0;
                 System.Diagnostics.Debug.WriteLine("============= Code Submit ===============");
                 System.Diagnostics.Debug.WriteLine(currentCode);
-                using (var httpClient = new HttpClient())
+                try
                 {
+                    var httpClient = new HttpClient();
                     httpClient.BaseAddress = new Uri(BaseURL);
                     httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                     var body = new FormUrlEncodedContent(new Dictionary<string, string> {
@@ -442,6 +452,11 @@ namespace virtuallab
                     }
                     else
                         CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                }
+                catch
+                {
+                    InError = 1;
+                    CurrentLoginUser.currentState = EnvironmentState.InEditing;
                 }
             }
             else
@@ -525,9 +540,11 @@ namespace virtuallab
                     return;
                 }
 
+                InError = 0;
                 System.Diagnostics.Debug.WriteLine("============= Program Uploading ===============");
-                using (var httpClient = new HttpClient())
+                try
                 {
+                    var httpClient = new HttpClient();
                     httpClient.BaseAddress = new Uri(BaseURL);
                     httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                     var body = new FormUrlEncodedContent(new Dictionary<string, string> {
@@ -547,6 +564,11 @@ namespace virtuallab
                     }
                     else
                         CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                }
+                catch
+                {
+                    InError = 1;
+                    CurrentLoginUser.currentState = EnvironmentState.InEditing;
                 }
             }
             else
@@ -631,9 +653,11 @@ namespace virtuallab
                     return;
                 }
 
+                InError = 0;
                 System.Diagnostics.Debug.WriteLine("============= Run Program ===============");
-                using (var httpClient = new HttpClient())
+                try
                 {
+                    var httpClient = new HttpClient();
                     httpClient.BaseAddress = new Uri(BaseURL);
                     httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                     var body = new FormUrlEncodedContent(new Dictionary<string, string> {
@@ -653,6 +677,11 @@ namespace virtuallab
                     }
                     else
                         CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                }
+                catch
+                {
+                    InError = 1;
+                    CurrentLoginUser.currentState = EnvironmentState.InEditing;
                 }
             }
             else
