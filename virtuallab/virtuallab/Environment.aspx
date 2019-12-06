@@ -442,13 +442,13 @@
                     <br />
                     软件：Ubuntu12.0，IDE，putty
                     <br />
-                    经由北京航空航天大学计算机学院的自主开发所提供的WEB服务，学员现在可通过网上实验室提供的远程终端，只要可以打开浏览器，就可以完成这些需要特殊软硬件环境的开发实践了。
+                    * 经由北京航空航天大学计算机学院的自主开发所提供的WEB服务，学员现在可通过网上实验室提供的远程终端在网页浏览器中完成这些需要特殊软硬件环境的开发实践了。
                     <br />
                     <br />
-                    <h4>实验原理</h4>
-                    【ZLG7290介绍】 ZLG7290 是广州周立功单片机发展有限公司自行设计的数码管显示驱动及键盘扫描管理芯片。能够直接驱动8位共阴极数码管（或64只独立的LED），同时还可以扫面管理多大64只按键。其中有8只按键可以作为功能键使用，就像电脑键盘上的Ctrl，Shift、Alt键一样。另外ZLG7290 内部还设有连击计数器，能够使某键按下后不松手而连续有效。该芯片为工业级芯片，抗干扰能力强，在工业测控中已有大量应用。该器件通过I2C总线接口进行操作，ZLG7290引脚图如图1。
+                    <h4>实验步骤3 ZLG7290介绍</h4>
+                    ZLG7290 是广州周立功单片机发展有限公司自行设计的数码管显示驱动及键盘扫描管理芯片。能够直接驱动8位共阴极数码管（或64只独立的LED），同时还可以扫面管理多大64只按键。其中有8只按键可以作为功能键使用，就像电脑键盘上的Ctrl，Shift、Alt键一样。另外ZLG7290 内部还设有连击计数器，能够使某键按下后不松手而连续有效。该芯片为工业级芯片，抗干扰能力强，在工业测控中已有大量应用。该器件通过I2C总线接口进行操作，ZLG7290引脚图如图1。
                     <br />
-                    <img src="/Content/board.png" style="width: 288px; height: 238px; margin: 10px;" />
+                    <img src="/Content/intro/board.png" style="width: 288px; height: 238px; margin: 10px;" />
                     <br />
                     <h4>下表说明了ZLG7290各引脚的功能</h4>
                     <br />
@@ -579,8 +579,32 @@
                             <td>数码管b 段／键盘行信号1</td>
                         </tr>
                     </table>
+                    数码管驱动zlg7290.c实现了设备文件操作控制，用户态可以调用zlg7290_hw_write()，zlg7290_hw_read()和zlg_led_ioctl()函数来对数码管进行读写操作。
                     <br />
                     <br />
+                    <h4>实验步骤4 数码管显示原理介绍</h4>
+                    <img src="/Content/intro/digit.png" style="width: 646px; height: 230px; margin: 10px;" />
+                    <br />
+                    0xfc, 0x0c, 0xda, 0xf2, 0x66, 0xb6, 0xbe, 0xe0----对应显示0-7
+                    <br />
+                    0xfe, 0xf6, 0xee, 0x3e, 0x9c, 0x7a, 0x9e, 0x8e----对应显示8-F
+                    <br />
+                    <img src="/Content/intro/tb.png" style="width: 539px; height: 151px; margin: 10px;" />
+                    <h4>实验步骤5 嵌入式开发Web在线仿真实验平台</h4>
+                    <h5>1.本次实验依然在实验室上课</h5>
+                    登录嵌入式开发Web在线仿真实验平台地址http://219.224.160.133:8090<br />
+                    学员登录：用户名和密码为各位学号（字母大写）<br />
+                    <h5>2.正确填写模板后，【提交编译】</h5>
+                    <img src="/Content/intro/d1.png" style="width: 432px; height: 287px; margin: 10px;" />
+                    <br />未出现failed、error等字样说明编译成功<br />
+                    <h5>3.【上传程序】</h5>
+                    <img src="/Content/intro/d2.png" style="width: 432px; height: 291px; margin: 10px;" />
+                    <h5>4.切换到“板卡效果“页面，【运行程序】</h5>
+                    <img src="/Content/intro/d3.png" style="width: 432px; height: 298px; margin: 10px;" />
+                    <h4>说明：本次在线实验需要由助教查看效果</h4>
+⦁	扩展实验：<br />
+⦁	编一个时钟程序，获取当前的年（2019），月日（1218），时分（0855），并在数码管中依次显示出来，例如：2019 1218 0855表示2019年12月18日08时55分<br />
+⦁	数码管依次显示 "2.0.1.9."、"1.2.1.8."、"0.8.5.5."<br />
                 </div>
                 <div id="introTitle" class="col-md-12" style="display:none;position:absolute; top:34px; padding-top: 10px; padding-bottom: 10px; background-color: #ebebeb; filter: alpha(opacity=80); -moz-opacity: 0.5; opacity: 0.8;">
                     <h4>数码管驱动zlg7290.c实现了设备文件操作控制，用户态可以调用zlg7290_hw_write()，zlg7290_hw_read()和zlg_led_ioctl()函数来对数码管进行读写操作，阅读ZLG7290数码管驱动的代码程序清单，了解其实现的具体方法。</h4>

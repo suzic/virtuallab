@@ -757,7 +757,6 @@
     <Content Include="CM\theme\yonce.css" />
     <Content Include="CM\theme\zenburn.css" />
     <Content Include="Contact.aspx" />
-    <Content Include="Content\board.png" />
     <Content Include="Content\bootstrap-theme.css" />
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
@@ -771,6 +770,12 @@
     <Content Include="Content\digit_num\p5.png" />
     <Content Include="Content\digit_num\p6.png" />
     <Content Include="Content\digit_num\p7.png" />
+    <Content Include="Content\intro\board.png" />
+    <Content Include="Content\intro\d1.png" />
+    <Content Include="Content\intro\d2.png" />
+    <Content Include="Content\intro\d3.png" />
+    <Content Include="Content\intro\digit.png" />
+    <Content Include="Content\intro\tb.png" />
     <Content Include="Content\zlg7290.png" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\tab.css" />
