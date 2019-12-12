@@ -50,15 +50,14 @@
     <hr />
     <div class="row">
         <div class="col-md-12">
-        <asp:GridView ID="gvRepots" runat="server" AutoGenerateColumns="False" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="4" CssClass="table col-md-12" DataKeyNames="id_task" DataSourceID="sdsReports" ForeColor="Black" GridLines="Horizontal" AllowPaging="True" AllowSorting="True" PageSize="12">
+        <asp:GridView ID="gvRepots" runat="server" AutoGenerateColumns="False" BackColor="White" BorderColor="#CCCCCC" BorderStyle="None" BorderWidth="1px" CellPadding="4" CssClass="table col-md-12" DataKeyNames="id_task, id_experiment, id_student" DataSourceID="sdsReports" ForeColor="Black" GridLines="Horizontal" AllowPaging="True" AllowSorting="True" PageSize="12">
             <Columns>
                 <asp:BoundField DataField="id_experiment" HeaderText="id_experiment" ReadOnly="True" SortExpression="id_experiment" Visible="False" />
-
                 <asp:TemplateField ConvertEmptyStringToNull="False" HeaderText="实验名称" SortExpression="title">
                     <ItemTemplate>
                         <asp:Label ID="lbTitle" runat="server" CssClass="col-md-12" Text='<%# Eval("title", "{0}") %>'></asp:Label>
                     </ItemTemplate>
-                    <HeaderStyle CssClass="col-md-5" />
+                    <HeaderStyle CssClass="col-md-4" />
                 </asp:TemplateField>
                 <asp:BoundField DataField="id_student" HeaderText="id_student" ReadOnly="True" SortExpression="id_student" Visible="False" />
                 <asp:TemplateField ConvertEmptyStringToNull="False" HeaderText="参与人" SortExpression="name">
@@ -72,9 +71,9 @@
                 <asp:BoundField DataField="id_record" HeaderText="id_record" ReadOnly="True" SortExpression="id_record" Visible="False" />
                 <asp:TemplateField ConvertEmptyStringToNull="False" HeaderText="完成时间" SortExpression="finish_date">
                     <ItemTemplate>
-                        <asp:Label ID="lbFinishDate" runat="server" CssClass="col-md-12" Text='<%# Eval("finish_date", "{0:g}") %>'></asp:Label>
+                        <asp:Label ID="lbFinishDate" runat="server" CssClass="col-md-12" Text='<%# Eval("finish_date", "{0:F}") %>'></asp:Label>
                     </ItemTemplate>
-                    <HeaderStyle CssClass="col-md-2" />
+                    <HeaderStyle CssClass="col-md-3" />
                 </asp:TemplateField>
                 <asp:TemplateField HeaderText="实验数据">
                     <ItemTemplate>
