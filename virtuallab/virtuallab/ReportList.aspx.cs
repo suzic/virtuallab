@@ -109,8 +109,10 @@ namespace virtuallab
                         string dd = res.ContentEncoding;
                         System.IO.Stream strem = res.GetResponseStream();
                         System.IO.StreamReader r = new System.IO.StreamReader(strem);
+
+                        if (i > 0)
+                            readCode += "\n//====================//";
                         readCode += r.ReadToEnd();
-                        readCode += "\n====================";
                     }
                 }
             }
