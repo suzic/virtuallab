@@ -82,24 +82,41 @@ namespace virtuallab
         /// </summary>
         protected void lbCode_Command(object sender, CommandEventArgs e)
         {
-            HttpWebRequest myHttpWebRequest = System.Net.WebRequest.Create(Request.Url.GetLeftPart(UriPartial.Authority) + "/Content/codeSample.txt") as HttpWebRequest;
-            myHttpWebRequest.KeepAlive = false;
-            myHttpWebRequest.AllowAutoRedirect = false;
-            myHttpWebRequest.UserAgent = "Mozilla/5.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727)";
-            myHttpWebRequest.Timeout = 10000;
-            myHttpWebRequest.ContentType = "application/x-www-form-urlencoded;charset=utf-8";
-            using (HttpWebResponse res = (HttpWebResponse)myHttpWebRequest.GetResponse())
+            HttpWebRequest myHttpWebRequest;
+
+            // 当前约定了用户的代码存储位置，然并未通过接口参数返回；因此这里需要根据约定来主动拼写请求地址
+            // string resultCodeUrl = e.CommandArgument.ToString();
+            int nIndex = ((GridViewRow)((LinkButton)sender).NamingContainer).RowIndex;
+            string idExp = gvRepots.DataKeys[nIndex][1].ToString();
+            string idStu = gvRepots.DataKeys[nIndex][2].ToString();
+            string resultCodeUrl = "192.168.18.80/workdir/" + idStu + "/" + idExp + "/app/src/" + idStu + "_" + idExp + ".c;";
+            resultCodeUrl += "192.168.18.80/workdir/" + idStu + "/" + idExp + "/kernel/src/" + idStu + "_" + idExp + ".c";
+
+            string[] results = resultCodeUrl.Split(';');
+            string readCode = "";
+            for (int i = 0; i < results.Length; i++)
             {
-                if (res.StatusCode == HttpStatusCode.OK || res.StatusCode == HttpStatusCode.PartialContent)//返回为200或206
+                myHttpWebRequest = System.Net.WebRequest.Create("http://" + results[i]) as HttpWebRequest;
+                myHttpWebRequest.KeepAlive = false;
+                myHttpWebRequest.AllowAutoRedirect = false;
+                myHttpWebRequest.UserAgent = "Mozilla/5.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727)";
+                myHttpWebRequest.Timeout = 10000;
+                myHttpWebRequest.ContentType = "application/x-www-form-urlencoded;charset=utf-8";
+                using (HttpWebResponse res = (HttpWebResponse)myHttpWebRequest.GetResponse())
                 {
-                    string dd = res.ContentEncoding;
-                    System.IO.Stream strem = res.GetResponseStream();
-                    System.IO.StreamReader r = new System.IO.StreamReader(strem);
-                    currentCode = r.ReadToEnd();
-                    // 需要使用JSON封装的方法将该字符串传至前端
-                    currentCode = JsonConvert.SerializeObject(currentCode);
+                    if (res.StatusCode == HttpStatusCode.OK || res.StatusCode == HttpStatusCode.PartialContent) // 返回为200或206
+                    {
+                        string dd = res.ContentEncoding;
+                        System.IO.Stream strem = res.GetResponseStream();
+                        System.IO.StreamReader r = new System.IO.StreamReader(strem);
+                        readCode += r.ReadToEnd();
+                        readCode += "\n====================";
+                    }
                 }
             }
+
+            // 需要使用JSON封装的方法将该字符串传至前端
+            currentCode = JsonConvert.SerializeObject(readCode);
         }
 
         protected void lbScoreConfirm(object sender, CommandEventArgs e)
