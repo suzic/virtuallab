@@ -54,6 +54,9 @@ namespace virtuallab.Models
         public bool uploadSuccess;      // Flag信息：标记上传是否成功
         public bool playSuccess;        // Flag信息：标记运行是否成功
 
+        public int InError;
+        public int InWaiting;
+
         /// <summary>
         /// 用户所处状态。在状态改变时，触发对应事件。
         /// </summary>

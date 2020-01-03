@@ -51,6 +51,11 @@ namespace virtuallab
             public SI pos { get; set; }
         }
 
+        /// <summary>
+        /// 运行等待队列
+        /// </summary>
+        public static List<LoginUser> runningQueue = new List<LoginUser>();
+
         public LoginUser CurrentLoginUser
         {
             get { return ((SiteMaster)Master).CurrentLoginUser; }
@@ -59,17 +64,17 @@ namespace virtuallab
         public string currentCodeOrigin;
         public int currentPosTop;
         public int defaultTab;
-        public int InError = 0;
 
-        public string BaseURL;
-        public string URIEnvironmentRequest;
-        public string URICodeSubmit;
-        public string URICompileResultTick;
-        public string URIProgramUpload;
-        public string URIRun;
-        public string URIRunResultTick;
+        public static string BaseURL = System.Configuration.ConfigurationManager.AppSettings["BaseURL"];
+        public static string URIEnvironmentRequest = System.Configuration.ConfigurationManager.AppSettings["URIEnvironmentRequest"];
+        public static string URICodeSubmit = System.Configuration.ConfigurationManager.AppSettings["URICodeSubmit"];
+        public static string URICompileResultTick = System.Configuration.ConfigurationManager.AppSettings["URICompileResultTick"];
+        public static string URIProgramUpload = System.Configuration.ConfigurationManager.AppSettings["URIProgramUpload"];
+        public static string URIRun = System.Configuration.ConfigurationManager.AppSettings["URIRun"];
+        public static string URIRunResultTick = System.Configuration.ConfigurationManager.AppSettings["URIRunResultTick"];
+        public static bool EnableService = System.Configuration.ConfigurationManager.AppSettings["EnableService"].Equals("1");
 
-        public bool EnableService = true;
+        public string tipInfo = "已接收数据，加载中......";
         public StringBuilder outputString = new StringBuilder();
         public StringBuilder animateString = new StringBuilder();
         public string runResultFormatted
@@ -86,7 +91,6 @@ namespace virtuallab
         /// </summary>
         protected void Page_Init(object sender, EventArgs e)
         {
-            InitNetworkParams();
             InitCodeMirrorStyles();
 
             if (CurrentLoginUser != null)
@@ -198,19 +202,6 @@ namespace virtuallab
                     currentPosTop = 0;
                 }
             }
-        }
-
-        // 从配置文件中读取接口设置
-        protected void InitNetworkParams()
-        {
-            BaseURL = System.Configuration.ConfigurationManager.AppSettings["BaseURL"];
-            URIEnvironmentRequest = System.Configuration.ConfigurationManager.AppSettings["URIEnvironmentRequest"];
-            URICodeSubmit = System.Configuration.ConfigurationManager.AppSettings["URICodeSubmit"];
-            URICompileResultTick = System.Configuration.ConfigurationManager.AppSettings["URICompileResultTick"];
-            URIProgramUpload = System.Configuration.ConfigurationManager.AppSettings["URIProgramUpload"];
-            URIRun = System.Configuration.ConfigurationManager.AppSettings["URIRun"];
-            URIRunResultTick = System.Configuration.ConfigurationManager.AppSettings["URIRunResultTick"];
-            EnableService = System.Configuration.ConfigurationManager.AppSettings["EnableService"].Equals("1");
         }
 
         // 初始化CodeMirror以呈现代码规范化效果
@@ -362,6 +353,34 @@ namespace virtuallab
             cmd.ExecuteNonQuery();
         }
 
+        #region 运行队列方法
+
+        private LoginUser CurrentRunning()
+        {
+            if (runningQueue.Count == 0)
+                return null;
+            return runningQueue[0];
+        }
+
+        private int QueueLength()
+        {
+            return runningQueue.Count;
+        }
+
+        private void PushToQueue(LoginUser user)
+        {
+            runningQueue.Add(user);
+        }
+
+        private LoginUser PopFromQueue()
+        {
+            LoginUser user = runningQueue[0];
+            runningQueue.RemoveAt(0);
+            return user;
+        }
+
+        #endregion
+
         #region 网络请求方法
 
         // 初始化开发环境，获取session_id的网络请求
@@ -371,11 +390,11 @@ namespace virtuallab
             if (!EnableService)
             {
                 CurrentLoginUser.currentState = EnvironmentState.InEditing;
-                CurrentLoginUser.currentSessionId = (CurrentLoginUser.currentTaskId + "test_session_sz19");
+                CurrentLoginUser.currentSessionId = ("Task_" + CurrentLoginUser.currentTaskId + "_" + Guid.NewGuid());
                 return;
             }
 
-            InError = 0;
+            CurrentLoginUser.InError = 0;
             System.Diagnostics.Debug.WriteLine("============= Environment Request ===============");
             try
             {
@@ -403,7 +422,7 @@ namespace virtuallab
             }
             catch
             {
-                InError = 1;
+                CurrentLoginUser.InError = 1;
                 CurrentLoginUser.currentState = EnvironmentState.NotReady;
             }
         }
@@ -413,6 +432,7 @@ namespace virtuallab
         {
             if (CurrentLoginUser.currentState == EnvironmentState.InEditing)
             {
+                tipInfo = "正在等待远程主机编译结果返回......";
                 CurrentLoginUser.currentState = EnvironmentState.InCompiling;
                 CurrentLoginUser.compileSuccess = false;
                 if (!EnableService)
@@ -423,7 +443,7 @@ namespace virtuallab
                     return;
                 }
 
-                InError = 0;
+                CurrentLoginUser.InError = 0;
                 System.Diagnostics.Debug.WriteLine("============= Code Submit ===============");
                 System.Diagnostics.Debug.WriteLine(currentCode);
                 try
@@ -455,8 +475,9 @@ namespace virtuallab
                 }
                 catch
                 {
-                    InError = 1;
+                    CurrentLoginUser.InError = 1;
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                    tipInfo = "您提交的代码无法编译，或当前编译服务无法连接。";
                 }
             }
             else
@@ -532,6 +553,7 @@ namespace virtuallab
         {
             if (CurrentLoginUser.currentState == EnvironmentState.InEditing && CurrentLoginUser.compileSuccess)
             {
+                tipInfo = "正在等待远程主机上传结果返回......";
                 CurrentLoginUser.currentState = EnvironmentState.InUploading;
                 CurrentLoginUser.uploadSuccess = false;
                 if (!EnableService)
@@ -540,7 +562,7 @@ namespace virtuallab
                     return;
                 }
 
-                InError = 0;
+                CurrentLoginUser.InError = 0;
                 System.Diagnostics.Debug.WriteLine("============= Program Uploading ===============");
                 try
                 {
@@ -567,8 +589,9 @@ namespace virtuallab
                 }
                 catch
                 {
-                    InError = 1;
+                    CurrentLoginUser.InError = 1;
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                    tipInfo = "您上传程序到板卡的请求服务未能完成，当前上传服务无法连接。";
                 }
             }
             else
@@ -647,41 +670,54 @@ namespace virtuallab
             {
                 CurrentLoginUser.currentState = EnvironmentState.InPlaying;
                 CurrentLoginUser.playSuccess = false;
-                if (!EnableService)
-                {
-                    CurrentLoginUser.currentRunId = "test_run_id_sz19";
-                    return;
-                }
 
-                InError = 0;
-                System.Diagnostics.Debug.WriteLine("============= Run Program ===============");
-                try
+                PushToQueue(CurrentLoginUser);
+                if (CurrentRunning() == CurrentLoginUser)
                 {
-                    var httpClient = new HttpClient();
-                    httpClient.BaseAddress = new Uri(BaseURL);
-                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                    var body = new FormUrlEncodedContent(new Dictionary<string, string> {
-                        { "session_id", CurrentLoginUser.currentSessionId.ToString() }
-                    });
-
-                    // response
-                    var response = httpClient.PostAsync(URIRun, body).Result;
-                    var data = response.Content.ReadAsStringAsync().Result;
-                    var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
-                    var result = (JObject)formatData["data"];
-                    bool success = (int)result["fail"] == 0;
-                    if (success)
+                    CurrentLoginUser.InWaiting = 0;
+                    tipInfo = "你的程序已在执行，正在等待远程主机运行效果返回......";
+                    if (!EnableService)
                     {
-                        CurrentLoginUser.currentRunId = result["run_id"].ToString();
-                        System.Diagnostics.Debug.Write("-------- run_id = " + CurrentLoginUser.currentRunId + "\n");
+                        CurrentLoginUser.currentRunId = "test_run_id_sz19";
+                        return;
                     }
-                    else
+
+                    CurrentLoginUser.InError = 0;
+                    System.Diagnostics.Debug.WriteLine("============= Run Program ===============");
+                    try
+                    {
+                        var httpClient = new HttpClient();
+                        httpClient.BaseAddress = new Uri(BaseURL);
+                        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        var body = new FormUrlEncodedContent(new Dictionary<string, string> {
+                            { "session_id", CurrentLoginUser.currentSessionId.ToString() }
+                        });
+
+                        // response
+                        var response = httpClient.PostAsync(URIRun, body).Result;
+                        var data = response.Content.ReadAsStringAsync().Result;
+                        var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
+                        var result = (JObject)formatData["data"];
+                        bool success = (int)result["fail"] == 0;
+                        if (success)
+                        {
+                            CurrentLoginUser.currentRunId = result["run_id"].ToString();
+                            System.Diagnostics.Debug.Write("-------- run_id = " + CurrentLoginUser.currentRunId + "\n");
+                        }
+                        else
+                            CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                    }
+                    catch
+                    {
+                        CurrentLoginUser.InError = 1;
                         CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                        tipInfo = "您运行程序的请求未能完成，或当前运行服务无法连接。";
+                    }
                 }
-                catch
+                else
                 {
-                    InError = 1;
-                    CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                    CurrentLoginUser.InWaiting = (QueueLength() - 1);
+                    tipInfo = "当前你还需要等待前面" + CurrentLoginUser.InWaiting + "个程序的运行完成.";
                 }
             }
             else
@@ -693,12 +729,27 @@ namespace virtuallab
         // 运行结果心跳检查
         protected void RunTick()
         {
-            if (CurrentLoginUser.currentState == EnvironmentState.InPlaying)
+            if (CurrentRunning() != CurrentLoginUser)
             {
+                CurrentLoginUser.playSuccess = false;
+                CurrentLoginUser.InWaiting = (QueueLength() - 1);
+                tipInfo = "当前你还需要等待前面" + CurrentLoginUser.InWaiting + "个程序的运行完成.";
+            }
+            else if (CurrentLoginUser.currentState == EnvironmentState.InPlaying)
+            {
+                // 如果当前用户还是等待状态，那么现在可以执行了。
+                if (CurrentLoginUser.InWaiting > 0)
+                {
+                    CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                    RunPlay();
+                    return;
+                }
+
                 if (!EnableService)
                 {
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
                     CurrentLoginUser.playSuccess = true;
+                    PopFromQueue(); // 运行完成时，移出队列
 
                     outputString.Append("\n");
                     outputString.Append("程序执行输出结果...\n");
@@ -740,6 +791,7 @@ namespace virtuallab
                         var effectInfo = (JArray)result["effect"];
                         var consoleInfo = (JArray)result["console"];
                         System.Diagnostics.Debug.WriteLine("-------- Result info ----------------");
+                        // 创建动画描述信息animateString，前端页面通过调用属性runResultFormatted获得animateString的可运行效果
                         SetupAnimationData(effectInfo);
                         foreach (var info in effectInfo)
                             System.Diagnostics.Debug.WriteLine("EFFECT: " + info.ToString());
@@ -751,12 +803,16 @@ namespace virtuallab
                         {
                             CurrentLoginUser.currentState = EnvironmentState.InEditing;
                             CurrentLoginUser.playSuccess = (finishInt == 1);
+                            PopFromQueue(); // 运行完成时，移出队列，无论成功还是失败
                         }
+                        // 如果没有运行完成，则不要动队列。
+                        tipInfo = "你的程序已在执行，正在等待远程主机运行效果返回......";
                     }
                     else
                     {
                         CurrentLoginUser.currentState = EnvironmentState.InEditing;
                         CurrentLoginUser.playSuccess = false;
+                        PopFromQueue(); // 网络请求失败的情况下，移出队列
                     }
                 }
             }

@@ -7,6 +7,7 @@
         var compile_id = "<%=CurrentLoginUser.currentCompileId %>";
         var upload_id = "<%=CurrentLoginUser.currentUploadId %>";
         var run_id = "<%=CurrentLoginUser.currentRunId %>";
+        var tip_info = "<%=tipInfo %>";
 
         var cm_editor;
         var cm_outer;
@@ -17,7 +18,7 @@
         var output_string = <%=outputFormatted %>;
         var animate_string = <%=runResultFormatted %>;
 
-        var inError = <%=InError %>;
+        var inError = <%=CurrentLoginUser.InError %>;
         var inCompiling = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InCompiling) %>";
         var inUploading = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InUploading) %>";
         var inRunning = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InPlaying) %>";
@@ -83,7 +84,7 @@
                     tickImageArray = animate_string.split("\n");
                     tickImageCount = 0;
                     clearTimeout(timerImageId);
-                    timerImageId = setTimeout("tickRunning()", 2000);
+                    timerImageId = setTimeout("tickRunning()", 1000);
                 }
             }
         }
@@ -94,15 +95,15 @@
             clearTimeout(timerId);
 
             if (inError != 0) {
-                layer_mask.innerHTML = '您提交的代码无法编译，或当前编译服务无法连接。' + '<br/>'
+                layer_mask.innerHTML = tip_info + '<br/>'
                 timerId = setTimeout(function () {
                     layer_mask.style.display = "none";
                     startAnimation();
                 }, 2000);
             }
             else if (inCompiling == "True") {
-                layer_mask.innerHTML = '正在等待远程主机编译结果返回......' + '<br/>'
-                    + '<div class="col-md-12" style="align-content:center;position:absolute;top:400px;"><input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="width:200px;"/></div>';
+                layer_mask.innerHTML = tip_info + '<br/>';
+                //    + '<div class="col-md-12" style="align-content:center;position:absolute;top:400px;"><input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="width:200px;"/></div>';
                 timerId = setTimeout(function () {
                     compileTick();
                 }, 5000);
@@ -113,8 +114,8 @@
                 //}
             }
             else if (inUploading == "True") {
-                layer_mask.innerHTML = '正在等待远程主机上传结果返回......' + '<br/>'
-                    + '<div class="col-md-12" style="align-content:center;position:absolute;top:400px;"><input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="width:200px;"/></div>';
+                layer_mask.innerHTML = tip_info + '<br/>';
+                //    + '<div class="col-md-12" style="align-content:center;position:absolute;top:400px;"><input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="width:200px;"/></div>';
                 timerId = setTimeout(function () {
                     uploadTick();
                 }, 5000);
@@ -125,11 +126,11 @@
                 //}
             }
             else if (inRunning == "True") {
-                layer_mask.innerHTML = '正在等待远程主机运行效果返回......' + '<br/>'
-                    + '<div class="col-md-12" style="align-content:center;position:absolute;top:400px;"><input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="width:200px;"/></div>';
+                layer_mask.innerHTML = tip_info + '<br/>';
+                //    + '<div class="col-md-12" style="align-content:center;position:absolute;top:400px;"><input type="button" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="width:200px;"/></div>';
                 timerId = setTimeout(function () {
                     runTick();
-                }, 5000);
+                }, 10000);
                 //layer_mask.onclick = function () {
                 //    clearTimeout(timerId);
                 //    layer_mask.style.display = "none";
@@ -137,7 +138,7 @@
                 //}
             }
             else {
-                layer_mask.innerHTML = "已接收数据，加载中......";
+                layer_mask.innerHTML = tip_info;
                 timerId = setTimeout(function () {
                     layer_mask.style.display = "none";
                     startAnimation();
@@ -628,7 +629,5 @@
         </div>
     </div>
     <div class="mask" id="mask" style="display:block;text-align:center;line-height:650px;min-height:650px;font-size:2em;">
-        Waiting...<div style="align-content:center"></div>
-        <input type="submit" value="放弃等待" onclick="abortWaiting();" class="btn btn-default form-control" style="position:absolute;align-content:center;" />
     </div>
 </asp:Content>
