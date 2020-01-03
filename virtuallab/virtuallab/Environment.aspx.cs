@@ -761,9 +761,11 @@ namespace virtuallab
                     return;
                 }
 
+                CurrentLoginUser.InError = 0;
                 System.Diagnostics.Debug.WriteLine("============= Run Tick ===============");
-                using (var httpClient = new HttpClient())
+                try
                 {
+                    var httpClient = new HttpClient();
                     httpClient.BaseAddress = new Uri(BaseURL);
                     httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                     var body = new FormUrlEncodedContent(new Dictionary<string, string> {
@@ -812,8 +814,16 @@ namespace virtuallab
                     {
                         CurrentLoginUser.currentState = EnvironmentState.InEditing;
                         CurrentLoginUser.playSuccess = false;
-                        PopFromQueue(); // 网络请求失败的情况下，移出队列
+                        PopFromQueue(); // 操作失败，移出队列
                     }
+                }
+                catch
+                {
+                    CurrentLoginUser.InError = 1;
+                    CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                    CurrentLoginUser.playSuccess = false;
+                    outputString.AppendLine("ERROR:运行的程序发生异常，没能查询到结果。");
+                    PopFromQueue(); // 网络请求失败的情况下，移出队列
                 }
             }
             else
