@@ -362,34 +362,6 @@ namespace virtuallab
             cmd.ExecuteNonQuery();
         }
 
-        #region 运行队列方法
-
-        private LoginUser CurrentRunning()
-        {
-            if (runningQueue.Count == 0)
-                return null;
-            return runningQueue[0];
-        }
-
-        private int QueueLength()
-        {
-            return runningQueue.Count;
-        }
-
-        private void PushToQueue(LoginUser user)
-        {
-            runningQueue.Add(user);
-        }
-
-        private LoginUser PopFromQueue()
-        {
-            LoginUser user = runningQueue[0];
-            runningQueue.RemoveAt(0);
-            return user;
-        }
-
-        #endregion
-
         #region 网络请求方法
 
         // 初始化开发环境，获取session_id的网络请求
@@ -683,54 +655,44 @@ namespace virtuallab
             {
                 CurrentLoginUser.currentState = EnvironmentState.InPlaying;
                 CurrentLoginUser.playSuccess = false;
-
-                PushToQueue(CurrentLoginUser);
-                if (CurrentRunning() == CurrentLoginUser)
+                CurrentLoginUser.InWaiting = 0;
+                tipInfo = "你的程序已在执行，正在等待远程主机运行效果返回......";
+                if (!EnableService)
                 {
-                    CurrentLoginUser.InWaiting = 0;
-                    tipInfo = "你的程序已在执行，正在等待远程主机运行效果返回......";
-                    if (!EnableService)
-                    {
-                        CurrentLoginUser.currentRunId = "test_run_id_sz19";
-                        return;
-                    }
-
-                    CurrentLoginUser.InError = 0;
-                    System.Diagnostics.Debug.WriteLine("============= Run Program ===============");
-                    try
-                    {
-                        var httpClient = new HttpClient();
-                        httpClient.BaseAddress = new Uri(BaseURL);
-                        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                        var body = new FormUrlEncodedContent(new Dictionary<string, string> {
-                            { "session_id", CurrentLoginUser.currentSessionId.ToString() }
-                        });
-
-                        // response
-                        var response = httpClient.PostAsync(URIRun, body).Result;
-                        var data = response.Content.ReadAsStringAsync().Result;
-                        var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
-                        var result = (JObject)formatData["data"];
-                        bool success = (int)result["fail"] == 0;
-                        if (success)
-                        {
-                            CurrentLoginUser.currentRunId = result["run_id"].ToString();
-                            System.Diagnostics.Debug.Write("-------- run_id = " + CurrentLoginUser.currentRunId + "\n");
-                        }
-                        else
-                            CurrentLoginUser.currentState = EnvironmentState.InEditing;
-                    }
-                    catch
-                    {
-                        CurrentLoginUser.InError = 1;
-                        CurrentLoginUser.currentState = EnvironmentState.InEditing;
-                        tipInfo = "您运行程序的请求未能完成，或当前运行服务无法连接。";
-                    }
+                    CurrentLoginUser.currentRunId = "test_run_id_sz19";
+                    return;
                 }
-                else
+
+                CurrentLoginUser.InError = 0;
+                System.Diagnostics.Debug.WriteLine("============= Run Program ===============");
+                try
                 {
-                    CurrentLoginUser.InWaiting = (QueueLength() - 1);
-                    tipInfo = "当前你还需要等待前面" + CurrentLoginUser.InWaiting + "个程序的运行完成.";
+                    var httpClient = new HttpClient();
+                    httpClient.BaseAddress = new Uri(BaseURL);
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var body = new FormUrlEncodedContent(new Dictionary<string, string> {
+                        { "session_id", CurrentLoginUser.currentSessionId.ToString() }
+                    });
+
+                    // response
+                    var response = httpClient.PostAsync(URIRun, body).Result;
+                    var data = response.Content.ReadAsStringAsync().Result;
+                    var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
+                    var result = (JObject)formatData["data"];
+                    bool success = (int)result["fail"] == 0;
+                    if (success)
+                    {
+                        CurrentLoginUser.currentRunId = result["run_id"].ToString();
+                        System.Diagnostics.Debug.Write("-------- run_id = " + CurrentLoginUser.currentRunId + "\n");
+                    }
+                    else
+                        CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                }
+                catch
+                {
+                    CurrentLoginUser.InError = 1;
+                    CurrentLoginUser.currentState = EnvironmentState.InEditing;
+                    tipInfo = "您运行程序的请求未能完成，或当前运行服务无法连接。";
                 }
             }
             else
@@ -742,13 +704,7 @@ namespace virtuallab
         // 运行结果心跳检查
         protected void RunTick()
         {
-            if (CurrentRunning() != CurrentLoginUser)
-            {
-                CurrentLoginUser.playSuccess = false;
-                CurrentLoginUser.InWaiting = (QueueLength() - 1);
-                tipInfo = "当前你还需要等待前面" + CurrentLoginUser.InWaiting + "个程序的运行完成.";
-            }
-            else if (CurrentLoginUser.currentState == EnvironmentState.InPlaying)
+            if (CurrentLoginUser.currentState == EnvironmentState.InPlaying)
             {
                 // 如果当前用户还是等待状态，那么现在可以执行了。
                 if (CurrentLoginUser.InWaiting > 0)
@@ -762,7 +718,6 @@ namespace virtuallab
                 {
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
                     CurrentLoginUser.playSuccess = true;
-                    PopFromQueue(); // 运行完成时，移出队列
 
                     outputString.Append("\n");
                     outputString.Append("程序执行输出结果...\n");
@@ -818,7 +773,6 @@ namespace virtuallab
                         {
                             CurrentLoginUser.currentState = EnvironmentState.InEditing;
                             CurrentLoginUser.playSuccess = (finishInt == 1);
-                            PopFromQueue(); // 运行完成时，移出队列，无论成功还是失败
                         }
                         // 如果没有运行完成，则不要动队列。
                         tipInfo = "你的程序已在执行，正在等待远程主机运行效果返回......";
@@ -827,7 +781,6 @@ namespace virtuallab
                     {
                         CurrentLoginUser.currentState = EnvironmentState.InEditing;
                         CurrentLoginUser.playSuccess = false;
-                        PopFromQueue(); // 操作失败，移出队列
                     }
                 }
                 catch
@@ -836,7 +789,6 @@ namespace virtuallab
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
                     CurrentLoginUser.playSuccess = false;
                     outputString.AppendLine("ERROR:运行的程序发生异常，没能查询到结果。");
-                    PopFromQueue(); // 网络请求失败的情况下，移出队列
                 }
             }
             else
