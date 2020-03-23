@@ -781,6 +781,7 @@ namespace virtuallab
                     if (!hasContent)
                     {
                         System.Diagnostics.Debug.WriteLine(">>>> Finished : NO Content DATA");
+                        tipInfo = "你的程序已在执行，正在等待远程主机运行效果返回......";
                         return;
                     }
                     var result = (JObject)formatData["data"];
@@ -807,8 +808,11 @@ namespace virtuallab
                             CurrentLoginUser.playSuccess = (finishInt == 1);
                             PopFromQueue(); // 运行完成时，移出队列，无论成功还是失败
                         }
-                        // 如果没有运行完成，则不要动队列。
-                        tipInfo = "你的程序已在执行，正在等待远程主机运行效果返回......";
+                        else
+                        {
+                            // 如果没有运行完成，则不要动队列。
+                            tipInfo = "你的程序已在执行，正在等待远程主机运行效果返回......";
+                        }
                     }
                     else
                     {
