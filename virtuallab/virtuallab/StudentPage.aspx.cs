@@ -48,6 +48,11 @@ namespace virtuallab
                 CurrentLoginUser.currentCompileId = "";
                 CurrentLoginUser.currentUploadId = "";
                 CurrentLoginUser.currentRunId = "";
+
+                CurrentLoginUser.device_id = "";
+                CurrentLoginUser.app_name = "";
+                CurrentLoginUser.currentState = EnvironmentState.NotReady;
+
                 CurrentLoginUser.compileSuccess = false;
                 CurrentLoginUser.uploadSuccess = false;
                 CurrentLoginUser.playSuccess = false;

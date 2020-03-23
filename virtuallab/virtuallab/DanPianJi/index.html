@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Unity WebGL Player | DanPianJi</title>
+  <link rel="shortcut icon" href="TemplateData/favicon.ico">
+  <link rel="stylesheet" href="TemplateData/style.css">
+  <script src="TemplateData/UnityProgress.js"></script>
+  <script src="Build/UnityLoader.js"></script>
+  <script>
+    var gameInstance = UnityLoader.instantiate("gameContainer", "Build/Build.json", {onProgress: UnityProgress,width:1960,height:1600});
+
+  </script>
+  <script language="JavaScript" src="js/SendToUnity.js"></script>
+</head>
+<body>
+    <div class="webgl-content">
+        <div id="gameContainer" style="width: 960px; height: 600px"></div>
+        <div class="footer">
+            <div class="webgl-logo"></div>
+            <div class="fullscreen" onclick="gameInstance.SetFullscreen(1)"></div>
+            <div class="title">DanPianJi</div>
+        </div>
+    </div>
+    <button onclick="SendDataToUnity('11111111,11111111,11111111,11111111')">测试</button>
+    <button onclick="SendDataToUnity('00000000,00000000,00000000,00000000')">测试0</button>
+
+
+    <button onclick="SendDataToUnity('11111100,00000000,00000000,00000000')">测试0</button>
+    <button onclick="SendDataToUnity('01100000,00000000,00000000,00000000')">测试1</button>
+    <button onclick="SendDataToUnity('11011010,00000000,00000000,00000000')">测试2</button>
+    <button onclick="SendDataToUnity('11110010,00000000,00000000,00000000')">测试3</button>
+    <button onclick="SendDataToUnity('01100110,00000000,00000000,00000000')">测试4</button>
+    <button onclick="SendDataToUnity('10110110,00000000,00000000,00000000')">测试5</button>
+    <button onclick="SendDataToUnity('10111110,00000000,00000000,00000000')">测试6</button>
+    <button onclick="SendDataToUnity('11100000,00000000,00000000,00000000')">测试7</button>
+    <button onclick="SendDataToUnity('11111110,00000000,00000000,00000000')">测试8</button>
+    <button onclick="SendDataToUnity('11110110,00000000,00000000,00000000')">测试9</button>
+
+</body>
+</html>

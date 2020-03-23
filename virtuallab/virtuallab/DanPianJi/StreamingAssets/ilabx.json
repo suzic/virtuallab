@@ -1,0 +1,8 @@
+{
+    "issuerID": "100400",
+    "loginURL": "http://47.94.128.81/ilab-x-test/users/authenticate",
+    "tokenURL": "http://47.94.128.81/ilab-x-test/users/authenticate-token",
+    "statusURL": "http://47.94.128.81/ilab-x-test/applogs/result",
+    "uploadURL": "",
+    "logURL": "http://47.94.128.81/ilab-x-test/applogs/upload"
+}

@@ -1,27 +1,68 @@
 ﻿<%@ Page Title="进行实验" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Environment.aspx.cs" Inherits="virtuallab.Environment" %>
+<%@ Import Namespace="virtuallab.Common.po" %>
+<%@ Import Namespace="Newtonsoft.Json" %>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
+    <link rel="stylesheet" href="Content/layui/css/layui.css">
+    <style type="text/css">
+        .cusbtn{width:100px; margin-left:20px;margin-right:20px;}
+    </style>
+    <script src="Content/layui/layui.all.js"></script>
+
+    <script type="text/javascript">
+        function showDebugWindown() {
+            layer.open({
+                type: 1,
+                title: '编译结果输出窗口',
+                area: ['800px', '650px'],
+                content: $('#debugWnd') 
+            });
+        }
+        function showRunWindown() {
+            layer.open({
+                type: 1,
+                title: '设备仿真控制台',
+                area: ['800px', '650px'],
+                content: $('#runWnd'),
+                cancel: function (index, layero) {
+                    releaseDevice();
+                    return true;
+                }    
+            });
+        }
+    </script>
     <script type="text/javascript">
 
+        var userId = <%=CurrentLoginUser.userId %>;
+        var fid_task = <%=CurrentLoginUser.currentTaskId %>;
+        var fid_experiment = <%=CurrentLoginUser.currentExperimentId %>;
         var session_id = "<%=CurrentLoginUser.currentSessionId %>";
         var compile_id = "<%=CurrentLoginUser.currentCompileId %>";
+        var device_id = "<%=CurrentLoginUser.device_id %>";
+        var app_name = "<%=CurrentLoginUser.app_name %>";
         var upload_id = "<%=CurrentLoginUser.currentUploadId %>";
         var run_id = "<%=CurrentLoginUser.currentRunId %>";
         var tip_info = "<%=tipInfo %>";
 
-        var cm_editor;
+        var cm_editor = {};
         var cm_outer;
         var cm_console;
-        var current_code = <%=currentCode %>;
+        var bhCodes =<%=JsonConvert.SerializeObject(bhCodes) %>;
         var scroll_pos = <%=currentPosTop %>;
         var default_tab = <%=defaultTab %>;
         var output_string = <%=outputFormatted %>;
         var animate_string = <%=runResultFormatted %>;
 
+        var timer_outer;
+        var timer_console;
+        var timer_recieve;
+        var wndGL;
+
         var inError = <%=CurrentLoginUser.InError %>;
         var inCompiling = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InCompiling) %>";
         var inUploading = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InUploading) %>";
         var inRunning = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InPlaying) %>";
+        var currentState =<%=(int)CurrentLoginUser.currentState %>;
 
         var layer_mask;
         var timerImageId;
@@ -33,13 +74,36 @@
         var tickImageArray;
 
         $(document).ready(function () {
-            initCodeEditor();
+            initButtons();
+            initCodeEditors();
             new Tab("#Tab", default_tab);
-            showWaitingLayers();
+            //showWaitingLayers();
         });
+        function initCodeEditors() {
+            for (var i = 0; i < 1; i++) {
+                initCodeEditor(bhCodes[i].id_code, bhCodes[i].filecontent);
+            }
 
-        function initCodeEditor() {
-            cm_editor = CodeMirror.fromTextArea(document.getElementById('code_text'), {
+            cm_outer = CodeMirror.fromTextArea(document.getElementById('debug_text'), {
+                mode: 'textile',
+                theme: 'zenburn',
+                identUnit: 4,
+                readOnly: true
+            });
+            cm_outer.setSize('100%', '100%');
+
+
+            cm_console = CodeMirror.fromTextArea(document.getElementById('cm_console'), {
+                mode: 'textile',
+                theme: 'zenburn',
+                identUnit: 4,
+                readOnly: true
+            });
+            cm_console.setSize('100%', '100%');
+        }
+        function initCodeEditor(id, code) {
+            var edid = 'code_text' + id;
+            cm_editor[edid] = CodeMirror.fromTextArea(document.getElementById(edid), {
                 mode: 'text/x-c++src',
                 lineNumbers: true,
                 theme: 'mdn-like',
@@ -48,24 +112,24 @@
                 smartIdent: true,
                 indentWithTabs: true
             });
-            cm_editor.setSize('100%', '100%');
-            cm_outer = CodeMirror.fromTextArea(document.getElementById('debug_text'), {
-                mode: 'textile',
-                theme: 'zenburn',
-                identUnit: 4,
-                readOnly: true
-            });
-            cm_outer.setSize('100%', '100%');
-            cm_console = CodeMirror.fromTextArea(document.getElementById('run_console'), {
-                mode: 'textile',
-                theme: 'zenburn',
-                identUnit: 4,
-                readOnly: true
-            });
-            cm_console.setSize('100%', '100%');
+            cm_editor[edid].setSize('100%', '100%');
+            cm_editor[edid].setValue(code);
+            //cm_editor[edid].scrollTo(0, scroll_pos);
+        }
+        function initButtons() {
+            if (Object.getOwnPropertyNames(cm_editor).length == bhCodes.length) {
+                $('#btnSubmit').removeAttr("disabled");
+            }
 
-            cm_editor.setValue(current_code);
-            cm_editor.scrollTo(0, scroll_pos);
+            if (device_id) {
+                $('#btnDevice').val('已申请设备');
+                $('#btnDevice').prop("disabled", true);
+
+                $('#btnUpload').removeAttr("disabled");
+            } else {
+                if (currentState == 2)
+                    $('#btnDevice').removeAttr("disabled");
+            }
         }
 
         function startAnimation() {
@@ -156,18 +220,323 @@
             layer_mask.style.display = "none";
         }
 
+        function isNotReady() {
+            if (currentState == 0) {
+                layer.alert('当前未获服务器授权，请刷新页面重新获取服务器授权', { title: '警告' });
+                return true;
+            }
+            return false;
+        }
         // 上传代码编译接口调用
         function submitCode() {
-            var codeText = cm_editor.getValue();
-            var position = cm_editor.getScrollInfo();
-            __doPostBack("SUBMIT_CODE", JSON.stringify({ "code": codeText, "pos": position, "tab": 0 }));
+            //是否已获取session_id
+            if (isNotReady())
+                return;
+
+            //判断编辑器是否编辑完成
+            if (Object.getOwnPropertyNames(cm_editor).length < bhCodes.length) {
+                layer.alert('请先完成所有代码文件编辑再尝试提交编译', {title:'警告'});
+                return;
+            }
+            if (currentState >= 2) {
+                layer.confirm('你已经有成功的编译，确定要重新提交编译代码吗?', { title: '询问' }, function (index) {
+                    layer.close(index);
+                    submitCode_Core();
+                });
+            }
+            else {
+                submitCode_Core();
+            }
+        }
+        function submitCode_Core() {
+            showDebugWindown();
+            cm_outer.setValue("正在等待远程主机编译结果返回，请不要关闭此窗口！！！.");
+            waitingTimerOut();
+
+            var data = {};
+            data.fid_task = fid_task;
+            data.session_id = session_id;
+            data.part = 1;
+            data.code = [];
+            for (var i = 0; i < bhCodes.length; i++) {
+                data.code[i] = {};
+                data.code[i].filename = bhCodes[i].filename;
+                data.code[i].content = cm_editor['code_text' + bhCodes[i].id_code].getValue();
+            }
+
+            $.post("api/bh/CodeSubmit", data, function (result) {
+                //清除等待定时器
+                clearTimerOut();
+                cm_outer.setValue(cm_outer.getValue() + "\n" + (result.fail == 0 ? "SUCCESS：" : "ERROR：") + result.info_buffer+"\n\n您的代码已编译成功，现在你可以关闭此窗口，然后进行以下操作：\r1.申请设备：只有先申请到设备才能在设备中运行你的程序\n2.上传到设备：申请设备成功后，你就可以将程序上传到设备并运行了");
+
+                //成功后续动作
+                if (result.fail == 0) {
+                    currentState = 2;//已编译成功
+
+                    //设置申请设备按钮
+                    if (!device_id) {
+                        $('#btnDevice').removeAttr("disabled");
+                    }
+                }
+
+            }, "json").fail(function (xhr, errorText, errorType) {
+                clearTimerOut();
+                cm_outer.setValue(cm_outer.getValue() + "\nERROR：" + xhr.responseJSON.ExceptionMessage);
+            });
+        }
+        function waitingTimerOut() {
+            timer_outer = setInterval(function () {
+                cm_outer.setValue(cm_outer.getValue() + "." );
+            }, 1000);
+        }
+        function clearTimerOut() {
+            if (timer_outer)
+                clearInterval(timer_outer);
+        }
+
+        //申请设备
+        function applyDevice() {
+            //是否已获取session_id
+            if (isNotReady())
+                return;
+
+            var data = {};
+            data.session_id = session_id;
+            data.device_type = "1";
+            
+            $.post("api/bh/DeviceRequest", data, function (result) {
+                //成功后续动作
+                if (result.fail == 0) {
+                    currentState = 3;//已申请设备
+                    device_id = result.device_id;
+
+                    //设置申请设备按钮
+                    if (device_id) {
+                        $('#btnDevice').val('已申请设备');
+                        $('#btnDevice').prop("disabled", true);
+
+                        $('#btnUpload').removeAttr("disabled");
+                    }
+
+                    layer.alert('申请设备成功，你可以上传程序到设备了', { title: '成功' });
+                } else {
+                    layer.alert('申请设备失败', { title: '失败' });
+                }
+
+            }, "json").fail(function (xhr, errorText, errorType) {
+                layer.alert(xhr.responseJSON.ExceptionMessage, { title: '异常' });
+            });
+        }
+
+        //释放设备
+        function releaseDevice() {
+            var data = {};
+            data.session_id = session_id;
+            data.device_type = "0";
+
+            $.post("api/bh/DeviceRequest", data, function (result) {
+                //成功后续动作
+                if (result.fail == 0) {
+                    currentState = 2;
+                    device_id = '';
+                    app_name = '';
+
+                    $('#btnDevice').val('申请设备');
+                    $('#btnDevice').removeAttr("disabled");
+                    $('#btnUpload').prop("disabled", true);
+
+
+                } else {
+                    layer.alert('释放设备失败', { title: '失败' });
+                }
+
+            }, "json").fail(function (xhr, errorText, errorType) {
+                layer.alert(xhr.responseJSON.ExceptionMessage, { title: '异常' });
+            });
         }
 
         // 上传程序接口调用
         function uploadProgram() {
-            var codeText = cm_editor.getValue();
-            var position = cm_editor.getScrollInfo();
-            __doPostBack("UPLOAD_PROGRAM", JSON.stringify({ "code": codeText, "pos": position, "tab": 0 }));
+            //是否已获取session_id
+            if (isNotReady())
+                return;
+
+            if (currentState == 4 && app_name) {
+                showRunWnd();
+                return;
+            }
+
+            var data = {};
+            data.session_id = session_id;
+            data.device_id = device_id;
+
+            $.post("api/bh/ProgramUpload", data, function (result) {
+                //成功后续动作
+                if (result.fail == 0) {
+                    currentState = 4;//已申请设备
+                    app_name = result.app_name;
+                    
+                    showRunWnd();
+                    
+                } else {
+                    layer.alert('上传程序到设备失败，错误码：' + result.fail, { title: '失败' });
+                }
+
+            }, "json").fail(function (xhr, errorText, errorType) {
+                layer.alert(xhr.responseJSON.ExceptionMessage, { title: '异常' });
+            });
+        }
+        function showRunWnd() {
+            showRunWindown();
+            cm_console.setValue("你的程序已上传到设备，文件名为：" + app_name+"\n你可以在下面编辑框输入命令，点击“运行”，会将命令发送到设备上去执行，并将执行结果显示在这里\n> ");
+        }
+
+        // 运行命令
+        function txtCommand_onKeyPress(e) {
+            var keyCode = null;
+            if (e.which)
+                keyCode = e.which;
+            else if (e.keyCode)
+                keyCode = e.keyCode;
+
+            if (keyCode == 13) {
+                $('#btnRun').click();
+                return false;
+            }
+            return true;
+        }
+        function runCommand() {
+            if (!session_id || !device_id||!app_name)
+                return;
+
+            var cmd = $('#txtCommand').val().trim();
+            if (!cmd) {
+                cm_console.setValue(cm_console.getValue() + '\n>');
+                return;
+            }
+
+            $('#txtCommand').val('');
+            runCommandBegin();
+
+            cm_console.setValue(cm_console.getValue() + cmd + ' ');
+            waitingTimerConsole();
+
+            var data = {};
+            data.session_id = session_id;
+            data.device_id = device_id;
+            data.app_name = app_name;
+            data.input_line = cmd;
+
+            $.post("api/bh/ConsoleSend", data, function (result) {
+                clearTimerConsole();
+                showCommandResult(result.output);
+
+                //如果未返回全部信息
+                if (!result.finish) {
+                    waitingTimerRecieve();
+                } else {
+                    runCommandComplete();
+                }
+
+            }, "json").fail(function (xhr, errorText, errorType) {
+                clearTimerConsole();
+                showCommandResult(xhr.responseJSON.ExceptionMessage);
+                runCommandComplete();
+            });
+        }
+        function waitingTimerConsole() {
+            timer_console = setInterval(function () {
+                cm_console.setValue(cm_console.getValue() + ".");
+            }, 1000);
+        }
+        function clearTimerConsole() {
+            if (timer_console)
+                clearInterval(timer_console);
+        }
+
+        // 获取命令结果
+        function getCommandResult() {
+            if (!session_id || !device_id || !app_name)
+                return;
+
+            var data = {};
+            data.session_id = session_id;
+            data.device_id = device_id;
+
+            $.post("api/bh/ConsoleReceive", data, function (result) {
+                showCommandResult(result.output);
+
+                //如果完成停止
+                if (result.finish) {
+                    clearTimerRecieve();
+                    runCommandComplete();
+                }
+
+            }, "json").fail(function (xhr, errorText, errorType) {
+                showCommandResult(xhr.responseJSON.ExceptionMessage);
+            });
+        }
+        function waitingTimerRecieve() {
+            timer_recieve = setInterval(function () {
+                getCommandResult();
+            }, 1000);
+        }
+        function clearTimerRecieve() {
+            if (timer_recieve)
+                clearInterval(timer_recieve);
+        }
+        function showCommandResult(res) {
+            if (!res)
+                return;
+            var index = res.indexOf('<Console>');
+            var jsonstr;
+            var jsonobj;
+            if (index == 0) {
+                // 控制台数据
+                jsonstr = res.substr(9);
+                jsonobj = $.parseJSON(jsonstr);
+                for (let i = 0; i < jsonobj.length; i++) {
+                    cm_console.setValue(cm_console.getValue() + "\n" + jsonobj[i].value);
+                }
+
+            } else {
+                index = res.indexOf('<Effect>');
+                if (index == 0) {
+                    // 效果数据
+                    jsonstr = res.substr(8);
+                    jsonobj = $.parseJSON(jsonstr);
+                    for (let i = 0; i < jsonobj.length; i++) {
+                        if (i < 1) {
+                            showEffect(jsonobj[i].value);
+                        } else {
+                            setTimeout(function () {
+                                showEffect(jsonobj[i].value);
+                            }, 1000*i)
+                        }
+                    }
+
+                } else {
+                    // 纯字符
+                    cm_console.setValue(cm_console.getValue() + "\n" + res);
+                }
+            }
+        }
+        function runCommandBegin() {
+            $('#txtCommand').prop("disabled", true);
+            $('#btnRun').prop("disabled", true);
+        }
+        function runCommandComplete() {
+            cm_console.setValue(cm_console.getValue() + '\n>');
+            $('#txtCommand').removeAttr("disabled");
+            $('#btnRun').removeAttr("disabled");
+        }
+
+        // 显示动画
+        function showEffect(data) {
+            if (!wndGL)
+                wndGL = document.getElementById('frmWebGl').contentWindow;
+
+            wndGL.SendDataToUnity(data);
         }
 
         // 播放运行接口调用
@@ -349,285 +718,116 @@
             this.tabTitle[index].classList.add("active");
             this.tabPanel[index].classList.remove("deactive");
             this.tabPanel[index].classList.add("active");
-            document.getElementById("introTitle").style.display = (index == 1) ? "block" : "none";
-            document.getElementById("playCtrl").style.display = (index == 2) ? "block" : "none";
+            //document.getElementById("introTitle").style.display = (index == 1) ? "block" : "none";
+            //document.getElementById("playCtrl").style.display = (index == 2) ? "block" : "none";
 
             if (typeof this.current === "number") {
                 this.tabTitle[this.current].classList.remove("active");
                 this.tabPanel[this.current].classList.remove("active");
                 this.tabPanel[this.current].classList.add("deactive");
-                if (index == 2) {
-                    document.getElementById("playCtrl").style.display = "block";
-                    showDigit("00000000", "00000000", "00000000", "00000000", "00000000");
-                }
-                else if (index == 1)
-                    document.getElementById("introTitle").style.display = "block";
+                //if (index == 2) {
+                //    document.getElementById("playCtrl").style.display = "block";
+                //    showDigit("00000000", "00000000", "00000000", "00000000", "00000000");
+                //}
+                //else if (index == 1)
+                //    document.getElementById("introTitle").style.display = "block";
             }
             this.current = index;
+
+            //初始化编辑器
+            if (index > 0) {
+                if (!bhCodes[index].isInit) {
+                    initCodeEditor(bhCodes[index].id_code, bhCodes[index].filecontent);
+                    bhCodes[index].isInit = true;
+
+                    if (Object.getOwnPropertyNames(cm_editor).length == bhCodes.length) {
+                        $('#btnSubmit').removeAttr("disabled");
+                    }
+                }
+            }
         };
 
         Tab.prototype.event = function () {
             var len = this.tabTitle.length;
             var that = this;
 
-            this.tabTitle[0].addEventListener("click", function () {
-                that.active.call(that, 0);
-            });
-            this.tabTitle[1].addEventListener("click", function () {
-                that.active.call(that, 1);
-            });
-            this.tabTitle[2].addEventListener("click", function () {
-                that.active.call(that, 2);
-            });
+            for (let i = 0; i < len; i++) {
+                this.tabTitle[i].addEventListener("click", function () {
+                    that.active.call(that, i);
+                });
+            }
         };
 
     </script>
 
-    <div id="Tab" class="Tab row" style="position: relative; margin-top: 10px; margin-bottom: 10px;">
+    <!-- 按钮栏 -->
+    <div class="row" style="position:absolute; padding-top: 9px; padding-bottom: 10px; padding-right:20px; width:600px; right:0px; z-index:20; ">
+        <table border="0" style="width:100%;">
+            <tr>
+                <td style="width:100%;">
+                    <asp:Button ID="btnReload" runat="server" OnClick="ReloadCode" Text="重新加载模板代码" CssClass="btn btn-default form-control cusbtn" Visible="false" />
+                    <asp:Label ID="lbGeneral" class="btn" runat="server" Text="" Visible="false"></asp:Label></td>
+
+                <td>
+                    <asp:HyperLink ID="HyperLinkHelp" runat="server" class="btn btn-default form-control cusbtn" Target="_blank">实验说明</asp:HyperLink>
+                </td>
+                <td><input id="btnSubmit" type="button" value="提交编译" onclick="submitCode();" class="btn btn-default form-control cusbtn"  disabled="disabled"/></td>
+                <td><input id="btnDevice" type="button" value="申请设备" onclick="applyDevice();" class="btn btn-default form-control cusbtn"  disabled="disabled"/></td>
+                <td><input id="btnUpload" type="button" value="上传到设备" onclick="uploadProgram();" class="btn btn-default form-control cusbtn" disabled="disabled" /></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- 代码编辑区 -->
+    <div id="Tab" class="Tab row" style="position:relative; margin-top: 10px; margin-bottom: 10px;">
         <div class="tab_title">
-            <div class="col-md-2">编辑调试</div>
-            <div class="col-md-2">实验说明</div>
-            <div class="col-md-2">板卡效果</div>
+            <%foreach (bhCode code in bhCodes){%>
+                <div class="col-md-1"><%=code.filename %></div>
+            <% }%>
         </div>
         <div class="tab_panel">
-            <div class="one_tab active">
-                <div class="row" style="background-color:#ebebeb; position: relative; padding-top: 10px; padding-bottom: 10px;">
-                    <div class="col-md-2">
-                        <asp:Button ID="btnReload" runat="server" OnClick="ReloadCode" Text="重新加载模板代码" CssClass="btn btn-default form-control" />
-                    </div>
-                    <div class="col-md-6">
-                        <asp:Label ID="lbGeneral" class="btn" runat="server" Text=""></asp:Label>
-                    </div>
-                    <div class="col-md-2">
-                        <input id="btnSubmit" type="submit" value="提交编译" onclick="submitCode();" class="btn btn-default form-control" />
-                    </div>
-                    <%--<div class="col-md-1">
-                        <input id="btnCompileTick" value="CT" onclick="compileTick();" class="btn btn-default form-control" />
-                    </div>--%>
-                    <div class="col-md-2">
-                        <input id="btnUpload" type="submit" value="上传程序" onclick="uploadProgram();" class="btn btn-default form-control" />
-                    </div>
-                    <%--<div class="col-md-1">
-                        <input id="btnUploadTick" value="UT" onclick="uploadTick();" class="btn btn-default form-control" />
-                    </div>--%>
-                </div>
-                <div class="row">
-                    <div class="col-md-8" style="height:700px; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
-                        <textarea id="code_text" class="form-control"></textarea>
-                    </div>
-                    <div class="col-md-4" style="height:700px; padding-left: 5px; padding-right: 0px">
-                        <textarea id="debug_text" class="form-control"></textarea>
+            <%foreach (bhCode code in bhCodes){%>
+                <div class="one_tab <%=code.active %>">
+                    <div class="row">
+                        <div class="col-md-12" style="height:700px; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
+                            <textarea id="code_text<%=code.id_code %>" class="form-control"></textarea>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="one_tab deactive">
-                <div class="col-md-12" style="overflow-y: scroll; position: relative; height: 752px; background-color: #f8f8f8;">
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <h4>实验步骤1 内容简介</h4>
-                    阅读实验原理，了解zlg7290的读写流程和I2C总线的使用方法
-                    <br />
-                    根据实验步骤完成对zlg7290的读写程序设计和验证
-                    <br />
-                    <br />
-                    <h4>实验步骤2 实验目的</h4>
-                    了解zlg7290的控制流程
-                    <br />
-                    掌握使用I2C总线读写zlg7290的静态驱动程序设计方法
-                    <br />
-                    <br />
-                    <h4>实验环境</h4>
-                    硬件：装有Linux操作系统的开发板
-                    <br />
-                    软件：Ubuntu12.0，IDE，putty
-                    <br />
-                    * 经由北京航空航天大学计算机学院的自主开发所提供的WEB服务，学员现在可通过网上实验室提供的远程终端在网页浏览器中完成这些需要特殊软硬件环境的开发实践了。
-                    <br />
-                    <br />
-                    <h4>实验步骤3 ZLG7290介绍</h4>
-                    ZLG7290 是广州周立功单片机发展有限公司自行设计的数码管显示驱动及键盘扫描管理芯片。能够直接驱动8位共阴极数码管（或64只独立的LED），同时还可以扫面管理多大64只按键。其中有8只按键可以作为功能键使用，就像电脑键盘上的Ctrl，Shift、Alt键一样。另外ZLG7290 内部还设有连击计数器，能够使某键按下后不松手而连续有效。该芯片为工业级芯片，抗干扰能力强，在工业测控中已有大量应用。该器件通过I2C总线接口进行操作，ZLG7290引脚图如图1。
-                    <br />
-                    <img src="/Content/intro/board.png" style="width: 288px; height: 238px; margin: 10px;" />
-                    <br />
-                    <h4>下表说明了ZLG7290各引脚的功能</h4>
-                    <br />
-                    <table style="width: 100%;" class="table">
-                        <tr>
-                            <td>引脚序号</td>
-                            <td>引脚名</td>
-                            <td>功能</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>SC/KR2</td>
-                            <td>数码管c 段／键盘行信号2</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>SD/KR3</td>
-                            <td>数码管d 段／键盘行信号3</td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td>DIG3/KC3</td>
-                            <td>数码管位选信号3／键盘列信号3</td>
-                        </tr>
-                        <tr>
-                            <td>4</td>
-                            <td>DIG2/KC2</td>
-                            <td>数码管位选信号2／键盘列信号2</td>
-                        </tr>
-                        <tr>
-                            <td>5</td>
-                            <td>DIG1/KC1</td>
-                            <td>数码管位选信号1／键盘列信号1</td>
-                        </tr>
-                        <tr>
-                            <td>6</td>
-                            <td>DIG0/KC0</td>
-                            <td>数码管位选信号0／键盘列信号0</td>
-                        </tr>
-                        <tr>
-                            <td>7</td>
-                            <td>SE/KR4</td>
-                            <td>数码管e 段／键盘行信号4</td>
-                        </tr>
-                        <tr>
-                            <td>8</td>
-                            <td>SF/KR5</td>
-                            <td>数码管f 段／键盘行信号5</td>
-                        </tr>
-                        <tr>
-                            <td>9</td>
-                            <td>SG/KR6</td>
-                            <td>数码管g 段／键盘行信号6</td>
-                        </tr>
-                        <tr>
-                            <td>10</td>
-                            <td>DP/KR7</td>
-                            <td>数码管dp 段／键盘行信号7</td>
-                        </tr>
-                        <tr>
-                            <td>11</td>
-                            <td>GND</td>
-                            <td>接地</td>
-                        </tr>
-                        <tr>
-                            <td>12</td>
-                            <td>DIG6/KC6</td>
-                            <td>数码管位选信号6／键盘列信号6</td>
-                        </tr>
-                        <tr>
-                            <td>13</td>
-                            <td>DIG7/KC7</td>
-                            <td>数码管位选信号7／键盘列信号7</td>
-                        </tr>
-                        <tr>
-                            <td>14</td>
-                            <td>INT</td>
-                            <td>键盘中断请求信号，低电平（下降沿）有效</td>
-                        </tr>
-                        <tr>
-                            <td>15</td>
-                            <td>RST</td>
-                            <td>复位信号，低电平有效</td>
-                        </tr>
-                        <tr>
-                            <td>16</td>
-                            <td>Vcc</td>
-                            <td>电源，＋3.3～5.5V</td>
-                        </tr>
-                        <tr>
-                            <td>17</td>
-                            <td>OSC1</td>
-                            <td>晶振输入信号</td>
-                        </tr>
-                        <tr>
-                            <td>18</td>
-                            <td>OSC2</td>
-                            <td>晶振输出信号</td>
-                        </tr>
-                        <tr>
-                            <td>19</td>
-                            <td>SCL</td>
-                            <td>I2C 总线时钟信号</td>
-                        </tr>
-                        <tr>
-                            <td>20</td>
-                            <td>SDA</td>
-                            <td>I2C 总线数据信号</td>
-                        </tr>
-                        <tr>
-                            <td>21</td>
-                            <td>DIG5/KC5</td>
-                            <td>数码管位选信号5／键盘列信号5</td>
-                        </tr>
-                        <tr>
-                            <td>22</td>
-                            <td>DIG4/KC4</td>
-                            <td>数码管位选信号4／键盘列信号4</td>
-                        </tr>
-                        <tr>
-                            <td>23</td>
-                            <td>SA/KR0</td>
-                            <td>数码管a 段／键盘行信号0</td>
-                        </tr>
-                        <tr>
-                            <td>24</td>
-                            <td>SB/KR1</td>
-                            <td>数码管b 段／键盘行信号1</td>
-                        </tr>
-                    </table>
-                    数码管驱动zlg7290.c实现了设备文件操作控制，用户态可以调用zlg7290_hw_write()，zlg7290_hw_read()和zlg_led_ioctl()函数来对数码管进行读写操作。
-                    <br />
-                    <br />
-                    <h4>实验步骤4 数码管显示原理介绍</h4>
-                    <img src="/Content/intro/digit.png" style="width: 646px; height: 230px; margin: 10px;" />
-                    <br />
-                    0xfc, 0x0c, 0xda, 0xf2, 0x66, 0xb6, 0xbe, 0xe0----对应显示0-7
-                    <br />
-                    0xfe, 0xf6, 0xee, 0x3e, 0x9c, 0x7a, 0x9e, 0x8e----对应显示8-F
-                    <br />
-                    <img src="/Content/intro/tb.png" style="width: 539px; height: 151px; margin: 10px;" />
-                    <h4>实验步骤5 嵌入式开发Web在线仿真实验平台</h4>
-                    <h5>1.本次实验依然在实验室上课</h5>
-                    登录嵌入式开发Web在线仿真实验平台地址http://219.224.160.133:8090<br />
-                    学员登录：用户名和密码为各位学号（字母大写）<br />
-                    <h5>2.正确填写模板后，【提交编译】</h5>
-                    <img src="/Content/intro/d1.png" style="width: 432px; height: 287px; margin: 10px;" />
-                    <br />未出现failed、error等字样说明编译成功<br />
-                    <h5>3.【上传程序】</h5>
-                    <img src="/Content/intro/d2.png" style="width: 432px; height: 291px; margin: 10px;" />
-                    <h5>4.切换到“板卡效果“页面，【运行程序】</h5>
-                    <img src="/Content/intro/d3.png" style="width: 432px; height: 298px; margin: 10px;" />
-                    <h4>说明：本次在线实验需要由助教查看效果</h4>
-⦁	扩展实验：<br />
-⦁	编一个时钟程序，获取当前的年（2019），月日（1218），时分（0855），并在数码管中依次显示出来，例如：2019 1218 0855表示2019年12月18日08时55分<br />
-⦁	数码管依次显示 "2.0.1.9."、"1.2.1.8."、"0.8.5.5."<br />
-                </div>
-                <div id="introTitle" class="col-md-12" style="display:none;position:absolute; top:34px; padding-top: 10px; padding-bottom: 10px; background-color: #ebebeb; filter: alpha(opacity=80); -moz-opacity: 0.5; opacity: 0.8;">
-                    <h4>数码管驱动zlg7290.c实现了设备文件操作控制，用户态可以调用zlg7290_hw_write()，zlg7290_hw_read()和zlg_led_ioctl()函数来对数码管进行读写操作，阅读ZLG7290数码管驱动的代码程序清单，了解其实现的具体方法。</h4>
-                </div>
-            </div>
-            <div class="one_tab deactive">
-                <img style="position:absolute;left:0px; width:1200px;" src="Content/zlg7290.png" />
-                <div id="stage" class="col-md-12" style="position: relative; min-width: 780px; height: 752px; background-color:rgba(0, 0, 0, 0.00);"></div>
-                <div id="playCtrl" class="col-md-12" style="display:none;position:absolute; top:34px; padding-top: 10px; padding-bottom: 10px; background-color: #ebebeb; filter: alpha(opacity=80); -moz-opacity: 0.5; opacity: 0.8;">
-                    <div class="col-md-2">
-                        <input id="btnRun" type="submit" value="运行程序" onclick="runPlay();" class="btn btn-default form-control" />
-                    </div>
-                    <%--<div class="col-md-1">
-                        <input id="btnRunTick" value="RT" onclick="runTick();" class="btn btn-default form-control" />
-                    </div>--%>
-                    <div class="col-md-10" style="height: 320px; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
-                        <textarea id="run_console" class="form-control"></textarea>
-                    </div>
-                </div>
-            </div>
+            <% }%>
+            
         </div>
     </div>
-    <div class="mask" id="mask" style="display:block;text-align:center;line-height:650px;min-height:650px;font-size:2em;">
+
+    <!-- 编译结果区 -->
+    <div id="debugWnd" style="display:none;width:800px; height:600px;">
+        <textarea id="debug_text" class="form-control"></textarea>
+    </div>
+
+    <!-- 运行结果区 -->
+    <div id="runWnd" style="display:none;width:800px; height:600px;">
+        <div style="width:800px; height:270px;">
+            <textarea id="cm_console" class="form-control"></textarea>
+        </div>
+
+        <div style="width:800px; height:34px;">
+            <table style="width:100%; height:100%; border:none;margin:0px;padding:0px;">
+                <tr style="width:100%; height:100%; border:none;margin:0px;padding:0px;">
+                    <td style="width:750px; height:34px; border:none;margin:0px;padding:0px;">
+                        <input id="txtCommand" type="text" class="form-control" style="width:749px; height:34px; max-width:749px;" onkeypress="return txtCommand_onKeyPress(event)"/>
+                    </td>
+                    <td style="width:50px; height:34px; border:none;margin:0px;padding:0px;">
+                        <input id="btnRun" type="button" value="运行" onclick="runCommand();" class="btn btn-danger form-control" style="width:50px; height:34px;margin:0px;padding:0px;"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <iframe id="frmWebGl" style="width: 800px; height: 300px; border:none; overflow:hidden;" src="DanPianJi/bh.html">
+        </iframe>
+    </div>
+
+    <!-- 遮罩 -->
+    <div class="mask" id="mask" style="display:none;text-align:center;line-height:650px;min-height:650px;font-size:2em;">
     </div>
 </asp:Content>

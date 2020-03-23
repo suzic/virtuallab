@@ -19,5 +19,16 @@ namespace virtuallab
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
+
+        public override void Init()
+        {
+            this.AuthenticateRequest += WebApiApplication_AuthenticateRequest;
+            base.Init();
+        }
+        void WebApiApplication_AuthenticateRequest(object sender, EventArgs e)
+        {
+            //启用 webapi 支持session 会话
+            HttpContext.Current.SetSessionStateBehavior(System.Web.SessionState.SessionStateBehavior.Required);
+        }
     }
 }

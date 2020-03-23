@@ -1,0 +1,6 @@
+{
+    "loginURL": "http://47.94.128.81/chujiao/test/api/users/authenticate",
+    "registerURL": "http://47.94.128.81/chujiao/test/api/users/register",
+    "logURL": "http://47.94.128.81/chujiao/test/api/score/upload",
+    "adminURL": "http://47.94.128.81/chujiao/test/admin/"
+}

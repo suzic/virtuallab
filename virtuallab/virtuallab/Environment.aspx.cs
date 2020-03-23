@@ -19,6 +19,8 @@ using System.Web.Http.Routing;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using virtuallab.Common;
+using virtuallab.Common.po;
 using virtuallab.Models;
 
 namespace virtuallab
@@ -86,6 +88,9 @@ namespace virtuallab
             get { return JsonConvert.SerializeObject(outputString.ToString()); }
         }
 
+        //新加
+        public List<bhCode> bhCodes;
+
         /// <summary>
         /// 初始化页面
         /// </summary>
@@ -102,8 +107,7 @@ namespace virtuallab
                 Response.Redirect("~/ManagerPage");
 
             // 当前仅针对ExperimentID=3的实验进行，没有ID或ID不为3，重定向到未就绪页面
-            if (string.IsNullOrEmpty(CurrentLoginUser.currentExperimentId)
-                || !CurrentLoginUser.currentExperimentId.Equals("3"))
+            if (string.IsNullOrEmpty(CurrentLoginUser.currentExperimentId))
                 Response.Redirect("~/NotReady");
         }
 
@@ -112,6 +116,20 @@ namespace virtuallab
         /// </summary>
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (!IsPostBack) {
+                // 获取session_id
+                if (string.IsNullOrEmpty(CurrentLoginUser.currentSessionId)|| CurrentLoginUser.currentState == EnvironmentState.NotReady)
+                {
+                    EnvironmentRequest();
+                    if (string.IsNullOrEmpty(CurrentLoginUser.currentSessionId))
+                        Response.Redirect("~/NotReady");
+                }
+
+                // 加载代码
+                ReloadCode(this, EventArgs.Empty);
+                return;
+            }
+
             // 进入页面首先获取session_id，并且确保当前用户状态不是NotReady
             if (string.IsNullOrEmpty(CurrentLoginUser.currentSessionId)
                 || CurrentLoginUser.currentState == EnvironmentState.NotReady)
@@ -183,25 +201,16 @@ namespace virtuallab
         // 重新加载模板代码
         protected void ReloadCode(object sender, EventArgs e)
         {
-            HttpWebRequest myHttpWebRequest = System.Net.WebRequest.Create(Request.Url.GetLeftPart(UriPartial.Authority) + "/Content/codeSample.txt") as HttpWebRequest;
-            myHttpWebRequest.KeepAlive = false;
-            myHttpWebRequest.AllowAutoRedirect = false;
-            myHttpWebRequest.UserAgent = "Mozilla/5.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727)";
-            myHttpWebRequest.Timeout = 10000;
-            myHttpWebRequest.ContentType = "application/x-www-form-urlencoded;charset=utf-8";
-            using (HttpWebResponse res = (HttpWebResponse)myHttpWebRequest.GetResponse())
-            {
-                if (res.StatusCode == HttpStatusCode.OK || res.StatusCode == HttpStatusCode.PartialContent)//返回为200或206
-                {
-                    string dd = res.ContentEncoding;
-                    System.IO.Stream strem = res.GetResponseStream();
-                    System.IO.StreamReader r = new System.IO.StreamReader(strem);
-                    currentCode = r.ReadToEnd();
-                    // 需要使用JSON封装的方法将该字符串传至前端
-                    currentCode = JsonConvert.SerializeObject(currentCode);
-                    currentPosTop = 0;
-                }
+            bhCodes = DB.GetCodes(Convert.ToInt32(CurrentLoginUser.currentExperimentId));
+            for (int i = 0; i < bhCodes.Count; i++) {
+                if (i == 0)
+                    bhCodes[i].active = "active";
+                else
+                    bhCodes[i].active = "deactive";
             }
+
+            //实验说明地址
+            HyperLinkHelp.NavigateUrl = DB.GetHelpUrl(Convert.ToInt32(CurrentLoginUser.currentExperimentId));
         }
 
         // 初始化CodeMirror以呈现代码规范化效果
@@ -478,12 +487,16 @@ namespace virtuallab
                     CurrentLoginUser.InError = 1;
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
                     tipInfo = "您提交的代码无法编译，或当前编译服务无法连接。";
+                    this.ClientScript.RegisterStartupScript(this.GetType(),"msg", string.Format("layer.alert('{0}'); ",tipInfo), true);
+                    return;
                 }
             }
             else
             {
                 outputString.AppendLine("ERROR：当前状态不允许进行编译。");
             }
+
+            this.ClientScript.RegisterStartupScript(this.GetType(), "msg", "showDebugWindown();", true);
         }
 
         // 编译结果心跳检查
