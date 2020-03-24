@@ -51,6 +51,7 @@ namespace virtuallab
 
                 CurrentLoginUser.device_id = "";
                 CurrentLoginUser.app_name = "";
+                CurrentLoginUser.ssh_uuid = "";
                 CurrentLoginUser.currentState = EnvironmentState.NotReady;
 
                 CurrentLoginUser.compileSuccess = false;

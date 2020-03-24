@@ -11,6 +11,7 @@ namespace virtuallab.API.Service
     {
         EnvironmentRequestRes EnvironmentRequest(EnvironmentRequestReq req);
         CodeSubmitRes CodeSubmit(CodeSubmitReq req);
+        CompileRes Compile(CompileReq req);
         DeviceRequestRes DeviceRequest(DeviceRequestReq req);
         ProgramUploadRes ProgramUpload(ProgramUploadReq req);
         ConsoleSendRes ConsoleSend(ConsoleSendReq req);

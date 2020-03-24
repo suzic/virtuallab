@@ -8,8 +8,8 @@ namespace virtuallab.API.Service.po
     public class CodeSubmitReq
     {
         public string session_id { get; set; }
-        public int part { get; set; }
-        public List<CodeFile> code { get; set; }
+        public string code_name { get; set; }
+        public string code { get; set; }
 
     }
 }

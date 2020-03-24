@@ -8,8 +8,7 @@ namespace virtuallab.API.Service.po
     public class ConsoleSendRes
     {
         public int fail { get; set; }
-        public int finish { get; set; }
-        public string output { get; set; }
+        public string res { get; set; }
 
     }
 }

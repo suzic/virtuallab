@@ -5,9 +5,10 @@ using System.Web;
 
 namespace virtuallab.API.Service.po
 {
-    public class CodeSubmitRes
+    public class CompileRes
     {
         public int fail { get; set; }
+        public string res { get; set; }
 
     }
 }

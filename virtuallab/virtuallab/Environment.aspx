@@ -14,17 +14,23 @@
             layer.open({
                 type: 1,
                 title: '编译结果输出窗口',
-                area: ['800px', '650px'],
+                area: ['1024px', '960px'],
+                resize:false,
                 content: $('#debugWnd') 
             });
         }
         function showRunWindown() {
+            if (fid_experiment == 3)
+                $('#frmWebGl').attr('src','DanPianJi/bh.html');
             layer.open({
                 type: 1,
                 title: '设备仿真控制台',
-                area: ['800px', '650px'],
+                area: ['1024px', '960px'],
+                resize: false,
                 content: $('#runWnd'),
                 cancel: function (index, layero) {
+                    if (fid_experiment == 3)
+                        $('#frmWebGl').attr('src', '');
                     releaseDevice();
                     return true;
                 }    
@@ -40,6 +46,7 @@
         var compile_id = "<%=CurrentLoginUser.currentCompileId %>";
         var device_id = "<%=CurrentLoginUser.device_id %>";
         var app_name = "<%=CurrentLoginUser.app_name %>";
+        var ssh_uuid = "<%=CurrentLoginUser.ssh_uuid %>";
         var upload_id = "<%=CurrentLoginUser.currentUploadId %>";
         var run_id = "<%=CurrentLoginUser.currentRunId %>";
         var tip_info = "<%=tipInfo %>";
@@ -57,6 +64,7 @@
         var timer_console;
         var timer_recieve;
         var wndGL;
+        var compileIndex=0;
 
         var inError = <%=CurrentLoginUser.InError %>;
         var inCompiling = "<%=(CurrentLoginUser.currentState == virtuallab.Models.EnvironmentState.InCompiling) %>";
@@ -75,6 +83,7 @@
 
         $(document).ready(function () {
             initButtons();
+            init_frmWebGl();
             initCodeEditors();
             new Tab("#Tab", default_tab);
             //showWaitingLayers();
@@ -130,6 +139,16 @@
                 if (currentState == 2)
                     $('#btnDevice').removeAttr("disabled");
             }
+        }
+        function init_frmWebGl() {
+            if (fid_experiment == 3)
+                return;
+
+
+            $("#frmWebGl").css('display', 'none');//隐藏
+
+            $("#runWndText").height(881);
+            
         }
 
         function startAnimation() {
@@ -248,7 +267,7 @@
                 submitCode_Core();
             }
         }
-        function submitCode_Core() {
+        function submitCode_Core_Back() {
             showDebugWindown();
             cm_outer.setValue("正在等待远程主机编译结果返回，请不要关闭此窗口！！！.");
             waitingTimerOut();
@@ -284,6 +303,73 @@
                 cm_outer.setValue(cm_outer.getValue() + "\nERROR：" + xhr.responseJSON.ExceptionMessage);
             });
         }
+        function submitCode_Core() {
+            showDebugWindown();
+            cm_outer.setValue("正在等待远程主机编译结果返回，请不要关闭此窗口！！！.");
+            waitingTimerOut();
+
+            compileIndex = 0;
+            if (compileIndex < bhCodes.length)
+            submitCode_files(function (result) {
+                //清除等待定时器
+                clearTimerOut();
+                cm_outer.setValue(cm_outer.getValue() + "\n" + (result.fail == 0 ? "SUCCESS：" : "ERROR：") + result.res + "\n\n您的代码已编译成功，现在你可以关闭此窗口，然后进行以下操作：\r1.申请设备：只有先申请到设备才能在设备中运行你的程序\n2.上传到设备：申请设备成功后，你就可以将程序上传到设备并运行了");
+
+                //成功后续动作
+                if (result.fail == 0) {
+                    currentState = 2;//已编译成功
+
+                    //设置申请设备按钮
+                    if (!device_id) {
+                        $('#btnDevice').removeAttr("disabled");
+                    }
+                }
+
+            });
+        }
+        //提交单个文件
+        function submitCode_files(end) {
+            if (compileIndex < bhCodes.length) {
+                submitCode_file(bhCodes[compileIndex].filename, cm_editor['code_text' + bhCodes[compileIndex].id_code].getValue(), function (result) {
+                    compileIndex++;
+                    if (result.fail == 0) {
+                        submitCode_files(end);
+                    }
+
+                });
+            }
+            else {
+                compile(end);
+            }
+        }
+        function submitCode_file(code_name,code,success) {
+            var data = {};
+            data.session_id = session_id;
+            data.code_name = code_name;
+            data.code = code;
+
+            $.post("api/bh/CodeSubmit", data, success, "json").fail(function (xhr, errorText, errorType) {
+                clearTimerOut();
+                cm_outer.setValue(cm_outer.getValue() + "\nERROR：" + xhr.responseJSON.ExceptionMessage);
+            });
+        }
+        function compile(success) {
+            var data = {};
+            data.fid_task = fid_task;
+            data.session_id = session_id;
+            data.part = 1;
+            data.code = [];
+            for (var i = 0; i < bhCodes.length; i++) {
+                data.code[i] = {};
+                data.code[i].filename = bhCodes[i].filename;
+                data.code[i].content = cm_editor['code_text' + bhCodes[i].id_code].getValue();
+            }
+
+            $.post("api/bh/Compile", data, success, "json").fail(function (xhr, errorText, errorType) {
+                clearTimerOut();
+                cm_outer.setValue(cm_outer.getValue() + "\nERROR：" + xhr.responseJSON.ExceptionMessage);
+            });
+        }
         function waitingTimerOut() {
             timer_outer = setInterval(function () {
                 cm_outer.setValue(cm_outer.getValue() + "." );
@@ -309,6 +395,7 @@
                 if (result.fail == 0) {
                     currentState = 3;//已申请设备
                     device_id = result.device_id;
+                    ssh_uuid = result.ssh_uuid;
 
                     //设置申请设备按钮
                     if (device_id) {
@@ -406,7 +493,7 @@
             return true;
         }
         function runCommand() {
-            if (!session_id || !device_id||!app_name)
+            if (!session_id || !device_id || !app_name || !ssh_uuid)
                 return;
 
             var cmd = $('#txtCommand').val().trim();
@@ -425,14 +512,15 @@
             data.session_id = session_id;
             data.device_id = device_id;
             data.app_name = app_name;
-            data.input_line = cmd;
+            data.ssh_uuid = ssh_uuid;
+            data.cmd = cmd;
 
             $.post("api/bh/ConsoleSend", data, function (result) {
                 clearTimerConsole();
-                showCommandResult(result.output);
+                showCommandResult(result.res);
 
                 //如果未返回全部信息
-                if (!result.finish) {
+                if (false) {
                     waitingTimerRecieve();
                 } else {
                     runCommandComplete();
@@ -789,7 +877,7 @@
             <%foreach (bhCode code in bhCodes){%>
                 <div class="one_tab <%=code.active %>">
                     <div class="row">
-                        <div class="col-md-12" style="height:700px; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
+                        <div class="col-md-12" style="height:870px; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
                             <textarea id="code_text<%=code.id_code %>" class="form-control"></textarea>
                         </div>
                     </div>
@@ -800,21 +888,21 @@
     </div>
 
     <!-- 编译结果区 -->
-    <div id="debugWnd" style="display:none;width:800px; height:600px;">
+    <div id="debugWnd" style="display:none;width:1024px; height:918px;">
         <textarea id="debug_text" class="form-control"></textarea>
     </div>
 
     <!-- 运行结果区 -->
-    <div id="runWnd" style="display:none;width:800px; height:600px;">
-        <div style="width:800px; height:270px;">
+    <div id="runWnd" style="display:none;width:1024px; height:918px;">
+        <div id="runWndText" style="width:100%; height:431px;">
             <textarea id="cm_console" class="form-control"></textarea>
         </div>
 
-        <div style="width:800px; height:34px;">
+        <div style="width:100%; height:34px;">
             <table style="width:100%; height:100%; border:none;margin:0px;padding:0px;">
                 <tr style="width:100%; height:100%; border:none;margin:0px;padding:0px;">
-                    <td style="width:750px; height:34px; border:none;margin:0px;padding:0px;">
-                        <input id="txtCommand" type="text" class="form-control" style="width:749px; height:34px; max-width:749px;" onkeypress="return txtCommand_onKeyPress(event)"/>
+                    <td style="width:100%; height:34px; border:none;margin:0px;padding:0px;">
+                        <input id="txtCommand" type="text" class="form-control" style="width:100%; height:34px; max-width:973px;" onkeypress="return txtCommand_onKeyPress(event)"/>
                     </td>
                     <td style="width:50px; height:34px; border:none;margin:0px;padding:0px;">
                         <input id="btnRun" type="button" value="运行" onclick="runCommand();" class="btn btn-danger form-control" style="width:50px; height:34px;margin:0px;padding:0px;"/>
@@ -823,7 +911,7 @@
             </table>
         </div>
 
-        <iframe id="frmWebGl" style="width: 800px; height: 300px; border:none; overflow:hidden;" src="DanPianJi/bh.html">
+        <iframe id="frmWebGl" style="width: 1024px; height: 450px; border:none; overflow:hidden;" src="">
         </iframe>
     </div>
 

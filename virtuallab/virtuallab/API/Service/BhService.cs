@@ -1,5 +1,4 @@
-﻿using Common;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Pocoor;
 using System;
 using System.Collections.Generic;
@@ -20,6 +19,10 @@ namespace virtuallab.API.Service
         {
             return PostJson<CodeSubmitReq, CodeSubmitRes>("CodeSubmit", req);
         }
+        public CompileRes Compile(CompileReq req)
+        {
+            return PostJson<CompileReq, CompileRes>("compile", req);
+        }
         public DeviceRequestRes DeviceRequest(DeviceRequestReq req)
         {
             return PostJson<DeviceRequestReq, DeviceRequestRes>("DeviceRequest", req);
@@ -38,11 +41,38 @@ namespace virtuallab.API.Service
         }
 
 
-        R PostJson<Q, R>(string path, Q req) {
-            string reqString = JsonConvert.SerializeObject(req);
-            string resultStriing = Http.PostJson(BaseURL + path, reqString);
+
+        R PostJson<Q, R>(string path, Q req)
+        {
+            string resultStriing = Post(path, toDict(req));
             R res = JsonConvert.DeserializeObject<R>(resultStriing);
             return res;
+        }
+        static string Post(string path, Dictionary<string, string> dict) {
+            var httpClient = new System.Net.Http.HttpClient();
+            httpClient.BaseAddress = new Uri(BaseURL);
+            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            var body = new System.Net.Http.FormUrlEncodedContent(dict);
+
+            // response
+            var response = httpClient.PostAsync(path, body).Result;
+            var data = response.Content.ReadAsStringAsync().Result;
+            return data;
+
+        }
+        static Dictionary<string, string> toDict(object obj) {
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            if (obj != null)
+            {
+                Type type = obj.GetType();
+                object value;
+                foreach (var p in type.GetProperties())
+                {
+                    value = p.GetValue(obj);
+                    dict.Add(p.Name, value==null?"":value.ToString());
+                }
+            }
+            return dict;
         }
     }
 }

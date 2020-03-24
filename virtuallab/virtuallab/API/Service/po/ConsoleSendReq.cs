@@ -12,5 +12,9 @@ namespace virtuallab.API.Service.po
         public string app_name { get; set; }
         public string input_line { get; set; }
 
+
+        public string ssh_uuid { get; set; }
+        public string cmd { get; set; }
+
     }
 }

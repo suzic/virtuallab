@@ -5,9 +5,9 @@ using System.Web;
 
 namespace virtuallab.API.Service.po
 {
-    public class CodeSubmitRes
+    public class CompileReq
     {
-        public int fail { get; set; }
+        public string session_id { get; set; }
 
     }
 }

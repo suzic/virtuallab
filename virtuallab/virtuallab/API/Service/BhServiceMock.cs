@@ -18,8 +18,14 @@ namespace virtuallab.API.Service
         {
             CodeSubmitRes e = new CodeSubmitRes();
             e.fail = 0;
-            e.info_buffer = "编译成功";
-            System.Threading.Thread.Sleep(3000);
+            return e;
+        }
+        public CompileRes Compile(CompileReq req)
+        {
+            CompileRes e = new CompileRes();
+            e.fail = 0;
+            e.res = "编译成功";
+            System.Threading.Thread.Sleep(1000);
             return e;
         }
         public DeviceRequestRes DeviceRequest(DeviceRequestReq req)
@@ -27,6 +33,7 @@ namespace virtuallab.API.Service
             DeviceRequestRes e = new DeviceRequestRes();
             e.fail = 0;
             e.device_id = Guid.NewGuid().ToString("D");
+            e.ssh_uuid = Guid.NewGuid().ToString("D");
             return e;
         }
         public ProgramUploadRes ProgramUpload(ProgramUploadReq req)
@@ -40,8 +47,7 @@ namespace virtuallab.API.Service
         {
             ConsoleSendRes e = new ConsoleSendRes();
             e.fail = 0;
-            e.finish = 0;
-            e.output = "您放大3D模型图，能看到数码管的动画显示效果";
+            e.res = "您放大3D模型图，能看到数码管的动画显示效果";
             return e;
         }
         public ConsoleReceiveRes ConsoleReceive(ConsoleReceiveReq req)

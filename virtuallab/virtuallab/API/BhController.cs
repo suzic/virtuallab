@@ -15,7 +15,8 @@ namespace virtuallab.API
         IBhApi service;
         public BhController()
         {
-            service = new BhServiceMock();
+            //service = new BhServiceMock();
+            service = new BhService();
         }
 
         [HttpGet, HttpPost]
@@ -30,16 +31,20 @@ namespace virtuallab.API
             return service.EnvironmentRequest(req);
         }
         [HttpPost]
-        public CodeSubmitRes CodeSubmit(ControllerCodeSubmitReq req)
+        public CodeSubmitRes CodeSubmit(CodeSubmitReq req)
         {
-            CodeSubmitReq r = new CodeSubmitReq();
-            r.code = req.code;
-            r.part = req.part;
+            return service.CodeSubmit(req);
+        }
+        [HttpPost]
+        public CompileRes Compile(ControllerCodeSubmitReq req)
+        {
+            CompileReq r = new CompileReq();
             r.session_id = req.session_id;
-            CodeSubmitRes res= service.CodeSubmit(r);
+            CompileRes res = service.Compile(r);
 
             //编译成功保存bhRecord
-            if (res.fail == 0) {
+            if (res.fail == 0)
+            {
                 DB.SaveRecordInfo(req);
 
                 LoginUser u = (LoginUser)System.Web.HttpContext.Current.Session["user"];
@@ -57,6 +62,7 @@ namespace virtuallab.API
             {
                 LoginUser u = (LoginUser)System.Web.HttpContext.Current.Session["user"];
                 u.device_id = res.device_id;
+                u.ssh_uuid = res.ssh_uuid;
                 u.currentState = (EnvironmentState)3;
             }
             return res;

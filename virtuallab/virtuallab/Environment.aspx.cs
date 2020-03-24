@@ -19,6 +19,8 @@ using System.Web.Http.Routing;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using virtuallab.API.Service;
+using virtuallab.API.Service.po;
 using virtuallab.Common;
 using virtuallab.Common.po;
 using virtuallab.Models;
@@ -376,32 +378,19 @@ namespace virtuallab
             }
 
             CurrentLoginUser.InError = 0;
-            System.Diagnostics.Debug.WriteLine("============= Environment Request ===============");
             try
             {
-                var httpClient = new HttpClient();
-                httpClient.BaseAddress = new Uri(BaseURL);
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var body = new FormUrlEncodedContent(new Dictionary<string, string> {
-                        { "exp_id", CurrentLoginUser.currentExperimentId.ToString() }, // 目前仅支持数码管ZLG7290实验的ID=3
-                        { "user_id", CurrentLoginUser.userId.ToString() }
-                    });
-
-                // response
-                var response = httpClient.PostAsync(URIEnvironmentRequest, body).Result;
-                var data = response.Content.ReadAsStringAsync().Result;
-                var formatData = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
-                var result = (JObject)formatData["data"];
-                bool success = (int)result["fail"] == 0;
-                if (success)
+                EnvironmentRequestReq req = new EnvironmentRequestReq();
+                req.exp_id = Convert.ToInt32(CurrentLoginUser.currentExperimentId);
+                req.user_id = CurrentLoginUser.userId;
+                EnvironmentRequestRes res = new BhService().EnvironmentRequest(req);
+                if (res.fail==0)
                 {
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;
-
-                    CurrentLoginUser.currentSessionId = result["session_id"].ToString();
-                    System.Diagnostics.Debug.Write("-------- session_id = " + CurrentLoginUser.currentSessionId + "\n");
+                    CurrentLoginUser.currentSessionId = res.session_id;
                 }
             }
-            catch
+            catch(Exception ex)
             {
                 CurrentLoginUser.InError = 1;
                 CurrentLoginUser.currentState = EnvironmentState.NotReady;
