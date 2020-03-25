@@ -8,7 +8,7 @@ namespace virtuallab.API.Service.po
     public class CompileRes
     {
         public int fail { get; set; }
-        public string res { get; set; }
+        public string info_buffer { get; set; }
 
     }
 }

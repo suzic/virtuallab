@@ -313,7 +313,7 @@
             submitCode_files(function (result) {
                 //清除等待定时器
                 clearTimerOut();
-                cm_outer.setValue(cm_outer.getValue() + "\n" + (result.fail == 0 ? "SUCCESS：" : "ERROR：") + result.res + "\n\n您的代码已编译成功，现在你可以关闭此窗口，然后进行以下操作：\r1.申请设备：只有先申请到设备才能在设备中运行你的程序\n2.上传到设备：申请设备成功后，你就可以将程序上传到设备并运行了");
+                cm_outer.setValue(cm_outer.getValue() + "\n" + (result.fail == 0 ? "SUCCESS：" : "ERROR：") + result.info_buffer + "\n\n您的代码已编译成功，现在你可以关闭此窗口，然后进行以下操作：\r1.申请设备：只有先申请到设备才能在设备中运行你的程序\n2.上传到设备：申请设备成功后，你就可以将程序上传到设备并运行了");
 
                 //成功后续动作
                 if (result.fail == 0) {
@@ -498,7 +498,7 @@
 
             var cmd = $('#txtCommand').val().trim();
             if (!cmd) {
-                cm_console.setValue(cm_console.getValue() + '\n>');
+                cm_console.setValue(cm_console.getValue() + '\n> ');
                 return;
             }
 
@@ -614,7 +614,7 @@
             $('#btnRun').prop("disabled", true);
         }
         function runCommandComplete() {
-            cm_console.setValue(cm_console.getValue() + '\n>');
+            cm_console.setValue(cm_console.getValue() + '\n> ');
             $('#txtCommand').removeAttr("disabled");
             $('#btnRun').removeAttr("disabled");
         }

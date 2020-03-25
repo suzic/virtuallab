@@ -24,7 +24,7 @@ namespace virtuallab.API.Service
         {
             CompileRes e = new CompileRes();
             e.fail = 0;
-            e.res = "编译成功";
+            e.info_buffer = "编译成功";
             System.Threading.Thread.Sleep(1000);
             return e;
         }
