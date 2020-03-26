@@ -1,6 +1,11 @@
 ﻿<%@ Page Title="报告列表" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="ReportList.aspx.cs" Inherits="virtuallab.ReportList" %>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
+    <link rel="stylesheet" href="Content/layui/css/layui.css">
+    <style type="text/css">
+        a{color:#337ab7;}
+    </style>
+    <script src="Content/layui/layui.all.js"></script>
     <script type="text/javascript">
         var current_code = <%=currentCode %>;
         var layer_mask;
@@ -44,6 +49,17 @@
             layer_mask.style.display = "none";
         }
 
+        function showCodeWindown(taskid, name, experiment) {
+            var url = 'StudentCode.aspx?taskid=' + taskid;
+            var wndtitle = name + ' - ' + experiment +' - 实验代码';
+            layer.open({
+                type: 2,
+                title: wndtitle,
+                area: ['1024px', '960px'],
+                resize: false,
+                content: url
+            });
+        }
     </script>
 
     <h2>学员实验报告</h2>
@@ -77,7 +93,8 @@
                 </asp:TemplateField>
                 <asp:TemplateField HeaderText="实验数据">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbCode" runat="server" CommandArgument='<%# Eval("final_code_uri") %>' OnCommand="lbCode_Command" CssClass="col-md-6">实验代码</asp:LinkButton>
+                        <a class="col-md-6" href="javascript:showCodeWindown(<%# Eval("id_task") %>,'<%# Eval("name") %>','<%# Eval("title") %>')">实验代码</a>
+                        <%--<asp:LinkButton ID="lbCode" runat="server" CommandArgument='<%# Eval("final_code_uri") %>' OnCommand="lbCode_Command" CssClass="col-md-6">实验代码</asp:LinkButton>--%>
                         <asp:LinkButton ID="lbReport" runat="server" CommandArgument='<%# Eval("result_json_uri") %>' CssClass="col-md-6" CommandName="Edit">打分</asp:LinkButton>
                     </ItemTemplate>
                     <EditItemTemplate>

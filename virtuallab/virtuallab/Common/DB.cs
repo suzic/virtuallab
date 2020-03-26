@@ -39,6 +39,18 @@ namespace virtuallab.Common
             sql = string.Format(sql, ids);
             return db.Fetch<bhCode>(sql);
         }
+        public static List<bhCode> GetStudentCodes(int id_task)
+        {
+            string ids = GetTaskCodeIds(id_task);
+            string sql = "select * from bhCode where id_code in ({0});";
+            sql = string.Format(sql, ids);
+            return db.Fetch<bhCode>(sql);
+        }
+        public static string GetTaskCodeIds(int id_task)
+        {
+            string sql = "select final_code_uri from bhRecord where fid_task=@0 and is_result=1";
+            return db.FirstOrDefault<string>(sql, (object)id_task);
+        }
 
         #region SaveRecordInfo
         public static void SaveRecordInfo(ControllerCodeSubmitReq req)

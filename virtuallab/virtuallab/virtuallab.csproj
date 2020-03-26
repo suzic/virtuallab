@@ -900,6 +900,7 @@
     <Content Include="DanPianJi\TemplateData\UnityProgress.js" />
     <Content Include="DanPianJi\TemplateData\webgl-logo.png" />
     <Content Include="Default.aspx" />
+    <Content Include="StudentCode.aspx" />
     <Content Include="Environment.aspx" />
     <Content Include="Environment_old.aspx" />
     <Content Include="favicon.ico" />
@@ -1141,6 +1142,20 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="StudentCodeMaster.Master.cs">
+      <DependentUpon>StudentCodeMaster.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="StudentCodeMaster.Master.designer.cs">
+      <DependentUpon>StudentCodeMaster.Master</DependentUpon>
+    </Compile>
+    <Compile Include="StudentCode.aspx.cs">
+      <DependentUpon>StudentCode.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="StudentCode.aspx.designer.cs">
+      <DependentUpon>StudentCode.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Environment.aspx.cs">
       <DependentUpon>Environment.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1235,6 +1250,7 @@
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.3.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.3.1.min.map" />
+    <Content Include="StudentCodeMaster.Master" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
