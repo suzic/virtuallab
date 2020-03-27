@@ -12,6 +12,8 @@ namespace virtuallab.API.Service
         public EnvironmentRequestRes EnvironmentRequest(EnvironmentRequestReq req)
         {
             EnvironmentRequestRes e = new EnvironmentRequestRes();
+            e.fail = 0;
+            e.session_id = Guid.NewGuid().ToString("D");
             return e;
         }
         public CodeSubmitRes CodeSubmit(CodeSubmitReq req)
@@ -48,6 +50,7 @@ namespace virtuallab.API.Service
             ConsoleSendRes e = new ConsoleSendRes();
             e.fail = 0;
             e.res = "您放大3D模型图，能看到数码管的动画显示效果";
+            e.Continue = 1;
             return e;
         }
         public ConsoleReceiveRes ConsoleReceive(ConsoleReceiveReq req)

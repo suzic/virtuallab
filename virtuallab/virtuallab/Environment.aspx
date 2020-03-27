@@ -14,7 +14,7 @@
             layer.open({
                 type: 1,
                 title: '编译结果输出窗口',
-                area: ['1024px', '960px'],
+                area: ['70%', '99%'],
                 resize:false,
                 content: $('#debugWnd') 
             });
@@ -25,7 +25,7 @@
             layer.open({
                 type: 1,
                 title: '设备仿真控制台',
-                area: ['1024px', '960px'],
+                area: ['70%', '99%'],
                 resize: false,
                 content: $('#runWnd'),
                 cancel: function (index, layero) {
@@ -141,14 +141,11 @@
             }
         }
         function init_frmWebGl() {
-            if (fid_experiment == 3)
-                return;
-
-
-            $("#frmWebGl").css('display', 'none');//隐藏
-
-            $("#runWndText").height(881);
-            
+            if (fid_experiment == 3) {
+                $("#runWndText").css('height', 'calc(50% - 17px)');
+                $("#frmWebGl").css('height', 'calc(50% - 17px)');
+                $("#frmWebGl").css('display', 'block');
+            }
         }
 
         function startAnimation() {
@@ -520,7 +517,7 @@
                 showCommandResult(result.res);
 
                 //如果未返回全部信息
-                if (false) {
+                if (result.Continue) {
                     waitingTimerRecieve();
                 } else {
                     runCommandComplete();
@@ -850,7 +847,9 @@
 
     <!-- 按钮栏 -->
     <div class="row" style="position:absolute; padding-top: 9px; padding-bottom: 10px; padding-right:20px; width:600px; right:0px; z-index:20; ">
-        <table border="0" style="width:100%;">
+        <table border="0" style="
+        width: 100%;
+">
             <tr>
                 <td style="width:100%;">
                     <asp:Button ID="btnReload" runat="server" OnClick="ReloadCode" Text="重新加载模板代码" CssClass="btn btn-default form-control cusbtn" Visible="false" />
@@ -877,7 +876,7 @@
             <%foreach (bhCode code in bhCodes){%>
                 <div class="one_tab <%=code.active %>">
                     <div class="row">
-                        <div class="col-md-12" style="height:870px; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
+                        <div class="col-md-12" style="height:calc(100vh - 95px); padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
                             <textarea id="code_text<%=code.id_code %>" class="form-control"></textarea>
                         </div>
                     </div>
@@ -888,13 +887,13 @@
     </div>
 
     <!-- 编译结果区 -->
-    <div id="debugWnd" style="display:none;width:1024px; height:918px;">
+    <div id="debugWnd" style="display:none;width:100%; height:100%;">
         <textarea id="debug_text" class="form-control"></textarea>
     </div>
 
     <!-- 运行结果区 -->
-    <div id="runWnd" style="display:none;width:1024px; height:918px;">
-        <div id="runWndText" style="width:100%; height:431px;">
+    <div id="runWnd" style="display:none;width:100%; height:100%;">
+        <div id="runWndText" style="width:100%; height:calc(100% - 34px);">
             <textarea id="cm_console" class="form-control"></textarea>
         </div>
 
@@ -902,7 +901,7 @@
             <table style="width:100%; height:100%; border:none;margin:0px;padding:0px;">
                 <tr style="width:100%; height:100%; border:none;margin:0px;padding:0px;">
                     <td style="width:100%; height:34px; border:none;margin:0px;padding:0px;">
-                        <input id="txtCommand" type="text" class="form-control" style="width:100%; height:34px; max-width:973px;" onkeypress="return txtCommand_onKeyPress(event)"/>
+                        <input id="txtCommand" type="text" class="form-control" style="width:100%; height:34px; max-width:1920px;" onkeypress="return txtCommand_onKeyPress(event)"/>
                     </td>
                     <td style="width:50px; height:34px; border:none;margin:0px;padding:0px;">
                         <input id="btnRun" type="button" value="运行" onclick="runCommand();" class="btn btn-danger form-control" style="width:50px; height:34px;margin:0px;padding:0px;"/>
@@ -911,7 +910,7 @@
             </table>
         </div>
 
-        <iframe id="frmWebGl" style="width: 1024px; height: 450px; border:none; overflow:hidden;" src="">
+        <iframe id="frmWebGl" style="width: 100%; height: 0px; border:none; overflow:hidden; display:none;">
         </iframe>
     </div>
 

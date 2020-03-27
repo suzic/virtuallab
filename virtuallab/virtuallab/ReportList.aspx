@@ -55,7 +55,7 @@
             layer.open({
                 type: 2,
                 title: wndtitle,
-                area: ['1024px', '960px'],
+                area: ['70%', '99%'],
                 resize: false,
                 content: url
             });

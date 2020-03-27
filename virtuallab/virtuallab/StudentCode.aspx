@@ -5,6 +5,9 @@
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <link rel="stylesheet" href="Content/layui/css/layui.css">
     <script src="Content/layui/layui.all.js"></script>
+    <style type="text/css">
+        html,body,form{height:100%;}
+    </style>
 
     <script type="text/javascript">
 
@@ -111,17 +114,17 @@
     </script>
 
     <!-- 代码编辑区 -->
-    <div id="Tab" class="Tab row" style="position:relative;">
+    <div id="Tab" class="Tab row" style="position:relative;height:100%;">
         <div class="tab_title">
             <%foreach (bhCode code in bhCodes){%>
                 <div class="col-md-2"><%=code.filename %></div>
             <% }%>
         </div>
-        <div class="tab_panel">
+        <div class="tab_panel" style="height:97%;">
             <%foreach (bhCode code in bhCodes){%>
-                <div class="one_tab <%=code.active %>">
-                    <div class="row">
-                        <div class="col-md-12" style="height:890px; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
+                <div class="one_tab <%=code.active %>" style="height:100%;">
+                    <div class="row" style="height:100%;">
+                        <div class="col-md-12" style="height:100%; padding-left: 0px; padding-right: 0px; border-style: solid; border-width: thin;">
                             <textarea id="code_text<%=code.id_code %>" class="form-control"></textarea>
                         </div>
                     </div>

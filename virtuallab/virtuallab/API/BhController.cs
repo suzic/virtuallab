@@ -15,8 +15,10 @@ namespace virtuallab.API
         IBhApi service;
         public BhController()
         {
-            //service = new BhServiceMock();
-            service = new BhService();
+            if(System.Configuration.ConfigurationManager.AppSettings["EnableService"]=="1")
+                service = new BhService();
+            else
+                service = new BhServiceMock();
         }
 
         [HttpGet, HttpPost]
@@ -45,7 +47,8 @@ namespace virtuallab.API
             //编译成功保存bhRecord
             if (res.fail == 0)
             {
-                DB.SaveRecordInfo(req);
+                if(System.Configuration.ConfigurationManager.AppSettings["EnableService"] == "1")
+                    DB.SaveRecordInfo(req);
 
                 LoginUser u = (LoginUser)System.Web.HttpContext.Current.Session["user"];
                 u.currentState = (EnvironmentState)2;
