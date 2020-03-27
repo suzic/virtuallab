@@ -37,7 +37,7 @@
             </Scripts>
         </asp:ScriptManager>
 
-        <div class="container body-content" style="width:calc(100% - 38px);height:100%">
+        <div class="container body-content" style="width:calc(100% - 68px);height:100%">
             <asp:ContentPlaceHolder ID="MainContent" runat="server">
             </asp:ContentPlaceHolder>
         </div>
