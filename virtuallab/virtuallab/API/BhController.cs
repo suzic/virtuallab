@@ -47,11 +47,15 @@ namespace virtuallab.API
             //编译成功保存bhRecord
             if (res.fail == 0)
             {
-                if(System.Configuration.ConfigurationManager.AppSettings["EnableService"] == "1")
+                if (System.Configuration.ConfigurationManager.AppSettings["EnableService"] == "1")
                     DB.SaveRecordInfo(req);
 
                 LoginUser u = (LoginUser)System.Web.HttpContext.Current.Session["user"];
                 u.currentState = (EnvironmentState)2;
+            }
+            else {
+                LoginUser u = (LoginUser)System.Web.HttpContext.Current.Session["user"];
+                u.currentState = (EnvironmentState)1;
             }
             return res;
         }

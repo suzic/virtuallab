@@ -310,7 +310,6 @@
             submitCode_files(function (result) {
                 //清除等待定时器
                 clearTimerOut();
-                cm_outer.setValue(cm_outer.getValue() + "\n" + (result.fail == 0 ? "SUCCESS：" : "ERROR：") + result.info_buffer + "\n\n您的代码已编译成功，现在你可以关闭此窗口，然后进行以下操作：\r1.申请设备：只有先申请到设备才能在设备中运行你的程序\n2.上传到设备：申请设备成功后，你就可以将程序上传到设备并运行了");
 
                 //成功后续动作
                 if (result.fail == 0) {
@@ -320,6 +319,15 @@
                     if (!device_id) {
                         $('#btnDevice').removeAttr("disabled");
                     }
+
+                    cm_outer.setValue(cm_outer.getValue() + "\nSUCCESS：\n" + result.res + "\n\n您的代码已编译成功，现在你可以关闭此窗口，然后进行以下操作：\r1.申请设备：只有先申请到设备才能在设备中运行你的程序\n2.上传到设备：申请设备成功后，你就可以将程序上传到设备并运行了");
+
+                } else {
+                    currentState = 1;
+                    $('#btnDevice').prop("disabled", true);
+                    $('#btnUpload').prop("disabled", true);
+                    cm_outer.setValue(cm_outer.getValue() + "\nERROR：\n" + result.res + "\n\n编译失败，请检查你的代码，确认无误后再重新提交编译");
+
                 }
 
             });
