@@ -35,6 +35,8 @@
                     return true;
                 }    
             });
+
+            $('#txtCommand').focus();
         }
     </script>
     <script type="text/javascript">
@@ -613,6 +615,8 @@
                     cm_console.setValue(cm_console.getValue() + "\n" + res);
                 }
             }
+
+            $('#txtCommand').focus();
         }
         function runCommandBegin() {
             $('#txtCommand').prop("disabled", true);
@@ -622,6 +626,7 @@
             cm_console.setValue(cm_console.getValue() + '\n> ');
             $('#txtCommand').removeAttr("disabled");
             $('#btnRun').removeAttr("disabled");
+            $('#txtCommand').focus();
         }
 
         // 显示动画
