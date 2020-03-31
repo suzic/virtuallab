@@ -84,10 +84,11 @@
         var tickImageArray;
 
         $(document).ready(function () {
+            initCodeEditors();
             initButtons();
             init_frmWebGl();
-            initCodeEditors();
             new Tab("#Tab", default_tab);
+            
             //showWaitingLayers();
         });
         function initCodeEditors() {
