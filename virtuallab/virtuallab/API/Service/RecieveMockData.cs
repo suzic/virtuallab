@@ -10,7 +10,9 @@ namespace virtuallab.API.Service
     public class RecieveMockData 
     {
         static List<String> data = new List<string>();
+        static List<String> data2 = new List<string>();
         static int index = 0;
+        static int index2 = 0;
         static RecieveMockData()
         {
 
@@ -30,6 +32,18 @@ namespace virtuallab.API.Service
             data.Add("<Effect>[{\"wait\": 1000,\"value\":\"11110110,00000000,00000000,00000000\"}]");
             data.Add("程序运行结束");
 
+
+
+            data2.Add("11111100,00000000,00000000,00000000");
+            data2.Add("01100000,00000000,00000000,00000000");
+            data2.Add("11011010,00000000,00000000,00000000");
+            data2.Add("11110010,00000000,00000000,00000000");
+            data2.Add("01100110,00000000,00000000,00000000");
+            data2.Add("10110110,00000000,00000000,00000000");
+            data2.Add("10111110,00000000,00000000,00000000");
+            data2.Add("11100000,00000000,00000000,00000000");
+            data2.Add("11111110,00000000,00000000,00000000");
+            data2.Add("11110110,00000000,00000000,00000000");
         }
 
         public static ConsoleReceiveRes GetRecieve()
@@ -42,6 +56,23 @@ namespace virtuallab.API.Service
             index++;
             if (index > data.Count - 1)
                 index = 0;
+
+            return res;
+        }
+
+        public static RunResultTickRes GetRecieve2()
+        {
+            RunResultTickRes res = new RunResultTickRes();
+            res.fail = 0;
+            res.output = new List<one_effect>();
+            one_effect e = new one_effect();
+            e.wait = 1000;
+            e.value = data2[index2];
+            res.output.Add(e);
+
+            index2++;
+            if (index2 > data2.Count - 1)
+                index2 = 0;
 
             return res;
         }

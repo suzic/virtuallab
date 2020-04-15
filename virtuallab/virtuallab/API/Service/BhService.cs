@@ -39,6 +39,10 @@ namespace virtuallab.API.Service
         {
             return PostJson<ConsoleReceiveReq, ConsoleReceiveRes>("ConsoleReceive", req);
         }
+        public RunResultTickRes runResultTick(ConsoleReceiveReq req)
+        {
+            return PostJson<ConsoleReceiveReq, RunResultTickRes>("runResultTick", req);
+        }
 
 
 

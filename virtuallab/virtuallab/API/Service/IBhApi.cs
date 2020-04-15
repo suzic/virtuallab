@@ -16,5 +16,6 @@ namespace virtuallab.API.Service
         ProgramUploadRes ProgramUpload(ProgramUploadReq req);
         ConsoleSendRes ConsoleSend(ConsoleSendReq req);
         ConsoleReceiveRes ConsoleReceive(ConsoleReceiveReq req);
+        RunResultTickRes runResultTick(ConsoleReceiveReq req);
     }
 }

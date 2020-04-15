@@ -58,5 +58,10 @@ namespace virtuallab.API.Service
             ConsoleReceiveRes e = RecieveMockData.GetRecieve();
             return e;
         }
+        public RunResultTickRes runResultTick(ConsoleReceiveReq req)
+        {
+            RunResultTickRes e = RecieveMockData.GetRecieve2();
+            return e;
+        }
     }
 }

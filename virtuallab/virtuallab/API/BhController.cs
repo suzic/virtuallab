@@ -15,10 +15,13 @@ namespace virtuallab.API
         IBhApi service;
         public BhController()
         {
-            if(System.Configuration.ConfigurationManager.AppSettings["EnableService"]=="1")
-                service = new BhService();
+            service = GetService();
+        }
+        public static IBhApi GetService() {
+            if (System.Configuration.ConfigurationManager.AppSettings["EnableService"] == "1")
+                return new BhService();
             else
-                service = new BhServiceMock();
+                return new BhServiceMock();
         }
 
         [HttpGet, HttpPost]
@@ -98,6 +101,10 @@ namespace virtuallab.API
         {
             return service.ConsoleReceive(req); 
         }
-
+        [HttpPost]
+        public RunResultTickRes runResultTick(ConsoleReceiveReq req)
+        {
+            return service.runResultTick(req);
+        }
     }
 }

@@ -1094,8 +1094,10 @@
     </Compile>
     <Compile Include="API\BhController.cs" />
     <Compile Include="API\po\ControllerCodeSubmitReq.cs" />
+    <Compile Include="API\Service\po\one_effect.cs" />
     <Compile Include="API\Service\po\CompileReq.cs" />
     <Compile Include="API\Service\po\CompileRes.cs" />
+    <Compile Include="API\Service\po\RunResultTickRes.cs" />
     <Compile Include="API\Service\RecieveMockData.cs" />
     <Compile Include="API\Service\po\CodeFile.cs" />
     <Compile Include="API\Service\po\CodeSubmitReq.cs" />

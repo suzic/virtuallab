@@ -383,7 +383,8 @@ namespace virtuallab
                 EnvironmentRequestReq req = new EnvironmentRequestReq();
                 req.exp_id = Convert.ToInt32(CurrentLoginUser.currentExperimentId);
                 req.user_id = CurrentLoginUser.userId;
-                EnvironmentRequestRes res = new BhService().EnvironmentRequest(req);
+                req.exp_type = DB.GetExpType(req.exp_id);
+                EnvironmentRequestRes res = API.BhController.GetService().EnvironmentRequest(req);
                 if (res.fail==0)
                 {
                     CurrentLoginUser.currentState = EnvironmentState.InEditing;

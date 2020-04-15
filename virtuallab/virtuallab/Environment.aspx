@@ -10,6 +10,7 @@
     <script src="Content/layui/layui.all.js"></script>
 
     <script type="text/javascript">
+        var GLEXPID = 4;
         function showDebugWindown() {
             layer.open({
                 type: 1,
@@ -20,7 +21,7 @@
             });
         }
         function showRunWindown() {
-            if (fid_experiment == 3)
+            if (fid_experiment == GLEXPID)
                 $('#frmWebGl').attr('src','DanPianJi/bh.html');
             layer.open({
                 type: 1,
@@ -29,8 +30,9 @@
                 resize: false,
                 content: $('#runWnd'),
                 cancel: function (index, layero) {
-                    if (fid_experiment == 3)
+                    if (fid_experiment == GLEXPID)
                         $('#frmWebGl').attr('src', '');
+                    clearTimerRecieve();
                     releaseDevice();
                     return true;
                 }    
@@ -144,7 +146,7 @@
             }
         }
         function init_frmWebGl() {
-            if (fid_experiment == 3) {
+            if (fid_experiment == GLEXPID) {
                 $("#runWndText").css('height', 'calc(50% - 17px)');
                 $("#frmWebGl").css('height', 'calc(50% - 17px)');
                 $("#frmWebGl").css('display', 'block');
@@ -413,7 +415,7 @@
                         $('#btnUpload').removeAttr("disabled");
                     }
 
-                    layer.alert('申请设备成功，你可以上传程序到设备了', { title: '成功' });
+                    layer.alert('申请设备成功，您申请到的设备号为：' + device_id +'。\n在网络实验中，该设备号可作为IP端口号使用。\n\n现在您可以上传程序到设备了', { title: '成功' });
                 } else {
                     layer.alert('申请设备失败', { title: '失败' });
                 }
@@ -528,10 +530,9 @@
                 showCommandResult(result.res);
 
                 //如果未返回全部信息
-                if (result.Continue) {
+                runCommandComplete();
+                if (fid_experiment == GLEXPID) {
                     waitingTimerRecieve();
-                } else {
-                    runCommandComplete();
                 }
 
             }, "json").fail(function (xhr, errorText, errorType) {
@@ -559,17 +560,12 @@
             data.session_id = session_id;
             data.device_id = device_id;
 
-            $.post("api/bh/ConsoleReceive", data, function (result) {
-                showCommandResult(result.output);
+            $.post("api/bh/runResultTick", data, function (result) {
+                showEffectResult(result.output);
 
-                //如果完成停止
-                if (result.finish) {
-                    clearTimerRecieve();
-                    runCommandComplete();
-                }
 
             }, "json").fail(function (xhr, errorText, errorType) {
-                showCommandResult(xhr.responseJSON.ExceptionMessage);
+                //showCommandResult(xhr.responseJSON.ExceptionMessage);
             });
         }
         function waitingTimerRecieve() {
@@ -628,6 +624,20 @@
             $('#txtCommand').removeAttr("disabled");
             $('#btnRun').removeAttr("disabled");
             $('#txtCommand').focus();
+        }
+        function showEffectResult(res) {
+            if (!res)
+                return;
+
+            for (let i = 0; i < res.length; i++) {
+                if (i < 1) {
+                    showEffect(res[i].value);
+                } else {
+                    setTimeout(function () {
+                        showEffect(res[i].value);
+                    }, 1000 * i)
+                }
+            }
         }
 
         // 显示动画

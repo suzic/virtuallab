@@ -32,6 +32,13 @@ namespace virtuallab.Common
             string sql = "SELECT rjson_uri FROM bhExperiment where id_experiment=@0";
             return db.FirstOrDefault<string>(sql, (object)id_experiment);
         }
+
+        public static int GetExpType(int id_experiment)
+        {
+            string sql = "SELECT [type] FROM bhExperiment where id_experiment=@0";
+            return db.FirstOrDefault<int>(sql, (object)id_experiment);
+        }
+
         public static List<bhCode> GetCodes(int id_experiment)
         {
             string ids= GetTemplateIds(id_experiment);
