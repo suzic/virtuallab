@@ -64,11 +64,10 @@ namespace virtuallab.API.Service
         {
             RunResultTickRes res = new RunResultTickRes();
             res.fail = 0;
-            res.output = new List<one_effect>();
-            one_effect e = new one_effect();
-            e.wait = 1000;
-            e.value = data2[index2];
-            res.output.Add(e);
+            res.effect = new List<string>();
+            for(int i=0;i<8;i++)
+                res.effect.Add("0");
+            res.effect.AddRange(data2[index2].Split(','));
 
             index2++;
             if (index2 > data2.Count - 1)

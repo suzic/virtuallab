@@ -52,6 +52,7 @@ namespace virtuallab.Models
         public string device_id;             // 设备ID
         public string app_name;             // 生成的程序名
         public string ssh_uuid;
+        public int exp_type;             // 
 
         public bool compileSuccess;     // Flag信息：标记编译是否成功
         public bool uploadSuccess;      // Flag信息：标记上传是否成功

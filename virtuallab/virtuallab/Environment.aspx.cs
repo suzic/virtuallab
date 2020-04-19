@@ -384,6 +384,7 @@ namespace virtuallab
                 req.exp_id = Convert.ToInt32(CurrentLoginUser.currentExperimentId);
                 req.user_id = CurrentLoginUser.userId;
                 req.exp_type = DB.GetExpType(req.exp_id);
+                CurrentLoginUser.exp_type = req.exp_type;
                 EnvironmentRequestRes res = API.BhController.GetService().EnvironmentRequest(req);
                 if (res.fail==0)
                 {

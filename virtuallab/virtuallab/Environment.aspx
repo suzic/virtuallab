@@ -430,6 +430,7 @@
             var data = {};
             data.session_id = session_id;
             data.device_type = "0";
+            data.device_id = device_id;
 
             $.post("api/bh/DeviceRequest", data, function (result) {
                 //成功后续动作
@@ -503,7 +504,7 @@
             return true;
         }
         function runCommand() {
-            if (!session_id || !device_id || !app_name || !ssh_uuid)
+            if (!session_id || !device_id || !app_name)
                 return;
 
             var cmd = $('#txtCommand').val().trim();
@@ -516,7 +517,7 @@
             runCommandBegin();
 
             cm_console.setValue(cm_console.getValue() + cmd + ' ');
-            waitingTimerConsole();
+            //waitingTimerConsole();
 
             var data = {};
             data.session_id = session_id;
@@ -561,7 +562,7 @@
             data.device_id = device_id;
 
             $.post("api/bh/runResultTick", data, function (result) {
-                showEffectResult(result.output);
+                showEffectResult(result.effect);
 
 
             }, "json").fail(function (xhr, errorText, errorType) {
@@ -571,7 +572,7 @@
         function waitingTimerRecieve() {
             timer_recieve = setInterval(function () {
                 getCommandResult();
-            }, 1000);
+            }, 500);
         }
         function clearTimerRecieve() {
             if (timer_recieve)
@@ -629,15 +630,17 @@
             if (!res)
                 return;
 
-            for (let i = 0; i < res.length; i++) {
-                if (i < 1) {
-                    showEffect(res[i].value);
-                } else {
-                    setTimeout(function () {
-                        showEffect(res[i].value);
-                    }, 1000 * i)
-                }
-            }
+            showEffect(res);
+
+            //for (let i = 0; i < res.length; i++) {
+            //    if (i < 1) {
+            //        showEffect(res[i].value);
+            //    } else {
+            //        setTimeout(function () {
+            //            showEffect(res[i].value);
+            //        }, 1000 * i)
+            //    }
+            //}
         }
 
         // 显示动画

@@ -10,5 +10,12 @@ namespace virtuallab.API.Service.po
         public string session_id { get; set; }
         public string device_type { get; set; }
 
+        public string device_id { get; set; }
+
+        public DeviceRequestReq()
+        {
+            device_id = string.Empty;
+        }
+
     }
 }

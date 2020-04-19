@@ -10,5 +10,7 @@ namespace virtuallab.API.Service.po
         public string session_id { get; set; }
         public string device_id { get; set; }
 
+        public int exp_type { get; set; }
+
     }
 }

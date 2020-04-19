@@ -5,11 +5,11 @@ using System.Web;
 
 namespace virtuallab.API.Service.po
 {
-    public class RunResultTickRes
+    public class ControllerRunResultTickRes
     {
         public int fail { get; set; }
 
-        public List<string> effect { get; set; }
+        public string effect { get; set; }
 
     }
 }

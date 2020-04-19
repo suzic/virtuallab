@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using virtuallab.API.Service.po;
+using virtuallab.Models;
 
 namespace virtuallab.API.Service
 {
@@ -29,6 +30,8 @@ namespace virtuallab.API.Service
         }
         public ProgramUploadRes ProgramUpload(ProgramUploadReq req)
         {
+            LoginUser u = (LoginUser)System.Web.HttpContext.Current.Session["user"];
+            req.exp_type = u.exp_type;
             return PostJson<ProgramUploadReq, ProgramUploadRes>("ProgramUpload", req);
         }
         public ConsoleSendRes ConsoleSend(ConsoleSendReq req)

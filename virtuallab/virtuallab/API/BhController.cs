@@ -102,9 +102,16 @@ namespace virtuallab.API
             return service.ConsoleReceive(req); 
         }
         [HttpPost]
-        public RunResultTickRes runResultTick(ConsoleReceiveReq req)
+        public ControllerRunResultTickRes runResultTick(ConsoleReceiveReq req)
         {
-            return service.runResultTick(req);
+            RunResultTickRes res= service.runResultTick(req);
+            ControllerRunResultTickRes R = new ControllerRunResultTickRes();
+            R.fail = res.fail;
+            if (res.fail == 0&&res.effect!=null&&res.effect.Count>11) {
+                R.effect = string.Format("{0},{1},{2},{3}",res.effect[8], res.effect[9], res.effect[10], res.effect[11]);
+            
+            }
+            return R;
         }
     }
 }
