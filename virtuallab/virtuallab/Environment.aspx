@@ -10,7 +10,15 @@
     <script src="Content/layui/layui.all.js"></script>
 
     <script type="text/javascript">
-        var GLEXPID = 4;
+        var GLEXPIDS = [4,30];
+        function Is3dExperiment() {
+            let length = GLEXPIDS.length;
+            for (let i = 0; i < length; i++) {
+                if (GLEXPIDS[i] == fid_experiment)
+                    return true;
+            }
+            return false;
+        }
         function showDebugWindown() {
             layer.open({
                 type: 1,
@@ -21,7 +29,7 @@
             });
         }
         function showRunWindown() {
-            if (fid_experiment == GLEXPID)
+            if (Is3dExperiment())
                 $('#frmWebGl').attr('src','DanPianJi/bh.html');
             layer.open({
                 type: 1,
@@ -30,7 +38,7 @@
                 resize: false,
                 content: $('#runWnd'),
                 cancel: function (index, layero) {
-                    if (fid_experiment == GLEXPID)
+                    if (Is3dExperiment())
                         $('#frmWebGl').attr('src', '');
                     clearTimerRecieve();
                     releaseDevice();
@@ -146,7 +154,7 @@
             }
         }
         function init_frmWebGl() {
-            if (fid_experiment == GLEXPID) {
+            if (Is3dExperiment()) {
                 $("#runWndText").css('height', 'calc(50% - 17px)');
                 $("#frmWebGl").css('height', 'calc(50% - 17px)');
                 $("#frmWebGl").css('display', 'block');
@@ -532,7 +540,7 @@
 
                 //如果未返回全部信息
                 runCommandComplete();
-                if (fid_experiment == GLEXPID) {
+                if (Is3dExperiment()) {
                     waitingTimerRecieve();
                 }
 
