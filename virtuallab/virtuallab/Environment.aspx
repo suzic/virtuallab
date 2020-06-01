@@ -6,6 +6,10 @@
     <link rel="stylesheet" href="Content/layui/css/layui.css">
     <style type="text/css">
         .cusbtn{width:100px; margin-left:20px;margin-right:20px;}
+        body {
+            overflow-x:hidden !important;
+            overflow-y:hidden !important;
+        }
     </style>
     <script src="Content/layui/layui.all.js"></script>
 
