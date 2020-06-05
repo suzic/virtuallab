@@ -884,6 +884,8 @@
     <Content Include="Content\zlg7290.png" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\tab.css" />
+    <Content Include="DanpianjiNew\bh.html" />
+    <Content Include="DanpianjiNew\index.html" />
     <Content Include="DanPianJi\Build\UnityLoader.js" />
     <Content Include="DanPianJi\bh.html" />
     <Content Include="DanPianJi\index.html" />

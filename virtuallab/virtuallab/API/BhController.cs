@@ -108,7 +108,10 @@ namespace virtuallab.API
             ControllerRunResultTickRes R = new ControllerRunResultTickRes();
             R.fail = res.fail;
             if (res.fail == 0&&res.effect!=null&&res.effect.Count>11) {
-                R.effect = string.Format("{0},{1},{2},{3}",res.effect[8], res.effect[9], res.effect[10], res.effect[11]);
+                R.effect = string.Format("{0}{1}{2}{3}{4}{5}{6}{7},{8},{9},{10},{11}",
+                    res.effect[0], res.effect[1], res.effect[2], res.effect[3],
+                    res.effect[4], res.effect[5], res.effect[6], res.effect[7],
+                    res.effect[8], res.effect[9], res.effect[10], res.effect[11]);
             
             }
             return R;

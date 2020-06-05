@@ -1,0 +1,34 @@
+﻿<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>DanPianJi</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <style type="text/css">
+        html,body {
+            margin: 0px;
+            padding: 0px;
+            width: 100%;
+            height: 100%;
+            overflow:hidden;
+        }
+
+        #gameContainer {
+            width: 100%;
+            height: 100%;
+            overflow:hidden;
+        }
+    </style>
+    <script src="TemplateData/UnityProgress.js"></script>
+    <script src="Build/UnityLoader.js"></script>
+    <script>
+        var gameInstance = UnityLoader.instantiate("gameContainer", "Build/DanpianjiBuild.json", { onProgress: UnityProgress });
+    </script>
+    <script language="JavaScript" src="js/SendToUnity.js"></script>
+</head>
+<body>
+    <div id="gameContainer"></div>
+</body>
+</html>

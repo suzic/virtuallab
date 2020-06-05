@@ -34,7 +34,7 @@
         }
         function showRunWindown() {
             if (Is3dExperiment())
-                $('#frmWebGl').attr('src','DanPianJi/bh.html');
+                $('#frmWebGl').attr('src','DanpianjiNew/bh.html');
             layer.open({
                 type: 1,
                 title: '设备仿真控制台',
